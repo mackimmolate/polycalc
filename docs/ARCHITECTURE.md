@@ -3,6 +3,7 @@
 ## Current state
 
 - Phase 1 scaffold is implemented with a deploy-ready frontend foundation.
+- Phase 1.2 refined overview information architecture and v1 model direction before backend integration.
 - Data persistence is still deferred; current data shown in routes is preview fixture data.
 
 ## Guiding principles
@@ -51,9 +52,8 @@ Primary entity: `material`
 
 - `id`
 - `name`
-- `displayName`
 - `category`
-- `manufacturer`
+- `manufacturer` (canonical value from centralized options)
 - `pricePerKg`
 - `maxTemperature`
 - `notes`
@@ -81,7 +81,7 @@ Routes:
 - Use local page state + lightweight service modules for fetching/mutations.
 - Keep form state local to create/edit views.
 - Handle loading, empty, and error states explicitly per screen.
-- Phase 1 services return preview fixture data; Supabase CRUD is deferred.
+- Phase 1 services return preview fixture data aligned to the intended v1 model; Supabase CRUD is deferred.
 
 ## UI foundation
 
@@ -89,6 +89,8 @@ Routes:
 - Reusable UI components for page heading, cards, and status badges.
 - Tailwind CSS v4 plus CSS variable design tokens in `src/styles/index.css`.
 - Mobile and desktop responsive behavior is built into route pages.
+- Materials overview uses labeled cards for quick direct understanding without opening detail pages.
+- Overview intentionally hides status/updated fields to reduce noise before archive flows are introduced.
 
 ## PWA foundation
 

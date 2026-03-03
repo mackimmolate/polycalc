@@ -1,64 +1,74 @@
 import { Link } from 'react-router-dom';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import { SurfaceCard } from '@/components/ui/SurfaceCard';
 import { getCategoryLabel } from '@/features/materials/utils/materialLabels';
 import type { Material } from '@/types/material';
-import { cn } from '@/utils/cn';
-import { formatCurrency, formatDate } from '@/utils/formatters';
+import { formatCurrency } from '@/utils/formatters';
 
 interface MaterialListProps {
   materials: Material[];
 }
 
+function formatTemperature(value: number | null) {
+  return value === null ? 'Ej angivet' : `${value} °C`;
+}
+
 export function MaterialList({ materials }: MaterialListProps) {
-  const columnsClass =
-    'md:grid-cols-[minmax(0,2.2fr)_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.9fr)]';
-
   return (
-    <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_12px_32px_-24px_rgba(15,23,42,0.45)]">
-      <div
-        className={cn(
-          'hidden gap-4 border-b border-[var(--border)] px-5 py-3 text-xs font-semibold uppercase tracking-wide text-[var(--muted)] md:grid',
-          columnsClass,
-        )}
-      >
-        <span className="text-left">Material</span>
-        <span className="text-left">Kategori</span>
-        <span className="text-right">Pris/kg</span>
-        <span className="text-right">Uppdaterad</span>
-        <span className="pl-2 text-left">Status</span>
-      </div>
-
-      <ul className="divide-y divide-[var(--border)]">
-        {materials.map((material) => (
-          <li key={material.id}>
-            <Link
-              to={`/materials/${material.id}`}
-              className={cn(
-                'grid gap-3 px-5 py-4 transition hover:bg-[var(--surface-soft)] md:items-center',
-                columnsClass,
-              )}
-            >
-              <div>
-                <p className="font-semibold text-[var(--ink)]">{material.displayName}</p>
-                <p className="text-xs text-[var(--muted)]">
-                  {material.manufacturer ?? 'Ingen tillverkare angiven'}
-                </p>
+    <div className="grid gap-4 md:grid-cols-2">
+      {materials.map((material) => (
+        <Link key={material.id} to={`/materials/${material.id}`} className="group">
+          <SurfaceCard className="h-full p-5 transition group-hover:-translate-y-0.5 group-hover:border-[var(--accent)] group-hover:shadow-[0_16px_40px_-28px_rgba(15,118,110,0.45)]">
+            <div className="space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    Materialnamn
+                  </p>
+                  <p className="mt-1 text-base font-semibold text-[var(--ink)]">{material.name}</p>
+                </div>
+                <span className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-xs font-semibold text-[var(--muted)]">
+                  {getCategoryLabel(material.category)}
+                </span>
               </div>
 
-              <p className="text-sm text-[var(--ink)]">{getCategoryLabel(material.category)}</p>
-              <p className="text-right text-sm tabular-nums text-[var(--ink)]">
-                {formatCurrency(material.pricePerKg)}
-              </p>
-              <p className="text-right text-sm tabular-nums text-[var(--ink)]">
-                {formatDate(material.updatedAt)}
-              </p>
-              <div className="pl-2">
-                <StatusBadge status={material.status} />
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
+              <dl className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    Tillverkare
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-[var(--ink)]">
+                    {material.manufacturer ?? 'Ej angiven'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    Pris per kg
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium tabular-nums text-[var(--ink)]">
+                    {formatCurrency(material.pricePerKg)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    Maxtemperatur
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-[var(--ink)]">
+                    {formatTemperature(material.maxTemperature)}
+                  </dd>
+                </div>
+                <div className="sm:col-span-2">
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    Anteckningar
+                  </dt>
+                  <dd className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
+                    {material.notes || 'Inga anteckningar'}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </SurfaceCard>
+        </Link>
+      ))}
     </div>
   );
 }

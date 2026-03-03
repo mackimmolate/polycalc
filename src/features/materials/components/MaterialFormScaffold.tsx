@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { SurfaceCard } from '@/components/ui/SurfaceCard';
 import { getCategoryLabel } from '@/features/materials/utils/materialLabels';
 import type { Material, MaterialCategory, MaterialStatus } from '@/types/material';
+import { manufacturerOptions, type Manufacturer } from '@/types/manufacturer';
 
 interface MaterialFormScaffoldProps {
   mode: 'create' | 'edit';
@@ -11,9 +12,8 @@ interface MaterialFormScaffoldProps {
 
 interface MaterialFormState {
   name: string;
-  displayName: string;
   category: MaterialCategory;
-  manufacturer: string;
+  manufacturer: Manufacturer | '';
   pricePerKg: string;
   maxTemperature: string;
   notes: string;
@@ -33,7 +33,6 @@ const categoryOptions: MaterialCategory[] = [
 function toFormState(material?: Material): MaterialFormState {
   return {
     name: material?.name ?? '',
-    displayName: material?.displayName ?? '',
     category: material?.category ?? 'PLA',
     manufacturer: material?.manufacturer ?? '',
     pricePerKg: material?.pricePerKg?.toString() ?? '',
@@ -60,25 +59,12 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
     <form className="space-y-4" onSubmit={onSubmit}>
       <SurfaceCard className="grid gap-4 md:grid-cols-2">
         <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Internt namn</span>
+          <span className="font-semibold text-[var(--ink)]">Materialnamn</span>
           <input
             required
             value={formState.name}
             onChange={(event) =>
               setFormState((current) => ({ ...current, name: event.target.value }))
-            }
-            className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            placeholder="exempel-pla-svart"
-          />
-        </label>
-
-        <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Visningsnamn</span>
-          <input
-            required
-            value={formState.displayName}
-            onChange={(event) =>
-              setFormState((current) => ({ ...current, displayName: event.target.value }))
             }
             className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
             placeholder="SUNLU PLA+ Svart"
@@ -106,15 +92,24 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
         </label>
 
         <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Tillverkare / varumärke</span>
-          <input
+          <span className="font-semibold text-[var(--ink)]">Tillverkare</span>
+          <select
             value={formState.manufacturer}
             onChange={(event) =>
-              setFormState((current) => ({ ...current, manufacturer: event.target.value }))
+              setFormState((current) => ({
+                ...current,
+                manufacturer: event.target.value as Manufacturer | '',
+              }))
             }
             className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            placeholder="SUNLU"
-          />
+          >
+            <option value="">Välj tillverkare</option>
+            {manufacturerOptions.map((manufacturer) => (
+              <option key={manufacturer} value={manufacturer}>
+                {manufacturer}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="space-y-1 text-sm">

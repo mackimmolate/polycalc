@@ -28,9 +28,8 @@ Suggested columns:
 
 - `id` (`uuid`, primary key)
 - `name` (`text`, required, unique as needed)
-- `display_name` (`text`, required)
 - `category` (`text`, required)
-- `manufacturer` (`text`, nullable)
+- `manufacturer` (`text`, nullable, constrained to canonical values used in frontend options)
 - `price_per_kg` (`numeric`, nullable)
 - `max_temperature` (`integer`, nullable)
 - `notes` (`text`, nullable)
@@ -49,3 +48,4 @@ Suggested columns:
 - Final RLS policy design.
 - Material CRUD integration from frontend services.
 - Error handling and retry strategy for Supabase operations.
+- Database-level constraints/checks for manufacturer canonical values.

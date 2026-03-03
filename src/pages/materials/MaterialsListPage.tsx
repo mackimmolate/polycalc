@@ -8,16 +8,15 @@ import {
   type MaterialSortOption,
 } from '@/features/materials/utils/filterMaterials';
 import { getMaterialPreviewList } from '@/services/materials/materialsService';
-import type { Material, MaterialCategory, MaterialStatus } from '@/types/material';
+import type { Material, MaterialCategory } from '@/types/material';
 
 export function MaterialsListPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [status, setStatus] = useState<MaterialStatus | 'all'>('all');
   const [category, setCategory] = useState('all');
-  const [sort, setSort] = useState<MaterialSortOption>('updated-desc');
+  const [sort, setSort] = useState<MaterialSortOption>('name-asc');
 
   useEffect(() => {
     let isMounted = true;
@@ -57,11 +56,10 @@ export function MaterialsListPage() {
     () =>
       queryMaterials(materials, {
         searchTerm,
-        status,
         category,
         sort,
       }),
-    [materials, searchTerm, status, category, sort],
+    [materials, searchTerm, category, sort],
   );
 
   const categories = useMemo<Array<'all' | MaterialCategory>>(
@@ -73,11 +71,11 @@ export function MaterialsListPage() {
     <div className="space-y-6">
       <PageHeading
         title="Material"
-        description="Sök, filtrera och skanna materialbiblioteket snabbt. I den här fasen används lokal förhandsdata tills Supabase-flöden kopplas in."
+        description="Översikten visar det viktigaste direkt: namn, tillverkare, kategori, pris, temperatur och anteckningar."
       />
 
       <SurfaceCard className="space-y-4">
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-3">
           <div>
             <label htmlFor="materials-search" className="sr-only">
               Sök material
@@ -87,26 +85,9 @@ export function MaterialsListPage() {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               aria-label="Sök material"
-              placeholder="Sök namn, visningsnamn eller tillverkare"
+              placeholder="Sök material eller tillverkare"
               className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
             />
-          </div>
-
-          <div>
-            <label htmlFor="materials-status" className="sr-only">
-              Filtrera på status
-            </label>
-            <select
-              id="materials-status"
-              value={status}
-              onChange={(event) => setStatus(event.target.value as MaterialStatus | 'all')}
-              aria-label="Filtrera på status"
-              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            >
-              <option value="all">Alla statusar</option>
-              <option value="active">Aktiv</option>
-              <option value="archived">Arkiverad</option>
-            </select>
           </div>
 
           <div>
@@ -139,7 +120,6 @@ export function MaterialsListPage() {
               aria-label="Sortering"
               className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
             >
-              <option value="updated-desc">Senast uppdaterad</option>
               <option value="name-asc">Namn (A-Ö)</option>
               <option value="price-asc">Pris (lägst först)</option>
               <option value="temperature-desc">Maxtemperatur (högst först)</option>
@@ -148,7 +128,9 @@ export function MaterialsListPage() {
         </div>
 
         <p className="text-xs text-[var(--muted)]">
-          {filteredMaterials.length} av {materials.length} material visas
+          {filteredMaterials.length} av{' '}
+          {materials.filter((material) => material.status === 'active').length} aktiva material
+          visas
         </p>
       </SurfaceCard>
 

@@ -28,7 +28,7 @@ export function EditMaterialPage() {
   return (
     <div className="space-y-6">
       <PageHeading
-        title={`Redigera ${material.displayName}`}
+        title={`Redigera ${material.name}`}
         description="Justera metadata och status. Spara-beteendet är avsiktligt uppskjutet tills Supabase-kopplingen i Fas 2."
       />
       <MaterialFormScaffold mode="edit" initialMaterial={material} />

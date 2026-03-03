@@ -15,6 +15,14 @@
 - Add PWA baseline configuration
 - Add GitHub Pages workflow (install, lint, build, deploy)
 
+## Phase 1.2 (completed): IA and model polish before backend
+
+- Removed overview noise (`status` filter plus visible `updated`/`status` overview fields)
+- Reworked materials overview into labeled quick-scan cards
+- Simplified v1 model to one material name field
+- Added canonical manufacturer option list in form scaffolds
+- Aligned preview data and UI scaffolding with the refined model direction
+
 ## Phase 2 (next): Material CRUD and data integration
 
 - Replace preview data with Supabase-backed material list/detail/create/edit/update/archive flows

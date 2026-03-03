@@ -4,9 +4,10 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials.
 
 ## Current status
 
-- Version: `0.2.1`
+- Version: `0.2.2`
 - Phase 1 completed: app foundation, routing, UI shell, PWA baseline, and GitHub Pages deployment workflow.
 - Phase 1.1 completed: UI cleanup, Swedish localization, and materials list alignment polish.
+- Phase 1.2 completed: overview information architecture and v1 data-model polish before Supabase integration.
 - Data persistence is intentionally deferred to the next phase.
 
 ## Implemented in Phase 1
@@ -28,6 +29,14 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials.
   - Placeholder icons
 - GitHub Actions workflow for install, lint, build, and deploy to GitHub Pages
 - `.env.example` and Supabase client scaffold (no CRUD yet)
+
+## Refined in Phase 1.2
+
+- Materials overview now emphasizes key material data directly in each card (name, manufacturer, category, price, max temperature, notes).
+- Visible status and updated metadata were removed from the overview/filter UI to reduce noise.
+- Active v1 model now uses one material name field (`name`) only.
+- Manufacturer input in create/edit scaffolds is normalized through a canonical selectable option list.
+- Preview data and frontend types now reflect the refined v1 model before backend integration.
 
 ## Quick start
 

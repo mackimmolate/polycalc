@@ -50,3 +50,24 @@ This file records key product and engineering decisions.
 - Status: Accepted
 - Decision: Bump from `0.1.0` to `0.2.0` after delivering the full Phase 1 app/tooling/deploy baseline.
 - Reason: Scope is a meaningful functional increment beyond documentation-only initialization.
+
+## D-0008: Single material name field for v1
+
+- Date: 2026-03-03
+- Status: Accepted
+- Decision: Use one material name field (`name`) and remove the dual-name `displayName` concept from active v1 direction.
+- Reason: Reduces model/UI complexity and avoids confusion during material creation/editing.
+
+## D-0009: Canonical manufacturer options in UI scaffolding
+
+- Date: 2026-03-03
+- Status: Accepted
+- Decision: Replace free-text manufacturer entry with a centralized selectable option list in create/edit scaffolds.
+- Reason: Prevents inconsistent naming (for example case/spelling variants) and improves future data quality for Supabase.
+
+## D-0010: Overview focuses on key material data, not status metadata
+
+- Date: 2026-03-03
+- Status: Accepted
+- Decision: Hide visible status and updated metadata in overview/filter UI and show key material fields directly in labeled overview cards.
+- Reason: Improves scanability and keeps the overview focused on practical browsing information.

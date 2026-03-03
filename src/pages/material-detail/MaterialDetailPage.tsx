@@ -30,7 +30,7 @@ export function MaterialDetailPage() {
   return (
     <div className="space-y-6">
       <PageHeading
-        title={material.displayName}
+        title={material.name}
         description={material.notes || 'Inga anteckningar ännu.'}
         actions={
           <div className="flex items-center gap-2">
@@ -87,9 +87,7 @@ export function MaterialDetailPage() {
 
       <SurfaceCard className="grid gap-4 md:grid-cols-2">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Internt namn
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Namn</p>
           <p className="mt-2 text-sm font-semibold text-[var(--ink)]">{material.name}</p>
         </div>
         <div>

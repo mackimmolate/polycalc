@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.2.2] - 2026-03-03
+
+### Changed
+
+- Removed visible `status` filtering from the materials overview and removed visible `updated`/`status` columns from overview presentation.
+- Reworked the materials overview into scan-friendly labeled cards showing key information directly (name, manufacturer, category, price, max temperature, notes).
+- Refined the active v1 material model to use one `name` field only (removed dual-name `displayName` usage from types, preview data, forms, and UI).
+- Replaced free-text manufacturer input in create/edit scaffolds with a centralized canonical option list for consistent values.
+- Aligned preview data and filtering/sorting utilities with the refined v1 model and Swedish UI direction.
+
+### Deferred
+
+- Supabase CRUD and auth remain deferred to Phase 2.
+
 ## [0.2.1] - 2026-03-03
 
 ### Changed

@@ -3,8 +3,7 @@ import type { Material } from '@/types/material';
 export const materialPreviewData: Material[] = [
   {
     id: 'sunlu-pla-plus-black',
-    name: 'sunlu-pla-plus-black',
-    displayName: 'SUNLU PLA+ Black',
+    name: 'SUNLU PLA+ Svart',
     category: 'PLA',
     manufacturer: 'SUNLU',
     pricePerKg: 19.5,
@@ -16,8 +15,7 @@ export const materialPreviewData: Material[] = [
   },
   {
     id: 'bambu-petg-cf-gray',
-    name: 'bambu-petg-cf-gray',
-    displayName: 'Bambu PETG-CF Gray',
+    name: 'Bambu PETG-CF Grå',
     category: 'PETG',
     manufacturer: 'Bambu Lab',
     pricePerKg: 34,
@@ -29,8 +27,7 @@ export const materialPreviewData: Material[] = [
   },
   {
     id: 'polymaker-asa-white',
-    name: 'polymaker-asa-white',
-    displayName: 'Polymaker ASA White',
+    name: 'Polymaker ASA Vit',
     category: 'ABS',
     manufacturer: 'Polymaker',
     pricePerKg: 29.99,
@@ -42,8 +39,7 @@ export const materialPreviewData: Material[] = [
   },
   {
     id: 'esun-tpu95a-blue',
-    name: 'esun-tpu95a-blue',
-    displayName: 'eSUN TPU 95A Blue',
+    name: 'eSUN TPU 95A Blå',
     category: 'TPU',
     manufacturer: 'eSUN',
     pricePerKg: 26.4,
@@ -55,8 +51,7 @@ export const materialPreviewData: Material[] = [
   },
   {
     id: 'siraya-fast-navy',
-    name: 'siraya-fast-navy',
-    displayName: 'Siraya Fast Navy Gray',
+    name: 'Siraya Fast Marin Grå',
     category: 'Resin',
     manufacturer: 'Siraya Tech',
     pricePerKg: 42,
