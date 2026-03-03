@@ -1,4 +1,4 @@
-import { getSupabaseClientOrThrow } from '@/lib/supabase/client';
+﻿import { getSupabaseClientOrThrow } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/database.types';
 import { manufacturerOptions } from '@/types/manufacturer';
 import type { Manufacturer } from '@/types/manufacturer';
@@ -22,6 +22,15 @@ const categoryValues: MaterialCategory[] = ['PLA', 'PETG', 'ABS', 'Nylon', 'TPU'
 type MaterialRow = Database['public']['Tables']['materials']['Row'];
 type MaterialInsert = Database['public']['Tables']['materials']['Insert'];
 type MaterialUpdate = Database['public']['Tables']['materials']['Update'];
+
+function asSupabaseErrorMessage(error: { message?: string; details?: string | null }) {
+  const details = error.details?.trim();
+  if (details) {
+    return `${error.message} (${details})`;
+  }
+
+  return error.message ?? 'Okant databasfel';
+}
 
 function asCategory(value: string): MaterialCategory {
   if (categoryValues.includes(value as MaterialCategory)) {
@@ -78,7 +87,7 @@ async function requireWriteSession() {
   }
 
   if (!data.session) {
-    throw new Error('Du måste vara inloggad för att ändra material.');
+    throw new Error('Du maste vara inloggad for att andra material.');
   }
 }
 
@@ -90,7 +99,7 @@ export async function listMaterials(): Promise<Material[]> {
     .order('name', { ascending: true });
 
   if (error) {
-    throw new Error('Det gick inte att läsa material från databasen.');
+    throw new Error(`Det gick inte att lasa material fran databasen: ${asSupabaseErrorMessage(error)}`);
   }
 
   return (data ?? []).map((row) => mapRowToMaterial(row as MaterialRow));
@@ -105,7 +114,7 @@ export async function getMaterialById(materialId: string): Promise<Material | nu
     .maybeSingle();
 
   if (error) {
-    throw new Error('Det gick inte att läsa materialdetaljer.');
+    throw new Error(`Det gick inte att lasa materialdetaljer: ${asSupabaseErrorMessage(error)}`);
   }
 
   if (!data) {
@@ -126,7 +135,7 @@ export async function createMaterial(input: MaterialMutationInput): Promise<Mate
     .single();
 
   if (error) {
-    throw new Error('Det gick inte att skapa materialet.');
+    throw new Error(`Det gick inte att skapa materialet: ${asSupabaseErrorMessage(error)}`);
   }
 
   return mapRowToMaterial(data as MaterialRow);
@@ -147,7 +156,7 @@ export async function updateMaterial(
     .single();
 
   if (error) {
-    throw new Error('Det gick inte att uppdatera materialet.');
+    throw new Error(`Det gick inte att uppdatera materialet: ${asSupabaseErrorMessage(error)}`);
   }
 
   return mapRowToMaterial(data as MaterialRow);
@@ -160,6 +169,6 @@ export async function deleteMaterial(materialId: string): Promise<void> {
   const { error } = await supabase.from(MATERIALS_TABLE).delete().eq('id', materialId);
 
   if (error) {
-    throw new Error('Det gick inte att ta bort materialet.');
+    throw new Error(`Det gick inte att ta bort materialet: ${asSupabaseErrorMessage(error)}`);
   }
 }

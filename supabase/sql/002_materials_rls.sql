@@ -4,6 +4,10 @@
 
 alter table public.materials enable row level security;
 
+grant usage on schema public to anon, authenticated;
+grant select on table public.materials to anon, authenticated;
+grant insert, update, delete on table public.materials to authenticated;
+
 drop policy if exists "materials_select_public" on public.materials;
 create policy "materials_select_public"
 on public.materials
