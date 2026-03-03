@@ -11,15 +11,15 @@ export function EditMaterialPage() {
   if (!material) {
     return (
       <SurfaceCard>
-        <p className="text-lg font-semibold text-[var(--ink)]">Material not found</p>
+        <p className="text-lg font-semibold text-[var(--ink)]">Materialet hittades inte</p>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          The selected material is not available in this preview dataset.
+          Det valda materialet finns inte i förhandsdatasetet.
         </p>
         <Link
           to="/materials"
           className="mt-4 inline-flex rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--surface-soft)]"
         >
-          Back to materials
+          Till material
         </Link>
       </SurfaceCard>
     );
@@ -28,8 +28,8 @@ export function EditMaterialPage() {
   return (
     <div className="space-y-6">
       <PageHeading
-        title={`Edit ${material.displayName}`}
-        description="Refine metadata and status. Save behavior is intentionally deferred until Supabase wiring in Phase 2."
+        title={`Redigera ${material.displayName}`}
+        description="Justera metadata och status. Spara-beteendet är avsiktligt uppskjutet tills Supabase-kopplingen i Fas 2."
       />
       <MaterialFormScaffold mode="edit" initialMaterial={material} />
     </div>

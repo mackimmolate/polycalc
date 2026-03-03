@@ -4,8 +4,9 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials.
 
 ## Current status
 
-- Version: `0.2.0`
+- Version: `0.2.1`
 - Phase 1 completed: app foundation, routing, UI shell, PWA baseline, and GitHub Pages deployment workflow.
+- Phase 1.1 completed: UI cleanup, Swedish localization, and materials list alignment polish.
 - Data persistence is intentionally deferred to the next phase.
 
 ## Implemented in Phase 1

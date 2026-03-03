@@ -32,7 +32,7 @@ export default defineConfig({
         id: './',
         name: 'PolyFlow',
         short_name: 'PolyFlow',
-        description: 'A clean PWA for managing 3D printing materials.',
+        description: 'Ett enkelt PWA för att hantera 3D-printmaterial.',
         start_url: './#/materials',
         scope: './',
         display: 'standalone',

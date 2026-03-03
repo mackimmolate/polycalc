@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.2.1] - 2026-03-03
+
+### Changed
+
+- Removed duplicate in-page "Add Material" CTA from the materials page heading.
+- Localized visible app UI copy to Swedish across navigation, pages, controls, messages, and PWA install text.
+- Improved materials list/table column alignment for clearer header-to-row scanning.
+- Removed visible filter labels for search/status/category/sort and preserved accessibility with screen-reader labels and `aria-label`s.
+- Localized preview material notes and formatting output (`sv-SE` date/currency presentation with USD values).
+
+### Deferred
+
+- Supabase CRUD and persistence remain deferred to Phase 2.
+
 ## [0.2.0] - 2026-03-03
 
 ### Added

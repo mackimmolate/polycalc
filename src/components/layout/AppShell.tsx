@@ -3,8 +3,8 @@ import { usePwaInstall } from '@/hooks/usePwaInstall';
 import { cn } from '@/utils/cn';
 
 const navigationItems = [
-  { to: '/materials', label: 'Materials', end: true },
-  { to: '/materials/new', label: 'Add Material' },
+  { to: '/materials', label: 'Material', end: true },
+  { to: '/materials/new', label: 'Lägg till material' },
 ];
 
 export function AppShell() {
@@ -25,7 +25,7 @@ export function AppShell() {
               <span className="block font-display text-lg font-bold leading-none text-[var(--ink)]">
                 PolyFlow
               </span>
-              <span className="block text-xs text-[var(--muted)]">Material library</span>
+              <span className="block text-xs text-[var(--muted)]">Materialbibliotek</span>
             </span>
           </NavLink>
 
@@ -55,11 +55,11 @@ export function AppShell() {
               onClick={installApp}
               className="rounded-full border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
             >
-              Install App
+              Installera app
             </button>
           ) : (
             <p className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-[var(--muted)]">
-              PWA foundation enabled
+              PWA-stöd aktivt
             </p>
           )}
         </div>

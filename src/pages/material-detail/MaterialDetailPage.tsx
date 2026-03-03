@@ -3,6 +3,7 @@ import { PageHeading } from '@/components/ui/PageHeading';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { SurfaceCard } from '@/components/ui/SurfaceCard';
 import { materialPreviewData } from '@/features/materials/data/materialPreviewData';
+import { getCategoryLabel } from '@/features/materials/utils/materialLabels';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 
 export function MaterialDetailPage() {
@@ -12,15 +13,15 @@ export function MaterialDetailPage() {
   if (!material) {
     return (
       <SurfaceCard>
-        <p className="text-lg font-semibold text-[var(--ink)]">Material not found</p>
+        <p className="text-lg font-semibold text-[var(--ink)]">Materialet hittades inte</p>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          The material id does not exist in the current preview dataset.
+          Material-id:t finns inte i det aktuella förhandsdatasetet.
         </p>
         <Link
           to="/materials"
           className="mt-4 inline-flex rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--surface-soft)]"
         >
-          Back to materials
+          Till material
         </Link>
       </SurfaceCard>
     );
@@ -30,20 +31,20 @@ export function MaterialDetailPage() {
     <div className="space-y-6">
       <PageHeading
         title={material.displayName}
-        description={material.notes || 'No notes added yet.'}
+        description={material.notes || 'Inga anteckningar ännu.'}
         actions={
           <div className="flex items-center gap-2">
             <Link
               to={`/materials/${material.id}/edit`}
               className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--surface-soft)]"
             >
-              Edit
+              Redigera
             </Link>
             <button
               type="button"
               className="rounded-full border border-amber-400 bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-800"
             >
-              Archive (Phase 2)
+              Arkivera (Fas 2)
             </button>
           </div>
         }
@@ -60,13 +61,15 @@ export function MaterialDetailPage() {
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Category
+            Kategori
           </p>
-          <p className="mt-2 text-sm font-semibold text-[var(--ink)]">{material.category}</p>
+          <p className="mt-2 text-sm font-semibold text-[var(--ink)]">
+            {getCategoryLabel(material.category)}
+          </p>
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Price per kg
+            Pris per kg
           </p>
           <p className="mt-2 text-sm font-semibold text-[var(--ink)]">
             {formatCurrency(material.pricePerKg)}
@@ -74,10 +77,10 @@ export function MaterialDetailPage() {
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Max temperature
+            Maxtemperatur
           </p>
           <p className="mt-2 text-sm font-semibold text-[var(--ink)]">
-            {material.maxTemperature ? `${material.maxTemperature} C` : 'Not set'}
+            {material.maxTemperature ? `${material.maxTemperature} °C` : 'Ej angivet'}
           </p>
         </div>
       </SurfaceCard>
@@ -85,21 +88,21 @@ export function MaterialDetailPage() {
       <SurfaceCard className="grid gap-4 md:grid-cols-2">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Internal name
+            Internt namn
           </p>
           <p className="mt-2 text-sm font-semibold text-[var(--ink)]">{material.name}</p>
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Manufacturer
+            Tillverkare
           </p>
           <p className="mt-2 text-sm font-semibold text-[var(--ink)]">
-            {material.manufacturer ?? 'Not set'}
+            {material.manufacturer ?? 'Ej angivet'}
           </p>
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Created
+            Skapad
           </p>
           <p className="mt-2 text-sm font-semibold text-[var(--ink)]">
             {formatDate(material.createdAt)}
@@ -107,7 +110,7 @@ export function MaterialDetailPage() {
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Updated
+            Uppdaterad
           </p>
           <p className="mt-2 text-sm font-semibold text-[var(--ink)]">
             {formatDate(material.updatedAt)}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SurfaceCard } from '@/components/ui/SurfaceCard';
+import { getCategoryLabel } from '@/features/materials/utils/materialLabels';
 import type { Material, MaterialCategory, MaterialStatus } from '@/types/material';
 
 interface MaterialFormScaffoldProps {
@@ -50,8 +51,8 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
     event.preventDefault();
     setMessage(
       mode === 'create'
-        ? 'Create flow wiring to Supabase is scheduled for Phase 2.'
-        : 'Update flow wiring to Supabase is scheduled for Phase 2.',
+        ? 'Skapaflödet kopplas till Supabase i Fas 2.'
+        : 'Uppdateringsflödet kopplas till Supabase i Fas 2.',
     );
   };
 
@@ -59,7 +60,7 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
     <form className="space-y-4" onSubmit={onSubmit}>
       <SurfaceCard className="grid gap-4 md:grid-cols-2">
         <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Internal name</span>
+          <span className="font-semibold text-[var(--ink)]">Internt namn</span>
           <input
             required
             value={formState.name}
@@ -67,12 +68,12 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
               setFormState((current) => ({ ...current, name: event.target.value }))
             }
             className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            placeholder="example-pla-black"
+            placeholder="exempel-pla-svart"
           />
         </label>
 
         <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Display name</span>
+          <span className="font-semibold text-[var(--ink)]">Visningsnamn</span>
           <input
             required
             value={formState.displayName}
@@ -80,12 +81,12 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
               setFormState((current) => ({ ...current, displayName: event.target.value }))
             }
             className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            placeholder="SUNLU PLA+ Black"
+            placeholder="SUNLU PLA+ Svart"
           />
         </label>
 
         <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Category</span>
+          <span className="font-semibold text-[var(--ink)]">Kategori</span>
           <select
             value={formState.category}
             onChange={(event) =>
@@ -98,14 +99,14 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
           >
             {categoryOptions.map((category) => (
               <option key={category} value={category}>
-                {category}
+                {getCategoryLabel(category)}
               </option>
             ))}
           </select>
         </label>
 
         <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Manufacturer / brand</span>
+          <span className="font-semibold text-[var(--ink)]">Tillverkare / varumärke</span>
           <input
             value={formState.manufacturer}
             onChange={(event) =>
@@ -117,7 +118,7 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
         </label>
 
         <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Price per kg (USD)</span>
+          <span className="font-semibold text-[var(--ink)]">Pris per kg (USD)</span>
           <input
             value={formState.pricePerKg}
             onChange={(event) =>
@@ -129,7 +130,7 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
         </label>
 
         <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Max temperature (C)</span>
+          <span className="font-semibold text-[var(--ink)]">Maxtemperatur (°C)</span>
           <input
             value={formState.maxTemperature}
             onChange={(event) =>
@@ -141,14 +142,14 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
         </label>
 
         <label className="space-y-1 text-sm md:col-span-2">
-          <span className="font-semibold text-[var(--ink)]">Notes</span>
+          <span className="font-semibold text-[var(--ink)]">Anteckningar</span>
           <textarea
             value={formState.notes}
             onChange={(event) =>
               setFormState((current) => ({ ...current, notes: event.target.value }))
             }
             className="min-h-24 w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            placeholder="Printing profile notes, drying requirements, or usage context..."
+            placeholder="Skriv utprofiler, torkkrav eller användningsområde..."
           />
         </label>
 
@@ -165,8 +166,8 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
               }
               className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
             >
-              <option value="active">Active</option>
-              <option value="archived">Archived</option>
+              <option value="active">Aktiv</option>
+              <option value="archived">Arkiverad</option>
             </select>
           </label>
         ) : null}
@@ -174,20 +175,20 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-[var(--muted)]">
-          Validation and persistence are intentionally deferred to Phase 2.
+          Validering och lagring är avsiktligt uppskjutet till Fas 2.
         </p>
         <div className="flex items-center gap-2">
           <Link
             to="/materials"
             className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--surface-soft)]"
           >
-            Cancel
+            Avbryt
           </Link>
           <button
             type="submit"
             className="rounded-full border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
           >
-            {mode === 'create' ? 'Save Material' : 'Update Material'}
+            {mode === 'create' ? 'Spara material' : 'Uppdatera material'}
           </button>
         </div>
       </div>

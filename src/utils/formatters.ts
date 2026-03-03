@@ -1,9 +1,9 @@
 export function formatCurrency(value: number | null) {
   if (value === null) {
-    return 'Not set';
+    return 'Ej angivet';
   }
 
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('sv-SE', {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 2,
@@ -11,7 +11,7 @@ export function formatCurrency(value: number | null) {
 }
 
 export function formatDate(value: string) {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('sv-SE', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

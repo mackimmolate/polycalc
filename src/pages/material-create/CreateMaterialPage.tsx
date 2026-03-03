@@ -5,8 +5,8 @@ export function CreateMaterialPage() {
   return (
     <div className="space-y-6">
       <PageHeading
-        title="Create Material"
-        description="Set up a new material profile. Form structure is ready, while persistence is added in Phase 2."
+        title="Skapa material"
+        description="Skapa en ny materialprofil. Formulärstrukturen är klar, medan lagring kopplas in i Fas 2."
       />
       <MaterialFormScaffold mode="create" />
     </div>

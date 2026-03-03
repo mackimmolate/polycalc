@@ -1,4 +1,5 @@
 import type { MaterialStatus } from '@/types/material';
+import { getStatusLabel } from '@/features/materials/utils/materialLabels';
 import { cn } from '@/utils/cn';
 
 interface StatusBadgeProps {
@@ -13,7 +14,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
         status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700',
       )}
     >
-      {status}
+      {getStatusLabel(status)}
     </span>
   );
 }

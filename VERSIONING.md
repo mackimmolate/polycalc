@@ -4,7 +4,7 @@ PolyFlow uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 
 ## Current version
 
-- `0.2.0`
+- `0.2.1`
 
 ## Rules
 
@@ -29,3 +29,4 @@ PolyFlow uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 
 - `0.1.0`: Documentation-first repository initialization.
 - `0.2.0`: Phase 1 frontend foundation (app scaffold, routing, UI shell, PWA baseline, GitHub Pages workflow).
+- `0.2.1`: Phase 1.1 UI polish (Swedish localization, CTA cleanup, table alignment, filter cleanup).
