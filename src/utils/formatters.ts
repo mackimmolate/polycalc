@@ -5,7 +5,7 @@ export function formatCurrency(value: number | null) {
 
   return new Intl.NumberFormat('sv-SE', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'EUR',
     maximumFractionDigits: 2,
   }).format(value);
 }

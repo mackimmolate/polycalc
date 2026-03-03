@@ -30,7 +30,7 @@ Suggested columns:
 - `name` (`text`, required, unique as needed)
 - `category` (`text`, required)
 - `manufacturer` (`text`, nullable, constrained to canonical values used in frontend options)
-- `price_per_kg` (`numeric`, nullable)
+- `price_per_kg` (`numeric`, nullable, interpreted as EUR in v1 UI)
 - `max_temperature` (`integer`, nullable)
 - `notes` (`text`, nullable)
 - `status` (`text`, required, default `active`)

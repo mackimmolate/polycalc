@@ -9,6 +9,7 @@ import {
 } from '@/features/materials/utils/filterMaterials';
 import { getMaterialPreviewList } from '@/services/materials/materialsService';
 import type { Material, MaterialCategory } from '@/types/material';
+import { manufacturerOptions, type Manufacturer } from '@/types/manufacturer';
 
 export function MaterialsListPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -16,7 +17,8 @@ export function MaterialsListPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
-  const [sort, setSort] = useState<MaterialSortOption>('name-asc');
+  const [manufacturer, setManufacturer] = useState<Manufacturer | 'all'>('all');
+  const [sort, setSort] = useState<MaterialSortOption>('temperature-desc');
 
   useEffect(() => {
     let isMounted = true;
@@ -57,9 +59,10 @@ export function MaterialsListPage() {
       queryMaterials(materials, {
         searchTerm,
         category,
+        manufacturer,
         sort,
       }),
-    [materials, searchTerm, category, sort],
+    [materials, searchTerm, category, manufacturer, sort],
   );
 
   const categories = useMemo<Array<'all' | MaterialCategory>>(
@@ -71,11 +74,11 @@ export function MaterialsListPage() {
     <div className="space-y-6">
       <PageHeading
         title="Material"
-        description="Översikten visar det viktigaste direkt: namn, tillverkare, kategori, pris, temperatur och anteckningar."
+        description="Jämför material snabbt i en kompakt översikt och hitta rätt val med sökning, filter och smart sortering."
       />
 
       <SurfaceCard className="space-y-4">
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <label htmlFor="materials-search" className="sr-only">
               Sök material
@@ -85,7 +88,7 @@ export function MaterialsListPage() {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               aria-label="Sök material"
-              placeholder="Sök material eller tillverkare"
+              placeholder="Sök namn, tillverkare, kategori eller anteckning"
               className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
             />
           </div>
@@ -110,6 +113,26 @@ export function MaterialsListPage() {
           </div>
 
           <div>
+            <label htmlFor="materials-manufacturer" className="sr-only">
+              Filtrera på tillverkare
+            </label>
+            <select
+              id="materials-manufacturer"
+              value={manufacturer}
+              onChange={(event) => setManufacturer(event.target.value as Manufacturer | 'all')}
+              aria-label="Filtrera på tillverkare"
+              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
+            >
+              <option value="all">Alla tillverkare</option>
+              {manufacturerOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label htmlFor="materials-sort" className="sr-only">
               Sortering
             </label>
@@ -120,9 +143,10 @@ export function MaterialsListPage() {
               aria-label="Sortering"
               className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
             >
+              <option value="temperature-desc">Maxtemperatur (högst först)</option>
+              <option value="manufacturer-asc">Tillverkare (A-Ö)</option>
               <option value="name-asc">Namn (A-Ö)</option>
               <option value="price-asc">Pris (lägst först)</option>
-              <option value="temperature-desc">Maxtemperatur (högst först)</option>
             </select>
           </div>
         </div>

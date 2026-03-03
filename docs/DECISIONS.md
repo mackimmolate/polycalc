@@ -69,5 +69,19 @@ This file records key product and engineering decisions.
 
 - Date: 2026-03-03
 - Status: Accepted
-- Decision: Hide visible status and updated metadata in overview/filter UI and show key material fields directly in labeled overview cards.
+- Decision: Hide visible status and updated metadata in overview/filter UI and show key material fields directly in labeled overview items.
 - Reason: Improves scanability and keeps the overview focused on practical browsing information.
+
+## D-0011: Compact row overview and EUR pricing for practical selection
+
+- Date: 2026-03-03
+- Status: Accepted
+- Decision: Use compact row-based overview items (instead of large cards) and display prices in EUR.
+- Reason: Improves repeated daily scanning/comparison and aligns pricing presentation with Swedish UI context.
+
+## D-0012: Findability polish before backend integration
+
+- Date: 2026-03-03
+- Status: Accepted
+- Decision: Strengthen overview findability with broader search matching and a manufacturer filter plus practical sort defaults.
+- Reason: Makes it easier to identify suitable materials quickly without adding complex recommendation logic.

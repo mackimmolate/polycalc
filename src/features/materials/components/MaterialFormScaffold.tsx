@@ -113,7 +113,7 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
         </label>
 
         <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Pris per kg (USD)</span>
+          <span className="font-semibold text-[var(--ink)]">Pris per kg (EUR)</span>
           <input
             value={formState.pricePerKg}
             onChange={(event) =>

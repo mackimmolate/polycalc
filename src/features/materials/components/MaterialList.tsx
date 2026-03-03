@@ -1,74 +1,103 @@
 import { Link } from 'react-router-dom';
-import { SurfaceCard } from '@/components/ui/SurfaceCard';
 import { getCategoryLabel } from '@/features/materials/utils/materialLabels';
 import type { Material } from '@/types/material';
 import { formatCurrency } from '@/utils/formatters';
+import { cn } from '@/utils/cn';
 
 interface MaterialListProps {
   materials: Material[];
 }
 
+const rowGridClass =
+  'grid gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,2.1fr)]';
+
 function formatTemperature(value: number | null) {
   return value === null ? 'Ej angivet' : `${value} °C`;
 }
 
+interface RowFieldProps {
+  label: string;
+  value: string;
+  className?: string;
+  valueClassName?: string;
+}
+
+function RowField({ label, value, className, valueClassName }: RowFieldProps) {
+  return (
+    <div className={cn('space-y-0.5', className)}>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)] lg:hidden">
+        {label}
+      </p>
+      <p className={cn('text-sm text-[var(--ink)]', valueClassName)}>{value}</p>
+    </div>
+  );
+}
+
 export function MaterialList({ materials }: MaterialListProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {materials.map((material) => (
-        <Link key={material.id} to={`/materials/${material.id}`} className="group">
-          <SurfaceCard className="h-full p-5 transition group-hover:-translate-y-0.5 group-hover:border-[var(--accent)] group-hover:shadow-[0_16px_40px_-28px_rgba(15,118,110,0.45)]">
-            <div className="space-y-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                    Materialnamn
-                  </p>
-                  <p className="mt-1 text-base font-semibold text-[var(--ink)]">{material.name}</p>
-                </div>
-                <span className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-xs font-semibold text-[var(--muted)]">
-                  {getCategoryLabel(material.category)}
-                </span>
-              </div>
+    <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_10px_26px_-24px_rgba(15,23,42,0.45)]">
+      <div
+        className={cn(
+          'hidden border-b border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3 lg:grid',
+          rowGridClass,
+        )}
+      >
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+          Material
+        </p>
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+          Tillverkare
+        </p>
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+          Kategori
+        </p>
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+          Pris/kg
+        </p>
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+          Maxtemp
+        </p>
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+          Anteckning
+        </p>
+      </div>
 
-              <dl className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                    Tillverkare
-                  </dt>
-                  <dd className="mt-1 text-sm font-medium text-[var(--ink)]">
-                    {material.manufacturer ?? 'Ej angiven'}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                    Pris per kg
-                  </dt>
-                  <dd className="mt-1 text-sm font-medium tabular-nums text-[var(--ink)]">
-                    {formatCurrency(material.pricePerKg)}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                    Maxtemperatur
-                  </dt>
-                  <dd className="mt-1 text-sm font-medium text-[var(--ink)]">
-                    {formatTemperature(material.maxTemperature)}
-                  </dd>
-                </div>
-                <div className="sm:col-span-2">
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                    Anteckningar
-                  </dt>
-                  <dd className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
-                    {material.notes || 'Inga anteckningar'}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </SurfaceCard>
-        </Link>
-      ))}
+      <ul className="divide-y divide-[var(--border)]">
+        {materials.map((material) => (
+          <li key={material.id}>
+            <Link
+              to={`/materials/${material.id}`}
+              className={cn(
+                'block px-4 py-3 transition hover:bg-[var(--surface-soft)] lg:py-2.5',
+                rowGridClass,
+              )}
+            >
+              <RowField label="Material" value={material.name} valueClassName="font-semibold" />
+              <RowField label="Tillverkare" value={material.manufacturer ?? 'Ej angiven'} />
+              <RowField
+                label="Kategori"
+                value={getCategoryLabel(material.category)}
+                valueClassName="font-medium"
+              />
+              <RowField
+                label="Pris/kg"
+                value={formatCurrency(material.pricePerKg)}
+                valueClassName="tabular-nums"
+              />
+              <RowField
+                label="Maxtemp"
+                value={formatTemperature(material.maxTemperature)}
+                valueClassName="tabular-nums"
+              />
+              <RowField
+                label="Anteckning"
+                value={material.notes || 'Inga anteckningar'}
+                valueClassName="line-clamp-1 text-[var(--muted)]"
+              />
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -3,7 +3,7 @@
 ## Current state
 
 - Phase 1 scaffold is implemented with a deploy-ready frontend foundation.
-- Phase 1.2 refined overview information architecture and v1 model direction before backend integration.
+- Phase 1.2-1.3 refined overview information architecture, data model direction, and findability before backend integration.
 - Data persistence is still deferred; current data shown in routes is preview fixture data.
 
 ## Guiding principles
@@ -89,8 +89,10 @@ Routes:
 - Reusable UI components for page heading, cards, and status badges.
 - Tailwind CSS v4 plus CSS variable design tokens in `src/styles/index.css`.
 - Mobile and desktop responsive behavior is built into route pages.
-- Materials overview uses labeled cards for quick direct understanding without opening detail pages.
+- Materials overview uses compact labeled rows for quick comparison without opening detail pages.
 - Overview intentionally hides status/updated fields to reduce noise before archive flows are introduced.
+- Overview findability is strengthened through search across key fields plus category/manufacturer filters and practical sorting.
+- Price presentation in UI uses EUR formatting (`sv-SE`).
 
 ## PWA foundation
 

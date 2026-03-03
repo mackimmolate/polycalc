@@ -4,6 +4,19 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.2.3] - 2026-03-03
+
+### Changed
+
+- Replaced the oversized overview cards with a compact row-based material list optimized for fast side-by-side comparison.
+- Kept key fields visible per row (materialnamn, tillverkare, kategori, pris per kg, maxtemperatur, anteckning).
+- Switched visible price formatting from USD to EUR using Swedish locale formatting.
+- Improved findability in overview by strengthening search matching and adding manufacturer filter plus refined sort options.
+
+### Deferred
+
+- Supabase CRUD and auth remain deferred to Phase 2.
+
 ## [0.2.2] - 2026-03-03
 
 ### Changed

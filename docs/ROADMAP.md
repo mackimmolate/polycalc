@@ -23,6 +23,13 @@
 - Added canonical manufacturer option list in form scaffolds
 - Aligned preview data and UI scaffolding with the refined model direction
 
+## Phase 1.3 (completed): Compact rows, EUR, and findability polish
+
+- Replaced oversized overview cards with compact row-based material items
+- Switched visible currency formatting to EUR (`sv-SE`)
+- Improved findability with broader search matching, manufacturer filtering, and refined sorting
+- Kept Swedish UI, single-name model, and canonical manufacturer direction intact
+
 ## Phase 2 (next): Material CRUD and data integration
 
 - Replace preview data with Supabase-backed material list/detail/create/edit/update/archive flows
