@@ -37,9 +37,21 @@ export function AuthProvider({ children }: PropsWithChildren) {
         }
       });
 
-    if (window.location.hash.includes('access_token=')) {
-      const cleanHash = '#/materials';
-      window.history.replaceState({}, document.title, `${window.location.pathname}${cleanHash}`);
+    const hashPayload = window.location.hash.replace(/^#/, '');
+    const hasAuthHashPayload =
+      /(^|[?&/])(access_token|refresh_token|expires_in|type|error|error_code|error_description)=/.test(
+        hashPayload,
+      );
+
+    if (hasAuthHashPayload) {
+      const hasAuthError =
+        hashPayload.includes('error=') ||
+        hashPayload.includes('error_code=') ||
+        hashPayload.includes('error_description=');
+      const nextRoute = hasAuthError ? '/auth' : '/materials';
+
+      // Use hash navigation so React Router receives a real location change event.
+      window.location.hash = nextRoute;
     }
 
     const {
