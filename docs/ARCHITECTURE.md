@@ -1,40 +1,41 @@
-# Architecture
+﻿# Architecture
 
 ## Current state
 
-- Phase 1 scaffold is implemented with a deploy-ready frontend foundation.
-- Phase 1.2-1.3 refined overview information architecture, data model direction, and findability before backend integration.
-- Data persistence is still deferred; current data shown in routes is preview fixture data.
+- Phase 2 connected baseline is implemented.
+- Runtime data is Supabase-backed for list/detail/create/edit/delete.
+- PolyFlow v1 is implemented as material library plus a simple per-material calculator.
 
 ## Guiding principles
 
 - Keep v1 simple, clear, and maintainable.
+- Keep model boundaries explicit: fixed values vs user input vs calculated output.
 - Use explicit module boundaries over clever abstractions.
-- Keep domain types and UI flows aligned with real material management tasks.
-- Make future extension easy without adding premature complexity.
+- Keep GitHub Pages deployment compatibility first-class.
 
-## Implemented frontend structure
+## Frontend structure
 
-```
+```text
 src/
   app/
     App.tsx
     router.tsx
+    providers/
     pwa/
   pages/
     materials/
     material-detail/
     material-create/
     material-edit/
+    auth/
     not-found/
   features/
     materials/
       components/
-      data/
       utils/
   components/
-    ui/
     layout/
+    ui/
   hooks/
   services/
     materials/
@@ -46,63 +47,73 @@ src/
   styles/
 ```
 
-## Data model direction (v1)
+## Runtime flow
 
-Primary entity: `material`
+1. Pages call `services/materials/materialsService.ts`.
+2. Service module executes Supabase reads/writes.
+3. Service maps DB rows to typed domain model (`Material`).
+4. UI components/pages render explicit loading, empty, error, and auth-required states.
 
-- `id`
+## Material model (v1)
+
+### Fixed values (persisted)
+
 - `name`
+- `manufacturer`
 - `category`
-- `manufacturer` (canonical value from centralized options)
-- `pricePerKg`
-- `maxTemperature`
+- `pricePerKgEur`
+- `maxTemperatureC`
+- `timePerLayer45DegSeconds`
 - `notes`
-- `status` (`active` | `archived`)
 - `createdAt`
 - `updatedAt`
 
+### User-entered calculator values (not persisted)
+
+- `kgMaterial`
+- `printHours`
+
+### Calculated values
+
+- `materialCostEur = pricePerKgEur * kgMaterial`
+
 ## Routing strategy
 
-- Router implementation: `createHashRouter` (`src/app/router.tsx`)
-- Reason: reliable route handling on GitHub Pages static hosting without server-side rewrites.
+- Router: `createHashRouter` in `src/app/router.tsx`
+- Reason: stable behavior on GitHub Pages without rewrite rules.
 
 Routes:
 
 - `/` -> redirect to `/materials`
-- `/materials` -> materials list page
-- `/materials/new` -> create material page
-- `/materials/:materialId` -> material detail page
-- `/materials/:materialId/edit` -> edit material page
-- `*` -> not found page
+- `/materials` -> overview
+- `/materials/new` -> create
+- `/materials/:materialId` -> detail + calculator
+- `/materials/:materialId/edit` -> edit
+- `/auth` -> magic-link sign-in
+- `*` -> not found
 
-## State and data strategy
+## Overview interaction model
 
-- Keep global state minimal.
-- Use local page state + lightweight service modules for fetching/mutations.
-- Keep form state local to create/edit views.
-- Handle loading, empty, and error states explicitly per screen.
-- Phase 1 services return preview fixture data aligned to the intended v1 model; Supabase CRUD is deferred.
+- One visible search field.
+- Sorting via clickable column headers.
+- Compact row-based overview for quick side-by-side scanning.
+- Row click opens deeper detail view.
 
-## UI foundation
+## Auth and security model
 
-- App shell with sticky top navigation and responsive layout container.
-- Reusable UI components for page heading, cards, and status badges.
-- Tailwind CSS v4 plus CSS variable design tokens in `src/styles/index.css`.
-- Mobile and desktop responsive behavior is built into route pages.
-- Materials overview uses compact labeled rows for quick comparison without opening detail pages.
-- Overview intentionally hides status/updated fields to reduce noise before archive flows are introduced.
-- Overview findability is strengthened through search across key fields plus category/manufacturer filters and practical sorting.
-- Price presentation in UI uses EUR formatting (`sv-SE`).
+- Supabase auth: magic link.
+- Reads are public (RLS select policy).
+- Writes require authenticated session (RLS insert/update/delete policies + frontend guard).
+- No role system in v1.
 
-## PWA foundation
+## Delete behavior
 
-- `vite-plugin-pwa` configured in `vite.config.ts`.
-- Service worker registration in `src/app/pwa/registerServiceWorker.ts`.
-- Install prompt handling via `src/hooks/usePwaInstall.ts`.
-- Manifest and icon assets are included.
-- Offline scope in Phase 1: static shell/assets only (no offline data sync).
+- Primary destructive action in v1 is hard delete.
+- UI requires double confirmation before delete API call.
+- Archive is not part of active v1 destructive flow.
 
-## Auth direction
+## PWA baseline
 
-- Auth is deferred for v1 unless later required by phase scope.
-- If auth is introduced later, update this document and `docs/SUPABASE.md`.
+- `vite-plugin-pwa` with generated service worker.
+- Static shell/assets cached.
+- No offline CRUD or background sync in v1.

@@ -1,57 +1,88 @@
-# PolyFlow
+﻿# PolyFlow
 
-PolyFlow is a clean, modern PWA for managing 3D printing materials.
+PolyFlow is a clean, modern PWA for managing 3D printing materials with a built-in lightweight material calculator.
 
 ## Current status
 
-- Version: `0.2.3`
-- Phase 1 completed: app foundation, routing, UI shell, PWA baseline, and GitHub Pages deployment workflow.
-- Phase 1.1 completed: UI cleanup, Swedish localization, and materials list alignment polish.
-- Phase 1.2 completed: overview information architecture and v1 data-model polish before Supabase integration.
-- Phase 1.3 completed: compact row-based overview, EUR pricing, and findability polish.
-- Data persistence is intentionally deferred to the next phase.
+- Version: `0.3.0`
+- Phase 2 completed: Supabase-backed materials with list/detail/create/edit/delete, minimal auth, and calculation-aware detail view.
+- Swedish UI, compact row-based overview, and GitHub Pages deployment workflow are active.
 
-## Implemented in Phase 1
+## What PolyFlow does in v1
 
-- Vite + React + TypeScript frontend scaffold
-- React Router route foundation (GitHub Pages-safe via hash routing)
-- Tailwind CSS v4 setup with a polished app shell
-- Placeholder but real routes:
-  - `/materials`
-  - `/materials/:materialId`
-  - `/materials/new`
-  - `/materials/:materialId/edit`
-  - `*` not found
-- ESLint + Prettier tooling
-- PWA foundation via `vite-plugin-pwa`:
-  - Manifest
-  - Service worker registration
-  - Install prompt support
-  - Placeholder icons
-- GitHub Actions workflow for install, lint, build, and deploy to GitHub Pages
-- `.env.example` and Supabase client scaffold (no CRUD yet)
+- Browses and compares materials in a compact row overview.
+- Searches materials from one search field.
+- Sorts materials via clickable column headers.
+- Opens a material detail view with fixed reference values and calculator inputs.
+- Creates, edits, and deletes materials against Supabase.
+- Protects write operations behind minimal authentication (magic link).
 
-## Refined in Phase 1.2-1.3
+## Product model in v1
 
-- Materials overview now uses compact rows with key fields visible directly (name, manufacturer, category, price, max temperature, notes).
-- Visible status and updated metadata were removed from the overview/filter UI to reduce noise.
-- Active v1 model now uses one material name field (`name`) only.
-- Manufacturer input in create/edit scaffolds is normalized through a canonical selectable option list.
-- Preview data and frontend types now reflect the refined v1 model before backend integration.
-- Price formatting is now in EUR with Swedish locale formatting.
-- Findability was improved with stronger search matching plus category/manufacturer filters and practical sort options.
+PolyFlow distinguishes three value types:
 
-## Quick start
+1. Fixed material values (stored in Supabase)
+
+- material name
+- manufacturer
+- category
+- price per kg (EUR)
+- max temperature (deg C)
+- time per layer at 45 deg (seconds)
+- notes
+
+2. User-entered calculator inputs (not persisted)
+
+- kg material
+- print time in hours
+
+3. Calculated values
+
+- material cost in EUR (`price_per_kg_eur * kg_material`)
+
+## Tech stack
+
+- Vite
+- React + TypeScript
+- React Router (hash routing for GitHub Pages)
+- Tailwind CSS
+- Supabase JS
+- `vite-plugin-pwa`
+- ESLint + Prettier
+
+## Local setup
 
 ### Prerequisites
 
 - Node.js 20+
 - npm 10+
 
-### Install and run
+### Install
 
 ```bash
 npm install
+```
+
+### Environment
+
+Copy `.env.example` to `.env.local` and set:
+
+```bash
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-public-anon-key
+VITE_BASE_PATH=/
+```
+
+### Database setup (manual)
+
+Run SQL files in Supabase SQL editor, in order:
+
+1. `supabase/sql/001_materials_schema.sql`
+2. `supabase/sql/002_materials_rls.sql`
+
+### Run
+
+```bash
 npm run dev
 ```
 
@@ -62,51 +93,32 @@ npm run lint
 npm run build
 ```
 
-## Environment variables
+## Auth in v1
 
-Copy `.env.example` to `.env.local` and set:
+- Sign-in uses Supabase magic link (`/auth`).
+- Read access (list/detail) is public via RLS policy.
+- Write access (create/edit/delete) requires an authenticated session.
 
-```bash
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_ANON_KEY=your-public-anon-key
-```
+## Deployment (GitHub Pages)
 
-Optional:
+Workflow: `.github/workflows/deploy-pages.yml`
 
-```bash
-VITE_BASE_PATH=/
-```
+Required repository configuration:
 
-`VITE_BASE_PATH` defaults to `/` locally and is set to `/<repo>/` in GitHub Actions for Pages builds.
+1. `Settings -> Pages -> Source: GitHub Actions`
+2. Add Actions variable `VITE_SUPABASE_URL`
+3. Add Actions secret `VITE_SUPABASE_ANON_KEY`
+4. In Supabase Auth URL configuration, allow redirect URL for your Pages site (`https://<user>.github.io/<repo>/`)
 
-## Routing and Pages compatibility
+## PWA behavior in v1
 
-- Routing uses `createHashRouter` for reliable static hosting behavior on GitHub Pages.
-- Build assets use Vite `base` configuration that adapts for Pages in CI.
-
-## PWA behavior (v1)
-
-- The app shell and static assets are precached.
-- Installability is supported when browser conditions are met.
-- Advanced offline data sync is not implemented yet.
-- Supabase-backed material CRUD is not available offline in Phase 1.
-
-## Product scope (v1)
-
-- Browse materials
-- Search, filter, sort
-- Material details
-- Create/edit flows
-- Archive/delete flows
-- Core UX states (loading, empty, error, not found)
-
-Out of scope:
-
-- Export functionality
+- Install prompt is supported when browser conditions are met.
+- Static shell/assets are cached.
+- Offline CRUD and offline data sync are not implemented.
 
 ## Documentation map
 
-- Repository guidance: [`AGENTS.md`](AGENTS.md)
+- Repo guidance: [`AGENTS.md`](AGENTS.md)
 - Version policy: [`VERSIONING.md`](VERSIONING.md)
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - Architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)

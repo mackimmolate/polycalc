@@ -1,15 +1,16 @@
-# Setup
+﻿# Setup
 
 ## Current state
 
-- Phase 1 app foundation is implemented and runnable.
-- Core material flows are scaffolded with preview data.
+- Phase 2 connected runtime is implemented.
+- Materials data is loaded from Supabase.
+- Create/edit/delete require authenticated session.
 
 ## Prerequisites
 
 - Node.js 20+
 - npm 10+
-- Supabase Cloud project (for upcoming integration phases)
+- Supabase Cloud project
 
 ## Environment variables
 
@@ -25,11 +26,21 @@ Rules:
 
 - Never commit real secrets.
 - Never use service-role keys in frontend code.
-
-Notes:
-
 - `VITE_BASE_PATH` is optional for local work; default is `/`.
-- CI sets `VITE_BASE_PATH` automatically for GitHub Pages deploys.
+
+## Supabase manual setup
+
+Run SQL files in Supabase SQL editor, in order:
+
+1. `supabase/sql/001_materials_schema.sql`
+2. `supabase/sql/002_materials_rls.sql`
+
+Configure Supabase Auth URL settings:
+
+- Site URL: your local URL for development (for example `http://localhost:5173/`)
+- Additional redirect URLs:
+  - `http://localhost:5173/`
+  - your GitHub Pages URL (`https://<user>.github.io/<repo>/`)
 
 ## Local development flow
 
@@ -41,7 +52,9 @@ npm run build
 npm run preview
 ```
 
-## Current behavior
+## Connected behavior checklist
 
-- Material data is sourced from local preview fixtures in Phase 1.
-- Supabase environment vars are scaffolded and ready, but CRUD wiring is deferred.
+- `/materials` loads data from Supabase.
+- `/auth` signs in with magic link.
+- Create/edit/delete are blocked when not signed in.
+- Detail page calculator computes material cost from user-entered kg.

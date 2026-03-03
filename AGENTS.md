@@ -1,10 +1,11 @@
-# AGENTS.md
+﻿# AGENTS.md
 
 This file defines durable working rules for PolyFlow contributors and future Codex passes.
 
 ## Product principles
 
 - Build a clean, modern, minimal PWA for managing 3D printing materials.
+- Treat PolyFlow as `material library + simple material calculator` in v1.
 - Optimize for clarity, speed, low cognitive load, and maintainability.
 - Prefer simple architecture and strong defaults over clever abstractions.
 - Document intentional deferrals explicitly.
@@ -25,15 +26,17 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 - Prefer readable, explicit code over compact tricks.
 - Use small pure utility functions where they improve clarity.
 - Add concise comments only where logic is non-obvious.
-- Keep naming domain-oriented (`material`, `status`, `pricePerKg`, etc.).
+- Keep naming domain-oriented (`material`, `pricePerKgEur`, `timePerLayer45DegSeconds`, etc.).
 - Use ESLint + Prettier as required quality gates.
 
 ## UI and UX expectations
 
 - Prioritize scanability and clear visual hierarchy.
-- Use intentional spacing, typography, and interaction states.
+- Keep materials overview compact and comparison-friendly.
+- Keep one primary search control in overview and sortable column headers for sorting.
 - Ship mobile-friendly and desktop-friendly layouts from the start.
-- Include loading, empty, error, and not-found states as first-class UX.
+- Include loading, empty, error, auth-required, and not-found states as first-class UX.
+- Keep destructive actions explicit and safe (delete uses double confirmation in v1).
 
 ## Documentation expectations
 
@@ -45,7 +48,7 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 ## Versioning discipline
 
 - Follow Semantic Versioning.
-- Current active baseline is `0.2.0`; increment only for real delivered scope.
+- Current active baseline is `0.3.0`; increment only for real delivered scope.
 - Every versioned change must update `CHANGELOG.md`.
 - Document assumptions and deferred scope for each milestone.
 
@@ -54,6 +57,7 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 - Target GitHub Pages hosting via GitHub Actions.
 - Configure Vite base path and React Router strategy for Pages compatibility.
 - Keep static asset paths and PWA asset generation Pages-safe.
+- Ensure Pages builds inject Supabase URL/key via Actions variable/secret.
 - Document required repository settings in `docs/DEPLOYMENT.md`.
 - Keep `.github/workflows/deploy-pages.yml` aligned with actual build/lint/deploy commands.
 
@@ -61,8 +65,9 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 
 - Use environment variables for Supabase URL and anon key only.
 - Never commit service-role keys or other secrets.
-- Keep auth minimal unless explicitly introduced in scope.
-- Document Supabase schema and RLS decisions in `docs/SUPABASE.md`.
+- Keep auth minimal unless explicitly expanded in scope.
+- Keep public read and authenticated write behavior explicit via RLS documentation.
+- Document schema and RLS decisions in `docs/SUPABASE.md`.
 
 ## What to avoid
 

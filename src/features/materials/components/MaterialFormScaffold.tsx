@@ -1,23 +1,22 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SurfaceCard } from '@/components/ui/SurfaceCard';
 import { getCategoryLabel } from '@/features/materials/utils/materialLabels';
-import type { Material, MaterialCategory, MaterialStatus } from '@/types/material';
+import {
+  type MaterialFormErrors,
+  type MaterialFormValues,
+  validateMaterialForm,
+} from '@/features/materials/utils/materialValidation';
+import type { Material, MaterialCategory, MaterialMutationInput } from '@/types/material';
 import { manufacturerOptions, type Manufacturer } from '@/types/manufacturer';
+import { formatDurationSeconds } from '@/utils/duration';
 
 interface MaterialFormScaffoldProps {
   mode: 'create' | 'edit';
   initialMaterial?: Material;
-}
-
-interface MaterialFormState {
-  name: string;
-  category: MaterialCategory;
-  manufacturer: Manufacturer | '';
-  pricePerKg: string;
-  maxTemperature: string;
-  notes: string;
-  status: MaterialStatus;
+  submitting?: boolean;
+  serverError?: string | null;
+  onSubmit: (input: MaterialMutationInput) => Promise<void>;
 }
 
 const categoryOptions: MaterialCategory[] = [
@@ -30,53 +29,82 @@ const categoryOptions: MaterialCategory[] = [
   'Other',
 ];
 
-function toFormState(material?: Material): MaterialFormState {
+function toFormValues(material?: Material): MaterialFormValues {
   return {
     name: material?.name ?? '',
     category: material?.category ?? 'PLA',
     manufacturer: material?.manufacturer ?? '',
-    pricePerKg: material?.pricePerKg?.toString() ?? '',
-    maxTemperature: material?.maxTemperature?.toString() ?? '',
+    pricePerKgEur: material ? material.pricePerKgEur.toString() : '',
+    maxTemperatureC: material?.maxTemperatureC?.toString() ?? '',
+    timePerLayer45DegSeconds: material?.timePerLayer45DegSeconds?.toString() ?? '',
     notes: material?.notes ?? '',
-    status: material?.status ?? 'active',
   };
 }
 
-export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaffoldProps) {
-  const [formState, setFormState] = useState<MaterialFormState>(() => toFormState(initialMaterial));
-  const [message, setMessage] = useState('');
+function FieldError({ error }: { error?: string }) {
+  if (!error) {
+    return null;
+  }
 
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  return <p className="text-xs font-medium text-red-700">{error}</p>;
+}
+
+export function MaterialFormScaffold({
+  mode,
+  initialMaterial,
+  submitting = false,
+  serverError,
+  onSubmit,
+}: MaterialFormScaffoldProps) {
+  const [formValues, setFormValues] = useState<MaterialFormValues>(() =>
+    toFormValues(initialMaterial),
+  );
+  const [fieldErrors, setFieldErrors] = useState<MaterialFormErrors>({});
+
+  const parsedLayerDuration = useMemo(() => {
+    const numeric = Number(formValues.timePerLayer45DegSeconds.replace(',', '.'));
+    if (!Number.isFinite(numeric) || numeric <= 0) {
+      return 'Ange tid i sekunder';
+    }
+
+    return formatDurationSeconds(Math.round(numeric));
+  }, [formValues.timePerLayer45DegSeconds]);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setMessage(
-      mode === 'create'
-        ? 'Skapaflödet kopplas till Supabase i Fas 2.'
-        : 'Uppdateringsflödet kopplas till Supabase i Fas 2.',
-    );
+    const { input, errors } = validateMaterialForm(formValues);
+    setFieldErrors(errors);
+
+    if (!input) {
+      return;
+    }
+
+    await onSubmit(input);
   };
 
   return (
-    <form className="space-y-4" onSubmit={onSubmit}>
+    <form className="space-y-4" onSubmit={handleSubmit}>
       <SurfaceCard className="grid gap-4 md:grid-cols-2">
         <label className="space-y-1 text-sm">
           <span className="font-semibold text-[var(--ink)]">Materialnamn</span>
           <input
             required
-            value={formState.name}
+            value={formValues.name}
             onChange={(event) =>
-              setFormState((current) => ({ ...current, name: event.target.value }))
+              setFormValues((current) => ({ ...current, name: event.target.value }))
             }
             className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
             placeholder="SUNLU PLA+ Svart"
           />
+          <FieldError error={fieldErrors.name} />
         </label>
 
         <label className="space-y-1 text-sm">
           <span className="font-semibold text-[var(--ink)]">Kategori</span>
           <select
-            value={formState.category}
+            value={formValues.category}
             onChange={(event) =>
-              setFormState((current) => ({
+              setFormValues((current) => ({
                 ...current,
                 category: event.target.value as MaterialCategory,
               }))
@@ -94,9 +122,9 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
         <label className="space-y-1 text-sm">
           <span className="font-semibold text-[var(--ink)]">Tillverkare</span>
           <select
-            value={formState.manufacturer}
+            value={formValues.manufacturer}
             onChange={(event) =>
-              setFormState((current) => ({
+              setFormValues((current) => ({
                 ...current,
                 manufacturer: event.target.value as Manufacturer | '',
               }))
@@ -110,67 +138,83 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
               </option>
             ))}
           </select>
+          <FieldError error={fieldErrors.manufacturer} />
         </label>
 
         <label className="space-y-1 text-sm">
           <span className="font-semibold text-[var(--ink)]">Pris per kg (EUR)</span>
           <input
-            value={formState.pricePerKg}
+            required
+            inputMode="decimal"
+            value={formValues.pricePerKgEur}
             onChange={(event) =>
-              setFormState((current) => ({ ...current, pricePerKg: event.target.value }))
+              setFormValues((current) => ({ ...current, pricePerKgEur: event.target.value }))
             }
             className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            placeholder="24.50"
+            placeholder="24,50"
           />
+          <FieldError error={fieldErrors.pricePerKgEur} />
         </label>
 
         <label className="space-y-1 text-sm">
           <span className="font-semibold text-[var(--ink)]">Maxtemperatur (°C)</span>
           <input
-            value={formState.maxTemperature}
+            inputMode="numeric"
+            value={formValues.maxTemperatureC}
             onChange={(event) =>
-              setFormState((current) => ({ ...current, maxTemperature: event.target.value }))
+              setFormValues((current) => ({ ...current, maxTemperatureC: event.target.value }))
             }
             className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            placeholder="240"
+            placeholder="260"
           />
+          <FieldError error={fieldErrors.maxTemperatureC} />
+        </label>
+
+        <label className="space-y-1 text-sm">
+          <span className="font-semibold text-[var(--ink)]">Tid per lager vid 45° (sekunder)</span>
+          <input
+            required
+            inputMode="numeric"
+            value={formValues.timePerLayer45DegSeconds}
+            onChange={(event) =>
+              setFormValues((current) => ({
+                ...current,
+                timePerLayer45DegSeconds: event.target.value,
+              }))
+            }
+            className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
+            placeholder="75"
+          />
+          <p className="text-xs text-[var(--muted)]">Visas som {parsedLayerDuration}</p>
+          <FieldError error={fieldErrors.timePerLayer45DegSeconds} />
         </label>
 
         <label className="space-y-1 text-sm md:col-span-2">
           <span className="font-semibold text-[var(--ink)]">Anteckningar</span>
           <textarea
-            value={formState.notes}
+            value={formValues.notes}
             onChange={(event) =>
-              setFormState((current) => ({ ...current, notes: event.target.value }))
+              setFormValues((current) => ({ ...current, notes: event.target.value }))
             }
             className="min-h-24 w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
             placeholder="Skriv utprofiler, torkkrav eller användningsområde..."
           />
+          <FieldError error={fieldErrors.notes} />
         </label>
-
-        {mode === 'edit' ? (
-          <label className="space-y-1 text-sm md:col-span-2">
-            <span className="font-semibold text-[var(--ink)]">Status</span>
-            <select
-              value={formState.status}
-              onChange={(event) =>
-                setFormState((current) => ({
-                  ...current,
-                  status: event.target.value as MaterialStatus,
-                }))
-              }
-              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            >
-              <option value="active">Aktiv</option>
-              <option value="archived">Arkiverad</option>
-            </select>
-          </label>
-        ) : null}
       </SurfaceCard>
+
+      {serverError ? (
+        <SurfaceCard>
+          <p className="text-sm font-semibold text-red-700">Det gick inte att spara materialet.</p>
+          <p className="mt-1 text-sm text-[var(--muted)]">{serverError}</p>
+        </SurfaceCard>
+      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-[var(--muted)]">
-          Validering och lagring är avsiktligt uppskjutet till Fas 2.
+          {mode === 'create'
+            ? 'Materialet sparas direkt i Supabase när formuläret skickas.'
+            : 'Ändringar sparas direkt i Supabase när formuläret skickas.'}
         </p>
         <div className="flex items-center gap-2">
           <Link
@@ -181,18 +225,13 @@ export function MaterialFormScaffold({ mode, initialMaterial }: MaterialFormScaf
           </Link>
           <button
             type="submit"
-            className="rounded-full border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+            disabled={submitting}
+            className="rounded-full border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {mode === 'create' ? 'Spara material' : 'Uppdatera material'}
+            {submitting ? 'Sparar...' : mode === 'create' ? 'Spara material' : 'Uppdatera material'}
           </button>
         </div>
       </div>
-
-      {message ? (
-        <p className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--muted)]">
-          {message}
-        </p>
-      ) : null}
     </form>
   );
 }

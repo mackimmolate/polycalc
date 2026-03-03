@@ -1,4 +1,4 @@
-import type { MaterialCategory, MaterialStatus } from '@/types/material';
+import type { MaterialCategory } from '@/types/material';
 
 const categoryLabels: Record<MaterialCategory, string> = {
   PLA: 'PLA',
@@ -12,8 +12,4 @@ const categoryLabels: Record<MaterialCategory, string> = {
 
 export function getCategoryLabel(category: MaterialCategory) {
   return categoryLabels[category];
-}
-
-export function getStatusLabel(status: MaterialStatus) {
-  return status === 'active' ? 'Aktiv' : 'Arkiverad';
 }

@@ -1,8 +1,48 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
+
+## [0.3.0] - 2026-03-03
+
+### Added
+
+- Supabase-backed material runtime with real list/detail/create/update/delete flows.
+- Minimal auth flow with Supabase magic link (`/auth`) and session-aware UI in app shell.
+- SQL assets for manual Supabase setup:
+  - `supabase/sql/001_materials_schema.sql`
+  - `supabase/sql/002_materials_rls.sql`
+- Calculation-aware material detail section with clear split between:
+  - fixed values
+  - user-entered values (`kg material`, `print time in hours`)
+  - calculated output (`material cost in EUR`)
+- Auth-required guard state for write actions.
+
+### Changed
+
+- Overview interaction model finalized to one visible control (`search`) plus sortable column headers.
+- Removed overview dropdown controls for category, manufacturer, and sort.
+- Expanded practical content width and increased notes room in compact rows.
+- Replaced archive direction with delete direction and implemented a real double-confirm delete flow.
+- Replaced preview runtime data with connected Supabase service calls.
+- Forms now persist real data with validation for the refined v1 model:
+  - single `name` field
+  - canonical manufacturer selection
+  - EUR pricing
+  - normalized `time_per_layer_45_deg_seconds`
+- GitHub Pages workflow now validates Supabase build variables and injects URL/key during build.
+
+### Removed
+
+- Local preview-data runtime dependency for materials pages.
+- Unused status badge component from the pre-connected model.
+
+### Deferred
+
+- Export functionality.
+- Advanced role/permission model beyond authenticated writes.
+- Offline data mutations and offline sync for Supabase data.
 
 ## [0.2.3] - 2026-03-03
 

@@ -1,50 +1,55 @@
-# Deployment
+﻿# Deployment
 
 ## Current state
 
 - GitHub Pages deployment workflow is implemented.
 - Workflow path: `.github/workflows/deploy-pages.yml`
+- Workflow stages: install -> lint -> validate env -> build -> upload artifact -> deploy
 
 ## Target platform
 
 - Frontend hosting: GitHub Pages
-- Automation: GitHub Actions (`build` + `deploy`)
+- Automation: GitHub Actions
 
 ## Required GitHub configuration (manual)
 
-Configure repository settings:
-
 1. Go to `Settings -> Pages`.
 2. Set source to `GitHub Actions`.
-3. Confirm default branch is `main` (or update workflow trigger).
-4. Ensure Actions permissions allow workflow runs.
+3. Ensure workflow runs from your deployment branch (default `main`).
+4. In `Settings -> Secrets and variables -> Actions`, add:
+   - Variable: `VITE_SUPABASE_URL`
+   - Secret: `VITE_SUPABASE_ANON_KEY`
 
-## Pages compatibility requirements
+## Pages compatibility strategy
 
-- Vite base path must match repository Pages URL.
-- React Router uses hash routing (`createHashRouter`) to avoid static-host rewrite issues.
-- Static assets and PWA manifest paths must resolve correctly under the base path.
+- Router uses hash routing (`createHashRouter`) to avoid static-host rewrite issues.
+- CI sets `VITE_BASE_PATH=/${{ github.event.repository.name }}/` during build.
+- PWA manifest `start_url` uses hash route startup (`./#/materials`).
 
-## Implemented workflow stages
+## Supabase auth redirect requirement
 
-1. Install dependencies
-2. Lint
-3. Build
-4. Upload Pages artifact
-5. Deploy
+In Supabase Auth URL settings, add your deployed Pages URL:
 
-Build details:
+- `https://<user>.github.io/<repo>/`
 
-- `VITE_BASE_PATH` is set during CI build to `/${{ github.event.repository.name }}/`.
-- Node.js 20 is pinned in workflow setup.
+Without this redirect URL, magic-link sign-in will fail after deployment.
+
+## Build-time validation
+
+The workflow fails early if these are missing:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+This prevents deploying a non-connected build by accident.
 
 ## PWA deployment notes
 
 - Manifest and service worker are generated at build time.
-- Phase 1 caches static app shell/assets only.
-- Supabase-backed dynamic data is not offline-synced in this phase.
+- v1 offline support covers static shell/assets only.
+- Supabase CRUD is not available offline.
 
-## Deferred details
+## Optional hardening (deferred)
 
-- Custom domain setup (if needed later).
-- Environment-protected deploy approvals (optional hardening step).
+- Environment-protected deploy approvals.
+- Separate staging environment workflow.

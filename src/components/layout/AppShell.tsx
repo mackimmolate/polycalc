@@ -1,19 +1,21 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { useAuth } from '@/app/providers/useAuth';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
 import { cn } from '@/utils/cn';
 
 const navigationItems = [
   { to: '/materials', label: 'Material', end: true },
-  { to: '/materials/new', label: 'Lägg till material' },
+  { to: '/materials/new', label: 'Skapa material' },
 ];
 
 export function AppShell() {
   const { canInstall, installApp } = usePwaInstall();
+  const { user, signOut, loading: authLoading } = useAuth();
 
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-white/90 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex w-full max-w-[92rem] flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
           <NavLink
             to="/materials"
             className="flex items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 shadow-sm transition hover:border-[var(--accent)]"
@@ -49,23 +51,51 @@ export function AppShell() {
             ))}
           </nav>
 
-          {canInstall ? (
-            <button
-              type="button"
-              onClick={installApp}
-              className="rounded-full border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
-            >
-              Installera app
-            </button>
-          ) : (
-            <p className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-[var(--muted)]">
-              PWA-stöd aktivt
-            </p>
-          )}
+          <div className="flex items-center gap-2">
+            {canInstall ? (
+              <button
+                type="button"
+                onClick={installApp}
+                className="rounded-full border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700"
+              >
+                Installera app
+              </button>
+            ) : (
+              <p className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-[var(--muted)]">
+                PWA-stöd aktivt
+              </p>
+            )}
+
+            {authLoading ? (
+              <p className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-[var(--muted)]">
+                Laddar konto...
+              </p>
+            ) : user ? (
+              <>
+                <p className="max-w-44 truncate rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-medium text-[var(--muted)]">
+                  {user.email}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void signOut()}
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--surface-soft)]"
+                >
+                  Logga ut
+                </button>
+              </>
+            ) : (
+              <NavLink
+                to="/auth"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--surface-soft)]"
+              >
+                Logga in
+              </NavLink>
+            )}
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-[92rem] px-4 py-8 sm:px-6 lg:px-8">
         <Outlet />
       </main>
     </div>

@@ -1,4 +1,4 @@
-# Roadmap
+﻿# Roadmap
 
 ## Phase 0 (completed): Repository initialization
 
@@ -6,47 +6,42 @@
 - Documentation foundation
 - Versioning and changelog baseline (`0.1.0`)
 
-## Phase 1 (completed): App foundation
+## Phase 1 (completed): Frontend foundation
 
-- Scaffold Vite + React + TypeScript
-- Add Tailwind, ESLint, Prettier
-- Configure routing and base app shell
-- Add Supabase client setup (env-driven, no secrets)
-- Add PWA baseline configuration
-- Add GitHub Pages workflow (install, lint, build, deploy)
+- Vite + React + TypeScript scaffold
+- Tailwind, ESLint, Prettier
+- Routing, app shell, and PWA baseline
+- GitHub Pages workflow baseline
 
-## Phase 1.2 (completed): IA and model polish before backend
+## Phase 1.1-1.3 (completed): UX and model polish
 
-- Removed overview noise (`status` filter plus visible `updated`/`status` overview fields)
-- Reworked materials overview into labeled quick-scan cards
-- Simplified v1 model to one material name field
-- Added canonical manufacturer option list in form scaffolds
-- Aligned preview data and UI scaffolding with the refined model direction
+- Swedish localization polish
+- Compact row overview
+- EUR formatting
+- Search/findability refinements
+- Single-name and canonical manufacturer direction
 
-## Phase 1.3 (completed): Compact rows, EUR, and findability polish
+## Phase 2 (completed): Connected v1 baseline
 
-- Replaced oversized overview cards with compact row-based material items
-- Switched visible currency formatting to EUR (`sv-SE`)
-- Improved findability with broader search matching, manufacturer filtering, and refined sorting
-- Kept Swedish UI, single-name model, and canonical manufacturer direction intact
+- Supabase-backed list/detail/create/edit/delete
+- Minimal auth (magic link) for write operations
+- RLS baseline: public read + authenticated write
+- Overview model finalized (search + sortable headers)
+- Calculation-aware material detail view
+- Delete flow with double confirmation
+- SQL setup assets for manual Supabase provisioning
 
-## Phase 2 (next): Material CRUD and data integration
+## Phase 3 (next): Hardening and release readiness
 
-- Replace preview data with Supabase-backed material list/detail/create/edit/update/archive flows
-- Add route-level loading and error boundaries around real API calls
-- Add validation and submit UX for create/edit forms
-- Implement archive/delete confirmation flow against real persistence
-- Harden empty/error states for production behavior
-
-## Phase 3: Hardening and release readiness
-
-- CI enhancements (typecheck/test gates as introduced)
-- PWA behavior refinements and cache strategy tuning
-- Supabase/RLS documentation finalization
-- Documentation and release tightening
+- Add automated tests for critical flows (services + key UI states)
+- Improve error observability and user-facing diagnostics
+- Refine calculator UX with clearer unit hints and guardrails
+- Optional pagination/virtualization strategy for larger datasets
+- Final production checklist before `1.0.0`
 
 ## Deferred scope (v1)
 
 - Export functionality
-- Advanced offline sync
-- Complex auth/permissions model unless explicitly requested
+- Advanced role/permission system
+- Offline mutation queue and sync
+- Full manufacturer management subsystem

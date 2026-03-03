@@ -1,18 +1,26 @@
 import type { Manufacturer } from '@/types/manufacturer';
 
-export type MaterialStatus = 'active' | 'archived';
-
 export type MaterialCategory = 'PLA' | 'PETG' | 'ABS' | 'Nylon' | 'TPU' | 'Resin' | 'Other';
 
 export interface Material {
   id: string;
   name: string;
   category: MaterialCategory;
-  manufacturer: Manufacturer | null;
-  pricePerKg: number | null;
-  maxTemperature: number | null;
+  manufacturer: Manufacturer;
+  pricePerKgEur: number;
+  maxTemperatureC: number | null;
+  timePerLayer45DegSeconds: number;
   notes: string;
-  status: MaterialStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface MaterialMutationInput {
+  name: string;
+  category: MaterialCategory;
+  manufacturer: Manufacturer;
+  pricePerKgEur: number;
+  maxTemperatureC: number | null;
+  timePerLayer45DegSeconds: number;
+  notes: string;
 }

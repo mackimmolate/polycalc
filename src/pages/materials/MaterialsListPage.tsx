@@ -1,24 +1,30 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { PageHeading } from '@/components/ui/PageHeading';
 import { SurfaceCard } from '@/components/ui/SurfaceCard';
 import { MaterialList } from '@/features/materials/components/MaterialList';
-import { getCategoryLabel } from '@/features/materials/utils/materialLabels';
 import {
   queryMaterials,
-  type MaterialSortOption,
+  type MaterialSort,
+  type SortDirection,
+  type MaterialSortField,
 } from '@/features/materials/utils/filterMaterials';
-import { getMaterialPreviewList } from '@/services/materials/materialsService';
-import type { Material, MaterialCategory } from '@/types/material';
-import { manufacturerOptions, type Manufacturer } from '@/types/manufacturer';
+import { listMaterials } from '@/services/materials/materialsService';
+import type { Material } from '@/types/material';
+
+interface NavigationState {
+  successMessage?: string;
+}
 
 export function MaterialsListPage() {
+  const location = useLocation();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [category, setCategory] = useState('all');
-  const [manufacturer, setManufacturer] = useState<Manufacturer | 'all'>('all');
-  const [sort, setSort] = useState<MaterialSortOption>('temperature-desc');
+  const [sort, setSort] = useState<MaterialSort>({ field: 'name', direction: 'asc' });
+
+  const successMessage = (location.state as NavigationState | null)?.successMessage ?? null;
 
   useEffect(() => {
     let isMounted = true;
@@ -28,16 +34,16 @@ export function MaterialsListPage() {
       setError(null);
 
       try {
-        const previewMaterials = await getMaterialPreviewList();
+        const databaseMaterials = await listMaterials();
         if (isMounted) {
-          setMaterials(previewMaterials);
+          setMaterials(databaseMaterials);
         }
       } catch (caughtError) {
         if (isMounted) {
           setError(
             caughtError instanceof Error
               ? caughtError.message
-              : 'Det gick inte att läsa in förhandsdata för material.',
+              : 'Det gick inte att läsa in material från databasen.',
           );
         }
       } finally {
@@ -58,109 +64,56 @@ export function MaterialsListPage() {
     () =>
       queryMaterials(materials, {
         searchTerm,
-        category,
-        manufacturer,
         sort,
       }),
-    [materials, searchTerm, category, manufacturer, sort],
+    [materials, searchTerm, sort],
   );
 
-  const categories = useMemo<Array<'all' | MaterialCategory>>(
-    () => ['all', ...new Set(materials.map((material) => material.category))],
-    [materials],
-  );
+  const onSortChange = (field: MaterialSortField) => {
+    setSort((current) => {
+      if (current.field === field) {
+        return { field, direction: current.direction === 'asc' ? 'desc' : 'asc' };
+      }
+
+      const defaultDirection: SortDirection =
+        field === 'pricePerKgEur' || field === 'maxTemperatureC' ? 'desc' : 'asc';
+      return { field, direction: defaultDirection };
+    });
+  };
 
   return (
     <div className="space-y-6">
       <PageHeading
         title="Material"
-        description="Jämför material snabbt i en kompakt översikt och hitta rätt val med sökning, filter och smart sortering."
+        description="Sök snabbt och sortera direkt i rubrikerna för att hitta rätt material för jobbet."
       />
 
-      <SurfaceCard className="space-y-4">
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <label htmlFor="materials-search" className="sr-only">
-              Sök material
-            </label>
-            <input
-              id="materials-search"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              aria-label="Sök material"
-              placeholder="Sök namn, tillverkare, kategori eller anteckning"
-              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="materials-category" className="sr-only">
-              Filtrera på kategori
-            </label>
-            <select
-              id="materials-category"
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
-              aria-label="Filtrera på kategori"
-              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            >
-              {categories.map((option) => (
-                <option key={option} value={option}>
-                  {option === 'all' ? 'Alla kategorier' : getCategoryLabel(option)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="materials-manufacturer" className="sr-only">
-              Filtrera på tillverkare
-            </label>
-            <select
-              id="materials-manufacturer"
-              value={manufacturer}
-              onChange={(event) => setManufacturer(event.target.value as Manufacturer | 'all')}
-              aria-label="Filtrera på tillverkare"
-              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            >
-              <option value="all">Alla tillverkare</option>
-              {manufacturerOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="materials-sort" className="sr-only">
-              Sortering
-            </label>
-            <select
-              id="materials-sort"
-              value={sort}
-              onChange={(event) => setSort(event.target.value as MaterialSortOption)}
-              aria-label="Sortering"
-              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            >
-              <option value="temperature-desc">Maxtemperatur (högst först)</option>
-              <option value="manufacturer-asc">Tillverkare (A-Ö)</option>
-              <option value="name-asc">Namn (A-Ö)</option>
-              <option value="price-asc">Pris (lägst först)</option>
-            </select>
-          </div>
-        </div>
-
+      <SurfaceCard className="space-y-3">
+        <label htmlFor="materials-search" className="sr-only">
+          Sök material
+        </label>
+        <input
+          id="materials-search"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          aria-label="Sök material"
+          placeholder="Sök namn, tillverkare, kategori, notering eller temperatur"
+          className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
+        />
         <p className="text-xs text-[var(--muted)]">
-          {filteredMaterials.length} av{' '}
-          {materials.filter((material) => material.status === 'active').length} aktiva material
-          visas
+          {filteredMaterials.length} av {materials.length} material visas
         </p>
       </SurfaceCard>
 
+      {successMessage ? (
+        <SurfaceCard>
+          <p className="text-sm font-semibold text-emerald-700">{successMessage}</p>
+        </SurfaceCard>
+      ) : null}
+
       {loading ? (
         <SurfaceCard>
-          <p className="text-sm text-[var(--muted)]">Läser in förhandsdata för material...</p>
+          <p className="text-sm text-[var(--muted)]">Läser in material...</p>
         </SurfaceCard>
       ) : null}
 
@@ -174,16 +127,16 @@ export function MaterialsListPage() {
       {!loading && !error && filteredMaterials.length === 0 ? (
         <SurfaceCard>
           <p className="text-sm font-semibold text-[var(--ink)]">
-            Inga material matchar dina filter.
+            Inga material matchar sökningen.
           </p>
           <p className="mt-1 text-sm text-[var(--muted)]">
-            Justera filtren eller lägg till ett nytt material via navigeringen.
+            Testa ett annat sökord eller skapa ett nytt material.
           </p>
         </SurfaceCard>
       ) : null}
 
       {!loading && !error && filteredMaterials.length > 0 ? (
-        <MaterialList materials={filteredMaterials} />
+        <MaterialList materials={filteredMaterials} sort={sort} onSortChange={onSortChange} />
       ) : null}
     </div>
   );
