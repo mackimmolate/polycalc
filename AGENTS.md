@@ -1,0 +1,72 @@
+# AGENTS.md
+
+This file defines durable working rules for PolyFlow contributors and future Codex passes.
+
+## Product principles
+
+- Build a clean, modern, minimal PWA for managing 3D printing materials.
+- Optimize for clarity, speed, low cognitive load, and maintainability.
+- Prefer simple architecture and strong defaults over clever abstractions.
+- Document intentional deferrals explicitly.
+- Avoid feature creep in v1 (for example: no export system).
+
+## Architecture expectations
+
+- Keep a feature-oriented frontend structure with clear module boundaries.
+- Use TypeScript everywhere with strict typing and explicit domain types.
+- Keep routing simple and predictable with React Router.
+- Maintain GitHub Pages compatibility using hash-based routing unless a documented replacement is approved.
+- Keep data access behind small service/api modules (no scattered Supabase calls).
+- Keep files focused; avoid giant multi-purpose files.
+- Avoid circular dependencies and hidden cross-feature coupling.
+
+## Coding style expectations
+
+- Prefer readable, explicit code over compact tricks.
+- Use small pure utility functions where they improve clarity.
+- Add concise comments only where logic is non-obvious.
+- Keep naming domain-oriented (`material`, `status`, `pricePerKg`, etc.).
+- Use ESLint + Prettier as required quality gates.
+
+## UI and UX expectations
+
+- Prioritize scanability and clear visual hierarchy.
+- Use intentional spacing, typography, and interaction states.
+- Ship mobile-friendly and desktop-friendly layouts from the start.
+- Include loading, empty, error, and not-found states as first-class UX.
+
+## Documentation expectations
+
+- Keep docs aligned with the actual codebase state.
+- Update `README.md`, `CHANGELOG.md`, and relevant `docs/*.md` in the same change set.
+- Record meaningful architecture/product decisions in `docs/DECISIONS.md`.
+- Do not leave undocumented scaffolding or fake "coming soon" claims.
+
+## Versioning discipline
+
+- Follow Semantic Versioning.
+- Current active baseline is `0.2.0`; increment only for real delivered scope.
+- Every versioned change must update `CHANGELOG.md`.
+- Document assumptions and deferred scope for each milestone.
+
+## Deployment expectations
+
+- Target GitHub Pages hosting via GitHub Actions.
+- Configure Vite base path and React Router strategy for Pages compatibility.
+- Keep static asset paths and PWA asset generation Pages-safe.
+- Document required repository settings in `docs/DEPLOYMENT.md`.
+- Keep `.github/workflows/deploy-pages.yml` aligned with actual build/lint/deploy commands.
+
+## Security and Supabase expectations
+
+- Use environment variables for Supabase URL and anon key only.
+- Never commit service-role keys or other secrets.
+- Keep auth minimal unless explicitly introduced in scope.
+- Document Supabase schema and RLS decisions in `docs/SUPABASE.md`.
+
+## What to avoid
+
+- No premature microservices or backend overengineering.
+- No heavyweight state management unless real complexity requires it.
+- No dead code or placeholder systems without documentation.
+- No undocumented breaking architectural changes.
