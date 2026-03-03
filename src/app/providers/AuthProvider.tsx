@@ -4,6 +4,50 @@ import type { Session } from '@supabase/supabase-js';
 import { AuthContext, type AuthContextValue } from '@/app/providers/auth-context';
 import { getSupabaseClientOrThrow, hasSupabaseConfig } from '@/lib/supabase/client';
 
+function getHashAuthParams(): URLSearchParams | null {
+  const rawHash = window.location.hash.replace(/^#/, '');
+  if (!rawHash) {
+    return null;
+  }
+
+  const candidates = new Set<string>();
+  candidates.add(rawHash);
+
+  const fragmentParts = rawHash.split('#');
+  if (fragmentParts.length > 1) {
+    candidates.add(fragmentParts[fragmentParts.length - 1]);
+  }
+
+  const questionIndex = rawHash.indexOf('?');
+  if (questionIndex >= 0 && questionIndex + 1 < rawHash.length) {
+    candidates.add(rawHash.slice(questionIndex + 1));
+  }
+
+  for (const candidate of candidates) {
+    const normalized = candidate.startsWith('/') ? candidate.slice(1) : candidate;
+    const params = new URLSearchParams(normalized);
+    if (
+      params.has('access_token') ||
+      params.has('refresh_token') ||
+      params.has('error') ||
+      params.has('error_description') ||
+      params.has('error_code')
+    ) {
+      return params;
+    }
+  }
+
+  return null;
+}
+
+function normalizeAuthError(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  return decodeURIComponent(value.replace(/\+/g, ' '));
+}
+
 export function AuthProvider({ children }: PropsWithChildren) {
   const isConfigured = hasSupabaseConfig();
   const [session, setSession] = useState<Session | null>(null);
@@ -18,48 +62,66 @@ export function AuthProvider({ children }: PropsWithChildren) {
     const supabase = getSupabaseClientOrThrow();
     let isMounted = true;
 
-    void supabase.auth
-      .getSession()
-      .then(({ data, error: sessionError }) => {
-        if (!isMounted) {
-          return;
-        }
-
-        if (sessionError) {
-          setError('Det gick inte att läsa sessionen.');
-        } else {
-          setSession(data.session);
-        }
-      })
-      .finally(() => {
-        if (isMounted) {
-          setLoading(false);
-        }
-      });
-
-    const hashPayload = window.location.hash.replace(/^#/, '');
-    const hasAuthHashPayload =
-      /(^|[?&/])(access_token|refresh_token|expires_in|type|error|error_code|error_description)=/.test(
-        hashPayload,
-      );
-
-    if (hasAuthHashPayload) {
-      const hasAuthError =
-        hashPayload.includes('error=') ||
-        hashPayload.includes('error_code=') ||
-        hashPayload.includes('error_description=');
-      const nextRoute = hasAuthError ? '/auth' : '/materials';
-
-      // Use hash navigation so React Router receives a real location change event.
-      window.location.hash = nextRoute;
-    }
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, updatedSession) => {
+      if (!isMounted) {
+        return;
+      }
+
       setSession(updatedSession);
       setLoading(false);
     });
+
+    const bootstrapSession = async () => {
+      const callbackParams = getHashAuthParams();
+
+      if (callbackParams) {
+        const accessToken = callbackParams.get('access_token');
+        const refreshToken = callbackParams.get('refresh_token');
+
+        if (accessToken && refreshToken) {
+          const { error: setSessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (setSessionError) {
+            if (isMounted) {
+              setError('Inloggning misslyckades vid bekräftelse av länken.');
+              setLoading(false);
+            }
+            window.location.hash = '/auth';
+            return;
+          }
+
+          window.location.hash = '/materials';
+        } else {
+          const callbackError = normalizeAuthError(
+            callbackParams.get('error_description') ?? callbackParams.get('error'),
+          );
+          if (callbackError && isMounted) {
+            setError(callbackError);
+          }
+          window.location.hash = '/auth';
+        }
+      }
+
+      const { data, error: sessionError } = await supabase.auth.getSession();
+      if (!isMounted) {
+        return;
+      }
+
+      if (sessionError) {
+        setError('Det gick inte att läsa sessionen.');
+      } else {
+        setSession(data.session);
+      }
+
+      setLoading(false);
+    };
+
+    void bootstrapSession();
 
     return () => {
       isMounted = false;
