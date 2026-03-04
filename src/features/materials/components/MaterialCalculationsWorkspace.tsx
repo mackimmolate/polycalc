@@ -69,10 +69,8 @@ interface CalculationMetrics {
   riskCostPerPart: number | null;
   internalCostPerPart: number | null;
   suggestedSalesPricePerPart: number | null;
-  grossMarginPercent: number | null;
   batchInternalCost: number | null;
   batchSalesTotal: number | null;
-  batchProfit: number | null;
   leadTimeHours: number | null;
 }
 
@@ -87,7 +85,6 @@ type EditableFieldKey =
   | 'setupTimeHoursInput'
   | 'postProcessTimeHoursPerPartInput'
   | 'riskBufferPercentInput'
-  | 'targetMarginPercentInput'
   | 'printerCountInput';
 
 interface FieldConfig {
@@ -97,7 +94,7 @@ interface FieldConfig {
   inputMode: 'text' | 'decimal' | 'numeric';
 }
 
-const BASIC_FIELDS: FieldConfig[] = [
+const ORDER_FIELDS: FieldConfig[] = [
   { key: 'label', label: 'Namn på kalkyl', placeholder: 'Kalkyl', inputMode: 'text' },
   { key: 'kgMaterialInput', label: 'Kg material', placeholder: '0,85', inputMode: 'decimal' },
   {
@@ -136,13 +133,7 @@ const COST_FIELDS: FieldConfig[] = [
   },
 ];
 
-const QUOTE_AND_TIME_FIELDS: FieldConfig[] = [
-  {
-    key: 'targetMarginPercentInput',
-    label: 'Målmarginal (%)',
-    placeholder: '30',
-    inputMode: 'decimal',
-  },
+const CAPACITY_FIELDS: FieldConfig[] = [
   {
     key: 'setupTimeHoursInput',
     label: 'Uppstartstid (h)',
@@ -203,14 +194,6 @@ function formatMetricCurrency(value: number | null) {
   }
 
   return formatCurrency(value);
-}
-
-function formatPercent(value: number | null, maximumFractionDigits = 1) {
-  if (value === null || !Number.isFinite(value)) {
-    return 'Ej beräknat';
-  }
-
-  return `${new Intl.NumberFormat('sv-SE', { maximumFractionDigits }).format(value)} %`;
 }
 
 function formatHoursWithUnit(value: number | null) {
@@ -360,13 +343,6 @@ function computeMetrics(
       ? internalCostPerPart / (1 - targetMarginPercent / 100)
       : null;
 
-  const grossMarginPercent =
-    suggestedSalesPricePerPart !== null &&
-    suggestedSalesPricePerPart > 0 &&
-    internalCostPerPart !== null
-      ? ((suggestedSalesPricePerPart - internalCostPerPart) / suggestedSalesPricePerPart) * 100
-      : null;
-
   const batchInternalCost =
     internalCostPerPart !== null && isValidPositiveInteger(quantity) && quantity !== null
       ? internalCostPerPart * quantity
@@ -375,11 +351,6 @@ function computeMetrics(
   const batchSalesTotal =
     suggestedSalesPricePerPart !== null && isValidPositiveInteger(quantity) && quantity !== null
       ? suggestedSalesPricePerPart * quantity
-      : null;
-
-  const batchProfit =
-    batchSalesTotal !== null && batchInternalCost !== null
-      ? batchSalesTotal - batchInternalCost
       : null;
 
   const leadTimeHours =
@@ -404,10 +375,8 @@ function computeMetrics(
     riskCostPerPart,
     internalCostPerPart,
     suggestedSalesPricePerPart,
-    grossMarginPercent,
     batchInternalCost,
     batchSalesTotal,
-    batchProfit,
     leadTimeHours,
   };
 }
@@ -720,13 +689,24 @@ export function MaterialCalculationsWorkspace({
 
   const renderEditForm = (draft: CalculationDraft, index: number) => {
     const title = getCalculationLabel(draft.label, index);
+    const parsedValues = parseDraftValues(draft);
+    const metrics = computeMetrics(material.pricePerKgEur, parsedValues);
+
+    const formula =
+      metrics.materialCostPerPart !== null &&
+      parsedValues.kgMaterial !== null &&
+      Number.isFinite(parsedValues.kgMaterial)
+        ? `${formatCurrency(material.pricePerKgEur)} × ${formatNumber(parsedValues.kgMaterial, 3)} kg = ${formatCurrency(metrics.materialCostPerPart)}`
+        : 'Ange kg material för att se materialkostnad.';
 
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <p className="text-sm font-semibold text-[var(--ink)]">{title}</p>
-            <p className="text-xs text-[var(--muted)]">Redigera kalkylvärden och spara.</p>
+            <p className="text-xs text-[var(--muted)]">
+              Fyll i underlag, kontrollera förhandsvisning och spara.
+            </p>
           </div>
           <button
             type="button"
@@ -738,18 +718,57 @@ export function MaterialCalculationsWorkspace({
           </button>
         </div>
 
-        <div className="grid gap-3 lg:grid-cols-4">
-          {BASIC_FIELDS.map((field) => renderField(draft, field))}
-        </div>
-        <div className="grid gap-3 lg:grid-cols-4">
-          {COST_FIELDS.map((field) => renderField(draft, field))}
-        </div>
-        <div className="grid gap-3 lg:grid-cols-4">
-          {QUOTE_AND_TIME_FIELDS.map((field) => renderField(draft, field))}
-        </div>
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+          <div className="space-y-3">
+            <div className="space-y-3 rounded-xl border border-[var(--border)] bg-white p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                1. Beställning
+              </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {ORDER_FIELDS.map((field) => renderField(draft, field))}
+              </div>
+            </div>
 
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2 text-xs text-[var(--muted)]">
-          Materialkostnad beräknas som <span className="font-semibold">pris/kg × kg material</span>.
+            <div className="space-y-3 rounded-xl border border-[var(--border)] bg-white p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                2. Kostnader per styck
+              </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {COST_FIELDS.map((field) => renderField(draft, field))}
+              </div>
+            </div>
+
+            <div className="space-y-3 rounded-xl border border-[var(--border)] bg-white p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                3. Kapacitet och tid
+              </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {CAPACITY_FIELDS.map((field) => renderField(draft, field))}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3 rounded-xl border border-teal-200 bg-teal-50 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+              Förhandsvisning
+            </p>
+            <div className="grid gap-2">
+              <ResultCard
+                label="Internkostnad/st"
+                value={formatMetricCurrency(metrics.internalCostPerPart)}
+              />
+              <ResultCard
+                label="Prisförslag/st"
+                value={formatMetricCurrency(metrics.suggestedSalesPricePerPart)}
+                emphasis="accent"
+              />
+              <ResultCard label="Totalpris" value={formatMetricCurrency(metrics.batchSalesTotal)} />
+              <ResultCard label="Ledtid total" value={formatHoursWithUnit(metrics.leadTimeHours)} />
+            </div>
+            <div className="rounded-lg border border-teal-200 bg-white px-3 py-2 text-xs text-[var(--muted)]">
+              {formula}
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-2">
@@ -787,7 +806,7 @@ export function MaterialCalculationsWorkspace({
         : 'Ange kg material för att se materialkostnad.';
 
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <p className="text-sm font-semibold text-[var(--ink)]">{title}</p>
@@ -819,7 +838,11 @@ export function MaterialCalculationsWorkspace({
           </div>
         </div>
 
-        <div className="grid gap-2 md:grid-cols-3">
+        <div className="grid gap-2 md:grid-cols-5">
+          <ResultCard
+            label="Materialkostnad/st"
+            value={formatMetricCurrency(metrics.materialCostPerPart)}
+          />
           <ResultCard
             label="Internkostnad/st"
             value={formatMetricCurrency(metrics.internalCostPerPart)}
@@ -830,53 +853,20 @@ export function MaterialCalculationsWorkspace({
             emphasis="accent"
           />
           <ResultCard
-            label="Bruttomarginal"
-            value={formatPercent(metrics.grossMarginPercent)}
-            emphasis="success"
+            label="Totalpris"
+            value={formatMetricCurrency(metrics.batchSalesTotal)}
+            emphasis="accent"
           />
+          <ResultCard label="Ledtid total" value={formatHoursWithUnit(metrics.leadTimeHours)} />
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2 text-xs text-[var(--muted)]">
           {formula}
         </div>
 
-        <div className="grid gap-2 md:grid-cols-4">
-          <ResultCard label="Antal" value={formatNumber(parsedValues.quantity, 0)} />
-          <ResultCard
-            label="Printtid/st"
-            value={formatHoursWithUnit(parsedValues.printTimeHours)}
-          />
-          <ResultCard label="Ledtid total" value={formatHoursWithUnit(metrics.leadTimeHours)} />
-          <ResultCard
-            label="Materialkostnad/st"
-            value={formatMetricCurrency(metrics.materialCostPerPart)}
-          />
-        </div>
-
         <div className="grid gap-3 lg:grid-cols-2">
-          <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-              Batchkalkyl
-            </p>
-            <div className="grid gap-2 md:grid-cols-3">
-              <ResultCard
-                label="Totalkostnad"
-                value={formatMetricCurrency(metrics.batchInternalCost)}
-              />
-              <ResultCard
-                label="Offert total"
-                value={formatMetricCurrency(metrics.batchSalesTotal)}
-                emphasis="accent"
-              />
-              <ResultCard
-                label="Täckningsbidrag"
-                value={formatMetricCurrency(metrics.batchProfit)}
-              />
-            </div>
-          </div>
-
           <div className="space-y-2 rounded-xl border border-teal-200 bg-teal-50 p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
               Kundsammanfattning
             </p>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -892,23 +882,51 @@ export function MaterialCalculationsWorkspace({
               />
               <ResultCard label="Leveranstid" value={formatHoursWithUnit(metrics.leadTimeHours)} />
               <ResultCard
-                label="Bruttomarginal"
-                value={formatPercent(metrics.grossMarginPercent)}
+                label="Totalkostnad"
+                value={formatMetricCurrency(metrics.batchInternalCost)}
               />
             </div>
           </div>
+
+          <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+              Underlag
+            </p>
+            <dl className="grid gap-x-3 gap-y-1 text-xs text-[var(--muted)] sm:grid-cols-2">
+              <dt>Antal</dt>
+              <dd className="text-right font-semibold text-[var(--ink)]">
+                {formatNumber(parsedValues.quantity, 0)}
+              </dd>
+              <dt>Kg material/st</dt>
+              <dd className="text-right font-semibold text-[var(--ink)]">
+                {formatNumber(parsedValues.kgMaterial, 3)} kg
+              </dd>
+              <dt>Printtid/st</dt>
+              <dd className="text-right font-semibold text-[var(--ink)]">
+                {formatHoursWithUnit(parsedValues.printTimeHours)}
+              </dd>
+              <dt>Uppstartstid</dt>
+              <dd className="text-right font-semibold text-[var(--ink)]">
+                {formatHoursWithUnit(parsedValues.setupTimeHours)}
+              </dd>
+              <dt>Efterbearbetning/st</dt>
+              <dd className="text-right font-semibold text-[var(--ink)]">
+                {formatHoursWithUnit(parsedValues.postProcessTimeHoursPerPart)}
+              </dd>
+              <dt>Antal skrivare</dt>
+              <dd className="text-right font-semibold text-[var(--ink)]">
+                {formatNumber(parsedValues.printerCount, 0)}
+              </dd>
+            </dl>
+          </div>
         </div>
 
-        <div className="grid gap-2 md:grid-cols-3">
+        <div className="grid gap-2 md:grid-cols-2">
           <ResultCard
             label="Maskinkostnad/st"
             value={formatMetricCurrency(metrics.machineCostPerPart)}
           />
           <ResultCard label="Riskpåslag/st" value={formatMetricCurrency(metrics.riskCostPerPart)} />
-          <ResultCard
-            label="Målmarginal (input)"
-            value={formatPercent(parsedValues.targetMarginPercent)}
-          />
         </div>
       </div>
     );
