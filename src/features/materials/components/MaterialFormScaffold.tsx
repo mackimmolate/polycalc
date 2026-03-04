@@ -381,7 +381,7 @@ export function MaterialFormScaffold({
                 setCategoryRemoveError(null);
               }}
               disabled={removableCategoryOptions.length === 0}
-              className="text-xs font-semibold text-[var(--accent)] underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:text-[var(--muted)] disabled:no-underline"
+              className="text-xs font-semibold text-red-700 underline-offset-2 hover:underline hover:text-red-800 disabled:cursor-not-allowed disabled:text-[var(--muted)] disabled:no-underline"
             >
               - Ta bort kategori
             </button>
@@ -515,7 +515,7 @@ export function MaterialFormScaffold({
                 setManufacturerRemoveError(null);
               }}
               disabled={removableManufacturerOptions.length === 0}
-              className="text-xs font-semibold text-[var(--accent)] underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:text-[var(--muted)] disabled:no-underline"
+              className="text-xs font-semibold text-red-700 underline-offset-2 hover:underline hover:text-red-800 disabled:cursor-not-allowed disabled:text-[var(--muted)] disabled:no-underline"
             >
               - Ta bort tillverkare
             </button>
