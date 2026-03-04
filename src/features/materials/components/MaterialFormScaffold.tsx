@@ -1,7 +1,12 @@
-﻿import { useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SurfaceCard } from '@/components/ui/SurfaceCard';
 import { getCategoryLabel } from '@/features/materials/utils/materialLabels';
+import {
+  loadSavedMaterialOptionPreferences,
+  saveSavedMaterialCategories,
+  saveSavedMaterialManufacturers,
+} from '@/features/materials/utils/materialOptionPreferences';
 import {
   type MaterialFormErrors,
   type MaterialFormValues,
@@ -26,6 +31,13 @@ interface MaterialFormScaffoldProps {
 
 function normalizeOptionValue(value: string) {
   return value.trim().replace(/\s+/g, ' ');
+}
+
+function sameOption(left: string, right: string) {
+  return (
+    normalizeOptionValue(left).toLocaleLowerCase('sv-SE') ===
+    normalizeOptionValue(right).toLocaleLowerCase('sv-SE')
+  );
 }
 
 function mergeUniqueOptions(options: string[]) {
@@ -90,16 +102,36 @@ export function MaterialFormScaffold({
   );
   const [fieldErrors, setFieldErrors] = useState<MaterialFormErrors>({});
 
-  const [customManufacturers, setCustomManufacturers] = useState<string[]>([]);
-  const [customCategories, setCustomCategories] = useState<string[]>([]);
+  const [customManufacturers, setCustomManufacturers] = useState<string[]>(() =>
+    mergeUniqueOptions(loadSavedMaterialOptionPreferences().manufacturers),
+  );
+  const [customCategories, setCustomCategories] = useState<string[]>(() =>
+    mergeUniqueOptions(loadSavedMaterialOptionPreferences().categories),
+  );
 
   const [showAddManufacturer, setShowAddManufacturer] = useState(false);
   const [manufacturerDraft, setManufacturerDraft] = useState('');
   const [manufacturerDraftError, setManufacturerDraftError] = useState<string | null>(null);
 
+  const [showRemoveManufacturer, setShowRemoveManufacturer] = useState(false);
+  const [manufacturerToRemove, setManufacturerToRemove] = useState('');
+  const [manufacturerRemoveError, setManufacturerRemoveError] = useState<string | null>(null);
+
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [categoryDraft, setCategoryDraft] = useState('');
   const [categoryDraftError, setCategoryDraftError] = useState<string | null>(null);
+
+  const [showRemoveCategory, setShowRemoveCategory] = useState(false);
+  const [categoryToRemove, setCategoryToRemove] = useState('');
+  const [categoryRemoveError, setCategoryRemoveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    saveSavedMaterialManufacturers(customManufacturers);
+  }, [customManufacturers]);
+
+  useEffect(() => {
+    saveSavedMaterialCategories(customCategories);
+  }, [customCategories]);
 
   const parsedLayerDuration = useMemo(() => {
     const numeric = Number(formValues.timePerLayer45DegSeconds.replace(',', '.'));
@@ -126,6 +158,16 @@ export function MaterialFormScaffold({
     [customCategories, formValues.category],
   );
 
+  const removableManufacturerOptions = useMemo(
+    () => mergeUniqueOptions(customManufacturers),
+    [customManufacturers],
+  );
+
+  const removableCategoryOptions = useMemo(
+    () => mergeUniqueOptions(customCategories),
+    [customCategories],
+  );
+
   const addManufacturer = () => {
     const normalized = normalizeOptionValue(manufacturerDraft);
     if (normalized.length < 2) {
@@ -145,6 +187,29 @@ export function MaterialFormScaffold({
     setShowAddManufacturer(false);
   };
 
+  const removeManufacturer = () => {
+    const normalized = normalizeOptionValue(manufacturerToRemove);
+    if (normalized.length < 1) {
+      setManufacturerRemoveError('Välj en tillverkare att ta bort.');
+      return;
+    }
+
+    const toRemove = removableManufacturerOptions.find((option) => sameOption(option, normalized));
+    if (!toRemove) {
+      setManufacturerRemoveError('Tillverkaren kunde inte hittas i egna sparade val.');
+      return;
+    }
+
+    setCustomManufacturers((current) => current.filter((option) => !sameOption(option, toRemove)));
+    if (sameOption(formValues.manufacturer, toRemove)) {
+      setFormValues((current) => ({ ...current, manufacturer: '' }));
+    }
+
+    setManufacturerToRemove('');
+    setManufacturerRemoveError(null);
+    setShowRemoveManufacturer(false);
+  };
+
   const addCategory = () => {
     const normalized = normalizeOptionValue(categoryDraft);
     if (normalized.length < 2) {
@@ -162,6 +227,29 @@ export function MaterialFormScaffold({
     setCategoryDraft('');
     setCategoryDraftError(null);
     setShowAddCategory(false);
+  };
+
+  const removeCategory = () => {
+    const normalized = normalizeOptionValue(categoryToRemove);
+    if (normalized.length < 1) {
+      setCategoryRemoveError('Välj en kategori att ta bort.');
+      return;
+    }
+
+    const toRemove = removableCategoryOptions.find((option) => sameOption(option, normalized));
+    if (!toRemove) {
+      setCategoryRemoveError('Kategorin kunde inte hittas i egna sparade val.');
+      return;
+    }
+
+    setCustomCategories((current) => current.filter((option) => !sameOption(option, toRemove)));
+    if (sameOption(formValues.category, toRemove)) {
+      setFormValues((current) => ({ ...current, category: defaultMaterialCategoryOptions[0] }));
+    }
+
+    setCategoryToRemove('');
+    setCategoryRemoveError(null);
+    setShowRemoveCategory(false);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -214,16 +302,31 @@ export function MaterialFormScaffold({
             </select>
           </label>
 
-          <button
-            type="button"
-            onClick={() => {
-              setShowAddCategory((current) => !current);
-              setCategoryDraftError(null);
-            }}
-            className="text-xs font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
-          >
-            + Lägg till ny kategori
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setShowAddCategory((current) => !current);
+                setShowRemoveCategory(false);
+                setCategoryDraftError(null);
+              }}
+              className="text-xs font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
+            >
+              + Lägg till ny kategori
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowRemoveCategory((current) => !current);
+                setShowAddCategory(false);
+                setCategoryRemoveError(null);
+              }}
+              disabled={removableCategoryOptions.length === 0}
+              className="text-xs font-semibold text-[var(--accent)] underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:text-[var(--muted)] disabled:no-underline"
+            >
+              Ta bort kategori
+            </button>
+          </div>
 
           {showAddCategory ? (
             <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
@@ -262,6 +365,53 @@ export function MaterialFormScaffold({
             </div>
           ) : null}
 
+          {showRemoveCategory ? (
+            <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+              <select
+                value={categoryToRemove}
+                onChange={(event) => {
+                  setCategoryToRemove(event.target.value);
+                  setCategoryRemoveError(null);
+                }}
+                className="w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
+              >
+                <option value="">Välj kategori att ta bort</option>
+                {removableCategoryOptions.map((category) => (
+                  <option key={category} value={category}>
+                    {getCategoryLabel(category)}
+                  </option>
+                ))}
+              </select>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={removeCategory}
+                  className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                >
+                  Ta bort
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRemoveCategory(false);
+                    setCategoryToRemove('');
+                    setCategoryRemoveError(null);
+                  }}
+                  className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:bg-[var(--surface)]"
+                >
+                  Avbryt
+                </button>
+              </div>
+              <p className="text-xs text-[var(--muted)]">
+                Tar bort från dina sparade val. Kategorier som redan används i material visas
+                fortfarande tills materialen ändras.
+              </p>
+              {categoryRemoveError ? (
+                <p className="text-xs font-medium text-red-700">{categoryRemoveError}</p>
+              ) : null}
+            </div>
+          ) : null}
+
           <FieldError error={fieldErrors.category} />
         </div>
 
@@ -287,16 +437,31 @@ export function MaterialFormScaffold({
             </select>
           </label>
 
-          <button
-            type="button"
-            onClick={() => {
-              setShowAddManufacturer((current) => !current);
-              setManufacturerDraftError(null);
-            }}
-            className="text-xs font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
-          >
-            + Lägg till ny tillverkare
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setShowAddManufacturer((current) => !current);
+                setShowRemoveManufacturer(false);
+                setManufacturerDraftError(null);
+              }}
+              className="text-xs font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
+            >
+              + Lägg till ny tillverkare
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowRemoveManufacturer((current) => !current);
+                setShowAddManufacturer(false);
+                setManufacturerRemoveError(null);
+              }}
+              disabled={removableManufacturerOptions.length === 0}
+              className="text-xs font-semibold text-[var(--accent)] underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:text-[var(--muted)] disabled:no-underline"
+            >
+              Ta bort tillverkare
+            </button>
+          </div>
 
           {showAddManufacturer ? (
             <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
@@ -331,6 +496,53 @@ export function MaterialFormScaffold({
               </div>
               {manufacturerDraftError ? (
                 <p className="text-xs font-medium text-red-700">{manufacturerDraftError}</p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {showRemoveManufacturer ? (
+            <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+              <select
+                value={manufacturerToRemove}
+                onChange={(event) => {
+                  setManufacturerToRemove(event.target.value);
+                  setManufacturerRemoveError(null);
+                }}
+                className="w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
+              >
+                <option value="">Välj tillverkare att ta bort</option>
+                {removableManufacturerOptions.map((manufacturer) => (
+                  <option key={manufacturer} value={manufacturer}>
+                    {manufacturer}
+                  </option>
+                ))}
+              </select>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={removeManufacturer}
+                  className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                >
+                  Ta bort
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRemoveManufacturer(false);
+                    setManufacturerToRemove('');
+                    setManufacturerRemoveError(null);
+                  }}
+                  className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:bg-[var(--surface)]"
+                >
+                  Avbryt
+                </button>
+              </div>
+              <p className="text-xs text-[var(--muted)]">
+                Tar bort från dina sparade val. Tillverkare som redan används i material visas
+                fortfarande tills materialen ändras.
+              </p>
+              {manufacturerRemoveError ? (
+                <p className="text-xs font-medium text-red-700">{manufacturerRemoveError}</p>
               ) : null}
             </div>
           ) : null}

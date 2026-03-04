@@ -4,7 +4,7 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials with an inlin
 
 ## Current status
 
-- Version: `0.4.1`
+- Version: `0.4.2`
 - Phase 2.1 completed: inline expandable material workflow with multiple calculations per material.
 - Supabase-backed runtime is active for materials and calculation records.
 - Swedish UI, compact row overview, and GitHub Pages deployment workflow are active.
@@ -14,11 +14,11 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials with an inlin
 - Browses and compares materials in a compact sortable overview.
 - Uses one main search field for fast filtering.
 - Expands one material inline to open a workspace directly under the row.
-- Shows fixed material/reference values in the expanded panel.
+- Keeps key fixed material values visible in the compact overview rows.
 - Manages multiple calculation scenarios per material (create, edit, remove).
 - Calculates material cost clearly from fixed and entered values.
 - Creates, edits, and deletes materials against Supabase.
-- Lets users add new manufacturer/category options directly from create/edit forms.
+- Lets users add and remove custom manufacturer/category options in create/edit forms, and keeps those custom options available in later forms on the same device/browser.
 
 ## Product model in v1
 

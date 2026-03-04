@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.4.2] - 2026-03-04
+
+### Added
+
+- Added persistent custom option storage for category and manufacturer in create/edit forms (`localStorage`) so user-added values are available in later forms.
+- Added `Ta bort kategori` and `Ta bort tillverkare` actions next to the existing add actions in forms.
+
+### Changed
+
+- Updated create/edit option management flow so category/manufacturer custom values can be added and removed without leaving the form.
+
 ## [0.4.1] - 2026-03-04
 
 ### Changed
