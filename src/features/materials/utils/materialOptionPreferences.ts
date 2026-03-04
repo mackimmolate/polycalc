@@ -1,9 +1,13 @@
 const SAVED_CATEGORIES_KEY = 'polyflow.savedMaterialCategories';
 const SAVED_MANUFACTURERS_KEY = 'polyflow.savedMaterialManufacturers';
+const HIDDEN_CATEGORIES_KEY = 'polyflow.hiddenMaterialCategories';
+const HIDDEN_MANUFACTURERS_KEY = 'polyflow.hiddenMaterialManufacturers';
 
 interface MaterialOptionPreferences {
   categories: string[];
   manufacturers: string[];
+  hiddenCategories: string[];
+  hiddenManufacturers: string[];
 }
 
 function canUseStorage() {
@@ -51,6 +55,8 @@ export function loadSavedMaterialOptionPreferences(): MaterialOptionPreferences 
   return {
     categories: readStringArray(SAVED_CATEGORIES_KEY),
     manufacturers: readStringArray(SAVED_MANUFACTURERS_KEY),
+    hiddenCategories: readStringArray(HIDDEN_CATEGORIES_KEY),
+    hiddenManufacturers: readStringArray(HIDDEN_MANUFACTURERS_KEY),
   };
 }
 
@@ -60,4 +66,12 @@ export function saveSavedMaterialCategories(categories: string[]) {
 
 export function saveSavedMaterialManufacturers(manufacturers: string[]) {
   writeStringArray(SAVED_MANUFACTURERS_KEY, manufacturers);
+}
+
+export function saveHiddenMaterialCategories(categories: string[]) {
+  writeStringArray(HIDDEN_CATEGORIES_KEY, categories);
+}
+
+export function saveHiddenMaterialManufacturers(manufacturers: string[]) {
+  writeStringArray(HIDDEN_MANUFACTURERS_KEY, manufacturers);
 }

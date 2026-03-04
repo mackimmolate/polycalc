@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.4.3] - 2026-03-04
+
+### Changed
+
+- `Ta bort kategori` and `Ta bort tillverkare` are now available for all current dropdown options, not only custom-added values.
+- Removed options are now hidden from form dropdowns on the same device/browser via persisted preference state.
+- Updated remove action labels to `- Ta bort kategori` and `- Ta bort tillverkare`.
+
 ## [0.4.2] - 2026-03-04
 
 ### Added

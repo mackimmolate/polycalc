@@ -4,7 +4,7 @@ PolyFlow uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 
 ## Current version
 
-- `0.4.2`
+- `0.4.3`
 
 ## Rules
 
@@ -36,3 +36,4 @@ PolyFlow uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 - `0.4.0`: Phase 2.1 inline expandable workspace with per-material multi-calculation CRUD and calculation-first overview workflow.
 - `0.4.1`: UX refinement for clickable row affordance + saved/read-only calculation mode, plus custom category/manufacturer schema-compatibility hotfix.
 - `0.4.2`: Form option persistence polish for category/manufacturer plus inline remove actions for custom options.
+- `0.4.3`: Form option removal expanded to all dropdown values, with persisted hidden-option preferences and updated remove action labeling.

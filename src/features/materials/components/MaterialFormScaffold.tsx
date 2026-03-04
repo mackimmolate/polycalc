@@ -4,6 +4,8 @@ import { SurfaceCard } from '@/components/ui/SurfaceCard';
 import { getCategoryLabel } from '@/features/materials/utils/materialLabels';
 import {
   loadSavedMaterialOptionPreferences,
+  saveHiddenMaterialCategories,
+  saveHiddenMaterialManufacturers,
   saveSavedMaterialCategories,
   saveSavedMaterialManufacturers,
 } from '@/features/materials/utils/materialOptionPreferences';
@@ -97,16 +99,24 @@ export function MaterialFormScaffold({
   serverError,
   onSubmit,
 }: MaterialFormScaffoldProps) {
+  const [savedOptionPreferences] = useState(() => loadSavedMaterialOptionPreferences());
+
   const [formValues, setFormValues] = useState<MaterialFormValues>(() =>
     toFormValues(initialMaterial),
   );
   const [fieldErrors, setFieldErrors] = useState<MaterialFormErrors>({});
 
   const [customManufacturers, setCustomManufacturers] = useState<string[]>(() =>
-    mergeUniqueOptions(loadSavedMaterialOptionPreferences().manufacturers),
+    mergeUniqueOptions(savedOptionPreferences.manufacturers),
   );
   const [customCategories, setCustomCategories] = useState<string[]>(() =>
-    mergeUniqueOptions(loadSavedMaterialOptionPreferences().categories),
+    mergeUniqueOptions(savedOptionPreferences.categories),
+  );
+  const [hiddenManufacturers, setHiddenManufacturers] = useState<string[]>(() =>
+    mergeUniqueOptions(savedOptionPreferences.hiddenManufacturers),
+  );
+  const [hiddenCategories, setHiddenCategories] = useState<string[]>(() =>
+    mergeUniqueOptions(savedOptionPreferences.hiddenCategories),
   );
 
   const [showAddManufacturer, setShowAddManufacturer] = useState(false);
@@ -133,6 +143,14 @@ export function MaterialFormScaffold({
     saveSavedMaterialCategories(customCategories);
   }, [customCategories]);
 
+  useEffect(() => {
+    saveHiddenMaterialManufacturers(hiddenManufacturers);
+  }, [hiddenManufacturers]);
+
+  useEffect(() => {
+    saveHiddenMaterialCategories(hiddenCategories);
+  }, [hiddenCategories]);
+
   const parsedLayerDuration = useMemo(() => {
     const numeric = Number(formValues.timePerLayer45DegSeconds.replace(',', '.'));
     if (!Number.isFinite(numeric) || numeric <= 0) {
@@ -142,13 +160,30 @@ export function MaterialFormScaffold({
     return formatDurationSeconds(Math.round(numeric));
   }, [formValues.timePerLayer45DegSeconds]);
 
-  const manufacturerSelectOptions = useMemo(
+  const canShowSelectedHiddenOption = mode === 'edit';
+
+  const allManufacturerOptions = useMemo(
     () =>
       mergeUniqueOptions([...manufacturerOptions, ...customManufacturers, formValues.manufacturer]),
     [customManufacturers, formValues.manufacturer],
   );
 
-  const categorySelectOptions = useMemo(
+  const manufacturerSelectOptions = useMemo(
+    () =>
+      allManufacturerOptions.filter(
+        (option) =>
+          !hiddenManufacturers.some((hiddenOption) => sameOption(option, hiddenOption)) ||
+          (canShowSelectedHiddenOption && sameOption(option, formValues.manufacturer)),
+      ),
+    [
+      allManufacturerOptions,
+      canShowSelectedHiddenOption,
+      hiddenManufacturers,
+      formValues.manufacturer,
+    ],
+  );
+
+  const allCategoryOptions = useMemo(
     () =>
       mergeUniqueOptions([
         ...defaultMaterialCategoryOptions,
@@ -158,14 +193,30 @@ export function MaterialFormScaffold({
     [customCategories, formValues.category],
   );
 
+  const categorySelectOptions = useMemo(
+    () =>
+      allCategoryOptions.filter(
+        (option) =>
+          !hiddenCategories.some((hiddenOption) => sameOption(option, hiddenOption)) ||
+          (canShowSelectedHiddenOption && sameOption(option, formValues.category)),
+      ),
+    [allCategoryOptions, canShowSelectedHiddenOption, hiddenCategories, formValues.category],
+  );
+
   const removableManufacturerOptions = useMemo(
-    () => mergeUniqueOptions(customManufacturers),
-    [customManufacturers],
+    () =>
+      allManufacturerOptions.filter(
+        (option) => !hiddenManufacturers.some((hiddenOption) => sameOption(option, hiddenOption)),
+      ),
+    [allManufacturerOptions, hiddenManufacturers],
   );
 
   const removableCategoryOptions = useMemo(
-    () => mergeUniqueOptions(customCategories),
-    [customCategories],
+    () =>
+      allCategoryOptions.filter(
+        (option) => !hiddenCategories.some((hiddenOption) => sameOption(option, hiddenOption)),
+      ),
+    [allCategoryOptions, hiddenCategories],
   );
 
   const addManufacturer = () => {
@@ -179,6 +230,7 @@ export function MaterialFormScaffold({
     if (!manufacturerSelectOptions.includes(resolved)) {
       setCustomManufacturers((current) => mergeUniqueOptions([...current, resolved]));
     }
+    setHiddenManufacturers((current) => current.filter((option) => !sameOption(option, resolved)));
 
     setFormValues((current) => ({ ...current, manufacturer: resolved as Manufacturer }));
     setFieldErrors((current) => ({ ...current, manufacturer: undefined }));
@@ -196,10 +248,11 @@ export function MaterialFormScaffold({
 
     const toRemove = removableManufacturerOptions.find((option) => sameOption(option, normalized));
     if (!toRemove) {
-      setManufacturerRemoveError('Tillverkaren kunde inte hittas i egna sparade val.');
+      setManufacturerRemoveError('Tillverkaren kunde inte hittas i listan.');
       return;
     }
 
+    setHiddenManufacturers((current) => mergeUniqueOptions([...current, toRemove]));
     setCustomManufacturers((current) => current.filter((option) => !sameOption(option, toRemove)));
     if (sameOption(formValues.manufacturer, toRemove)) {
       setFormValues((current) => ({ ...current, manufacturer: '' }));
@@ -221,6 +274,7 @@ export function MaterialFormScaffold({
     if (!categorySelectOptions.includes(resolved)) {
       setCustomCategories((current) => mergeUniqueOptions([...current, resolved]));
     }
+    setHiddenCategories((current) => current.filter((option) => !sameOption(option, resolved)));
 
     setFormValues((current) => ({ ...current, category: resolved as MaterialCategory }));
     setFieldErrors((current) => ({ ...current, category: undefined }));
@@ -238,13 +292,17 @@ export function MaterialFormScaffold({
 
     const toRemove = removableCategoryOptions.find((option) => sameOption(option, normalized));
     if (!toRemove) {
-      setCategoryRemoveError('Kategorin kunde inte hittas i egna sparade val.');
+      setCategoryRemoveError('Kategorin kunde inte hittas i listan.');
       return;
     }
 
+    setHiddenCategories((current) => mergeUniqueOptions([...current, toRemove]));
     setCustomCategories((current) => current.filter((option) => !sameOption(option, toRemove)));
     if (sameOption(formValues.category, toRemove)) {
-      setFormValues((current) => ({ ...current, category: defaultMaterialCategoryOptions[0] }));
+      const fallbackCategory = categorySelectOptions.find(
+        (option) => !sameOption(option, toRemove),
+      );
+      setFormValues((current) => ({ ...current, category: fallbackCategory ?? '' }));
     }
 
     setCategoryToRemove('');
@@ -294,6 +352,7 @@ export function MaterialFormScaffold({
               }
               className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
             >
+              <option value="">Välj kategori</option>
               {categorySelectOptions.map((category) => (
                 <option key={category} value={category}>
                   {getCategoryLabel(category)}
@@ -324,7 +383,7 @@ export function MaterialFormScaffold({
               disabled={removableCategoryOptions.length === 0}
               className="text-xs font-semibold text-[var(--accent)] underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:text-[var(--muted)] disabled:no-underline"
             >
-              Ta bort kategori
+              - Ta bort kategori
             </button>
           </div>
 
@@ -403,8 +462,7 @@ export function MaterialFormScaffold({
                 </button>
               </div>
               <p className="text-xs text-[var(--muted)]">
-                Tar bort från dina sparade val. Kategorier som redan används i material visas
-                fortfarande tills materialen ändras.
+                Tar bort kategorin från dropdown-listan i formulär på denna enhet.
               </p>
               {categoryRemoveError ? (
                 <p className="text-xs font-medium text-red-700">{categoryRemoveError}</p>
@@ -459,7 +517,7 @@ export function MaterialFormScaffold({
               disabled={removableManufacturerOptions.length === 0}
               className="text-xs font-semibold text-[var(--accent)] underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:text-[var(--muted)] disabled:no-underline"
             >
-              Ta bort tillverkare
+              - Ta bort tillverkare
             </button>
           </div>
 
@@ -538,8 +596,7 @@ export function MaterialFormScaffold({
                 </button>
               </div>
               <p className="text-xs text-[var(--muted)]">
-                Tar bort från dina sparade val. Tillverkare som redan används i material visas
-                fortfarande tills materialen ändras.
+                Tar bort tillverkaren från dropdown-listan i formulär på denna enhet.
               </p>
               {manufacturerRemoveError ? (
                 <p className="text-xs font-medium text-red-700">{manufacturerRemoveError}</p>
