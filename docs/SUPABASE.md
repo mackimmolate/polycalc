@@ -2,10 +2,11 @@
 
 ## Current state
 
-- Supabase is the active backend for PolyFlow Phase 2.1.
+- Supabase is the active backend for PolyFlow Phase 2.2.
 - Frontend client is defined in `src/lib/supabase/client.ts`.
 - Runtime CRUD modules:
   - `src/services/materials/materialsService.ts`
+  - `src/services/material-options/materialOptionsService.ts`
   - `src/services/material-calculations/materialCalculationsService.ts`
 
 ## Environment variables
@@ -28,15 +29,36 @@ Apply in this order:
 3. `supabase/sql/003_material_calculations.sql`
 4. `supabase/sql/004_materials_custom_options.sql`
 5. `supabase/sql/005_materials_drop_legacy_option_checks.sql`
+6. `supabase/sql/006_shared_material_options.sql`
+
+Upgrade note:
+
+- If your database already has scripts `001`-`005`, run only `006` to migrate to shared canonical options.
 
 ## Table model
 
-### `public.materials` (fixed material values)
+### `public.material_categories` (shared category options)
+
+- `id` (`uuid`, PK)
+- `label` (`text`, required)
+- `normalized_key` (`text`, required, unique)
+- `is_active` (`boolean`, required, default `true`)
+- `created_at`, `updated_at`
+
+### `public.material_manufacturers` (shared manufacturer options)
+
+- `id` (`uuid`, PK)
+- `label` (`text`, required)
+- `normalized_key` (`text`, required, unique)
+- `is_active` (`boolean`, required, default `true`)
+- `created_at`, `updated_at`
+
+### `public.materials` (fixed material values + option references)
 
 - `id` (`uuid`, PK)
 - `name` (`text`, required)
-- `manufacturer` (`text`, required)
-- `category` (`text`, required)
+- `manufacturer_id` (`uuid`, FK -> `material_manufacturers.id`, required)
+- `category_id` (`uuid`, FK -> `material_categories.id`, required)
 - `price_per_kg_eur` (`numeric(10,2)`, required, `>= 0`)
 - `max_temperature_c` (`integer`, nullable, `>= 0`)
 - `time_per_layer_45_deg_seconds` (`integer`, required, `> 0`)
@@ -56,19 +78,24 @@ Notes:
 
 - Calculated output values (for example material cost) are derived in UI, not stored.
 - One material can have many calculation records.
-- Manufacturer and category now allow custom non-empty values so users can extend lists from the UI.
+- Category and manufacturer values are now canonical shared entities with normalized keys.
+- Duplicate variants are prevented by `normalized_key` uniqueness.
+- Removing an option from the form inactivates it (`is_active = false`) instead of hard delete.
 
 ## RLS policy model (v1)
 
-For both `materials` and `material_calculations`:
+For `materials`, `material_calculations`, `material_categories`, and `material_manufacturers`:
 
 - Public read allowed (`select` policy).
-- `insert`, `update`, `delete` allowed for `authenticated` role only.
+- `insert`/`update` allowed for `authenticated` role.
+- `delete` allowed for `authenticated` only on runtime entities that use hard delete (`materials`, `material_calculations`).
+- Option tables intentionally use update-only removal behavior (inactivation), so delete grants/policies are not provided.
 
 This matches frontend behavior:
 
 - unauthenticated users can browse/search/sort/read.
 - authenticated users can create/edit/delete materials and calculations.
+- authenticated users can add and inactivate shared category/manufacturer options.
 
 ## Auth approach
 
@@ -86,9 +113,10 @@ Required Supabase Auth URL setup:
 - Material destructive action is hard delete with double confirmation.
 - Deleting a material cascades related calculations (`material_id` FK with cascade).
 - Calculation rows can be removed individually.
+- Category/manufacturer option removal uses soft deactivation (`is_active = false`) to protect existing material references.
 
 ## Deferred items
 
 - Role-based authorization model.
-- Manufacturer reference table and management UI.
+- Option rename/admin moderation workflow beyond inline add/inactivate.
 - Offline mutation queue/sync.

@@ -4,9 +4,9 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials with an inlin
 
 ## Current status
 
-- Version: `0.4.3`
-- Phase 2.1 completed: inline expandable material workflow with multiple calculations per material.
-- Supabase-backed runtime is active for materials and calculation records.
+- Version: `0.5.0`
+- Phase 2.2 completed: shared canonical kategori/tillverkare in Supabase.
+- Supabase-backed runtime is active for materials, shared options, and calculation records.
 - Swedish UI, compact row overview, and GitHub Pages deployment workflow are active.
 
 ## What PolyFlow does in v1
@@ -18,7 +18,9 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials with an inlin
 - Manages multiple calculation scenarios per material (create, edit, remove).
 - Calculates material cost clearly from fixed and entered values.
 - Creates, edits, and deletes materials against Supabase.
-- Lets users add manufacturer/category options and remove dropdown options directly in create/edit forms, with per-device/browser persistence for those option preferences.
+- Loads kategori/tillverkare from shared Supabase option tables.
+- Lets users add and inactivate kategori/tillverkare inline in create/edit forms.
+- Prevents duplicate variants (for example `Sunlu`/`SUNLU`/`sunlu`) via canonical normalized keys.
 
 ## Product model in v1
 
@@ -27,20 +29,25 @@ PolyFlow separates three value types:
 1. Fixed material values (persisted on `materials`)
 
 - material name
-- manufacturer
-- category
+- manufacturer reference (`manufacturer_id`)
+- category reference (`category_id`)
 - price per kg (EUR)
 - max temperature (°C)
 - time per layer at 45° (seconds)
 - notes
 
-2. User-entered calculation values (persisted per scenario on `material_calculations`)
+2. Shared option values (persisted globally)
+
+- `material_manufacturers` (`label`, `normalized_key`, `is_active`)
+- `material_categories` (`label`, `normalized_key`, `is_active`)
+
+3. User-entered calculation values (persisted per scenario on `material_calculations`)
 
 - kg material
 - print time in hours
 - optional calculation label
 
-3. Calculated values (derived in UI)
+4. Calculated values (derived in UI)
 
 - material cost in EUR (`price_per_kg_eur * kg_material`)
 
@@ -86,6 +93,11 @@ Run SQL files in Supabase SQL editor, in order:
 3. `supabase/sql/003_material_calculations.sql`
 4. `supabase/sql/004_materials_custom_options.sql`
 5. `supabase/sql/005_materials_drop_legacy_option_checks.sql`
+6. `supabase/sql/006_shared_material_options.sql`
+
+If your project is already set up through `005`, run only:
+
+- `supabase/sql/006_shared_material_options.sql`
 
 ### Run
 
@@ -103,8 +115,8 @@ npm run build
 ## Auth in v1
 
 - Sign-in uses Supabase magic link (`/auth`).
-- Read access for materials and calculations is public via RLS policies.
-- Write access (create/edit/delete) requires an authenticated session.
+- Read access for materials, shared options, and calculations is public via RLS policies.
+- Write access (create/edit/delete/inactivate/create options) requires an authenticated session.
 
 ## Deployment (GitHub Pages)
 

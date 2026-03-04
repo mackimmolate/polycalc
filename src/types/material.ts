@@ -1,21 +1,13 @@
-import type { Manufacturer } from '@/types/manufacturer';
-
-export const defaultMaterialCategoryOptions = [
-  'PLA',
-  'PETG',
-  'ABS',
-  'Nylon',
-  'TPU',
-  'Resin',
-] as const;
-
 export type MaterialCategory = string;
+export type MaterialManufacturer = string;
 
 export interface Material {
   id: string;
+  categoryId: string;
+  manufacturerId: string;
   name: string;
   category: MaterialCategory;
-  manufacturer: Manufacturer;
+  manufacturer: MaterialManufacturer;
   pricePerKgEur: number;
   maxTemperatureC: number | null;
   timePerLayer45DegSeconds: number;
@@ -26,8 +18,8 @@ export interface Material {
 
 export interface MaterialMutationInput {
   name: string;
-  category: MaterialCategory;
-  manufacturer: Manufacturer;
+  categoryId: string;
+  manufacturerId: string;
   pricePerKgEur: number;
   maxTemperatureC: number | null;
   timePerLayer45DegSeconds: number;

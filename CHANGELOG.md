@@ -4,6 +4,36 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.5.0] - 2026-03-04
+
+### Added
+
+- New shared Supabase option tables and migration asset:
+  - `supabase/sql/006_shared_material_options.sql`
+- New shared option service module:
+  - `src/services/material-options/materialOptionsService.ts`
+- New option domain type:
+  - `src/types/materialOption.ts`
+
+### Changed
+
+- Replaced localStorage-based category/manufacturer source model with Supabase-backed shared options.
+- Refactored `materials` runtime model to foreign-key references:
+  - `materials.category_id -> material_categories.id`
+  - `materials.manufacturer_id -> material_manufacturers.id`
+- Updated create/edit forms to:
+  - load category/manufacturer options from Supabase
+  - support inline add with canonical duplicate handling
+  - support safe remove via option inactivation (`is_active = false`)
+  - show loading/error states for shared option reads and mutations
+- Updated Supabase typings for new tables and materials FK columns.
+- Updated legacy SQL scripts (`004`, `005`) to be safer when text columns are no longer present.
+
+### Removed
+
+- Browser-local option preference utility from active runtime (`src/features/materials/utils/materialOptionPreferences.ts`).
+- Static manufacturer option file (`src/types/manufacturer.ts`).
+
 ## [0.4.3] - 2026-03-04
 
 ### Changed

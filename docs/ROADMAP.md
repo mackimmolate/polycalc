@@ -37,6 +37,14 @@
 - Calculation CRUD directly in expanded row workspace
 - Detail route reduced to compatibility redirect
 
+## Phase 2.2 (completed): Shared canonical kategori/tillverkare in Supabase
+
+- Added shared option entities (`material_categories`, `material_manufacturers`)
+- Migrated `materials` to FK references (`category_id`, `manufacturer_id`)
+- Replaced localStorage option source with Supabase-backed shared options in create/edit forms
+- Added canonical duplicate prevention via normalized keys
+- Added safe option removal via inactivation (`is_active = false`)
+
 ## Phase 3 (next): Hardening and release readiness
 
 - Add automated tests for critical flows (material + calculation services and key UI states)
@@ -49,4 +57,4 @@
 - Export functionality
 - Advanced role/permission system
 - Offline mutation queue and sync
-- Full manufacturer management subsystem
+- Full option administration workflow (rename/merge/bulk cleanup)

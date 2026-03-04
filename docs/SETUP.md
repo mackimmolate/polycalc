@@ -2,9 +2,9 @@
 
 ## Current state
 
-- Phase 2.1 inline runtime is implemented.
-- Materials and per-material calculations are loaded from Supabase.
-- Material and calculation writes require authenticated session.
+- Phase 2.2 shared option runtime is implemented.
+- Materials, shared kategori/tillverkare options, and per-material calculations are loaded from Supabase.
+- Material, calculation, and option mutations require authenticated session.
 
 ## Prerequisites
 
@@ -37,6 +37,11 @@ Run SQL files in Supabase SQL editor, in order:
 3. `supabase/sql/003_material_calculations.sql`
 4. `supabase/sql/004_materials_custom_options.sql`
 5. `supabase/sql/005_materials_drop_legacy_option_checks.sql`
+6. `supabase/sql/006_shared_material_options.sql`
+
+If your project is already initialized up to `005`, run only:
+
+- `supabase/sql/006_shared_material_options.sql`
 
 Configure Supabase Auth URL settings:
 
@@ -62,4 +67,5 @@ npm run preview
 - `/auth` signs in with magic link.
 - Write actions are blocked when not signed in.
 - Material create/edit returns to overview and reopens target material inline.
-- Material create/edit can add custom tillverkare/kategori values directly from form controls.
+- Material create/edit loads kategori/tillverkare from shared Supabase option tables.
+- Material create/edit can add/inaktivera kategori/tillverkare directly from form controls.

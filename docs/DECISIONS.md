@@ -120,3 +120,24 @@ This file records key product and engineering decisions.
 - Status: Accepted
 - Decision: Keep `/materials/:materialId` route but redirect it to `/materials` with inline expansion state.
 - Reason: Preserves deep-link compatibility while enforcing the overview-first UX.
+
+## D-0018: Shared canonical category/manufacturer entities in Supabase
+
+- Date: 2026-03-04
+- Status: Accepted
+- Decision: Move category and manufacturer into dedicated shared tables (`material_categories`, `material_manufacturers`) and reference them from `materials` via foreign keys.
+- Reason: Browser-local option lists are not reliable for multi-user/device consistency; shared canonical entities improve data integrity.
+
+## D-0019: Normalize duplicate option variants using unique keys
+
+- Date: 2026-03-04
+- Status: Accepted
+- Decision: Store `normalized_key` (trimmed, collapsed whitespace, lowercase) and enforce uniqueness for both option tables.
+- Reason: Prevents trivial duplicate variants such as `Sunlu`, `SUNLU`, and `sunlu` from fragmenting data.
+
+## D-0020: Option removal is soft deactivation, not hard delete
+
+- Date: 2026-03-04
+- Status: Accepted
+- Decision: Removing a category/manufacturer in UI updates `is_active = false` instead of deleting rows.
+- Reason: Keeps existing material references valid while hiding inactive options from new selections.

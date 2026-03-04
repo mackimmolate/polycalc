@@ -1,10 +1,9 @@
-﻿import type { Manufacturer } from '@/types/manufacturer';
-import type { MaterialCategory, MaterialMutationInput } from '@/types/material';
+import type { MaterialMutationInput } from '@/types/material';
 
 export interface MaterialFormValues {
   name: string;
-  category: MaterialCategory;
-  manufacturer: Manufacturer | '';
+  categoryId: string;
+  manufacturerId: string;
   pricePerKgEur: string;
   maxTemperatureC: string;
   timePerLayer45DegSeconds: string;
@@ -34,14 +33,14 @@ export function validateMaterialForm(values: MaterialFormValues): {
     errors.name = 'Ange ett materialnamn med minst 2 tecken.';
   }
 
-  const manufacturer = values.manufacturer.trim();
-  if (manufacturer.length < 2) {
-    errors.manufacturer = 'Välj eller lägg till en tillverkare med minst 2 tecken.';
+  const manufacturerId = values.manufacturerId.trim();
+  if (manufacturerId.length < 1) {
+    errors.manufacturerId = 'Välj en tillverkare.';
   }
 
-  const category = values.category.trim();
-  if (category.length < 2) {
-    errors.category = 'Välj eller lägg till en kategori med minst 2 tecken.';
+  const categoryId = values.categoryId.trim();
+  if (categoryId.length < 1) {
+    errors.categoryId = 'Välj en kategori.';
   }
 
   const price = parseNumber(values.pricePerKgEur);
@@ -70,8 +69,8 @@ export function validateMaterialForm(values: MaterialFormValues): {
   return {
     input: {
       name,
-      category,
-      manufacturer,
+      categoryId,
+      manufacturerId,
       pricePerKgEur: Number(price),
       maxTemperatureC: maxTemperature === null ? null : Math.round(maxTemperature),
       timePerLayer45DegSeconds: Math.round(Number(timePerLayer)),

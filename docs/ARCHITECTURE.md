@@ -2,8 +2,8 @@
 
 ## Current state
 
-- Phase 2.1 inline workflow is implemented.
-- Runtime data is Supabase-backed for materials and related calculation records.
+- Phase 2.2 shared option model is implemented.
+- Runtime data is Supabase-backed for materials, shared option entities, and related calculation records.
 - PolyFlow v1 is implemented as material library plus inline multi-calculation workspace.
 
 ## Guiding principles
@@ -39,6 +39,7 @@ src/
   hooks/
   services/
     materials/
+    material-options/
     material-calculations/
   api/
   lib/
@@ -52,21 +53,27 @@ src/
 
 1. `MaterialsListPage` loads materials and renders compact sortable rows.
 2. One row can be expanded inline to open a material workspace.
-3. Expanded workspace shows fixed material values and per-material calculations.
+3. Expanded workspace focuses on per-material calculations while fixed values remain visible in the compact summary row.
 4. Calculation CRUD calls `services/material-calculations/materialCalculationsService.ts`.
 5. Material CRUD calls `services/materials/materialsService.ts`.
+6. Category/manufacturer option reads and mutations call `services/material-options/materialOptionsService.ts`.
 
 ## Data model boundaries
 
 ### Fixed values (persisted on `materials`)
 
 - `name`
-- `manufacturer`
-- `category`
+- `manufacturer_id` (FK -> `material_manufacturers.id`)
+- `category_id` (FK -> `material_categories.id`)
 - `pricePerKgEur`
 - `maxTemperatureC`
 - `timePerLayer45DegSeconds`
 - `notes`
+
+### Shared option values (persisted globally)
+
+- `material_categories`: `label`, `normalized_key`, `is_active`
+- `material_manufacturers`: `label`, `normalized_key`, `is_active`
 
 ### Entered scenario values (persisted on `material_calculations`)
 
@@ -104,7 +111,7 @@ Routes:
 ## Auth and security model
 
 - Supabase auth: magic link.
-- Reads are public via RLS (`materials` and `material_calculations`).
+- Reads are public via RLS (`materials`, shared option tables, and `material_calculations`).
 - Writes require authenticated session (insert/update/delete policies + frontend guards).
 - No role system in v1.
 
@@ -112,6 +119,7 @@ Routes:
 
 - Material destructive action in v1 is hard delete with double confirmation.
 - Calculation rows use simpler remove action with explicit user trigger.
+- Shared category/manufacturer options are not hard-deleted in v1; they are inactivated (`is_active = false`) to avoid breaking existing material references.
 - Archive is not part of active v1 destructive flow.
 
 ## PWA baseline

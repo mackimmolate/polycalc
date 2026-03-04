@@ -5,8 +5,8 @@ export interface Database {
         Row: {
           id: string;
           name: string;
-          manufacturer: string;
-          category: string;
+          manufacturer_id: string;
+          category_id: string;
           price_per_kg_eur: number;
           max_temperature_c: number | null;
           time_per_layer_45_deg_seconds: number;
@@ -17,8 +17,8 @@ export interface Database {
         Insert: {
           id?: string;
           name: string;
-          manufacturer: string;
-          category: string;
+          manufacturer_id: string;
+          category_id: string;
           price_per_kg_eur: number;
           max_temperature_c?: number | null;
           time_per_layer_45_deg_seconds: number;
@@ -29,12 +29,81 @@ export interface Database {
         Update: {
           id?: string;
           name?: string;
-          manufacturer?: string;
-          category?: string;
+          manufacturer_id?: string;
+          category_id?: string;
           price_per_kg_eur?: number;
           max_temperature_c?: number | null;
           time_per_layer_45_deg_seconds?: number;
           notes?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'materials_category_id_fkey';
+            columns: ['category_id'];
+            isOneToOne: false;
+            referencedRelation: 'material_categories';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'materials_manufacturer_id_fkey';
+            columns: ['manufacturer_id'];
+            isOneToOne: false;
+            referencedRelation: 'material_manufacturers';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      material_categories: {
+        Row: {
+          id: string;
+          label: string;
+          normalized_key: string;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          label: string;
+          normalized_key: string;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          label?: string;
+          normalized_key?: string;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      material_manufacturers: {
+        Row: {
+          id: string;
+          label: string;
+          normalized_key: string;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          label: string;
+          normalized_key: string;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          label?: string;
+          normalized_key?: string;
+          is_active?: boolean;
           created_at?: string;
           updated_at?: string;
         };

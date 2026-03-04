@@ -1,4 +1,4 @@
-﻿import { getSupabaseClientOrThrow } from '@/lib/supabase/client';
+import { getSupabaseClientOrThrow } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/database.types';
 import type { Material, MaterialMutationInput } from '@/types/material';
 
@@ -6,19 +6,38 @@ const MATERIALS_TABLE = 'materials';
 const MATERIAL_COLUMNS = `
   id,
   name,
-  category,
-  manufacturer,
+  category_id,
+  manufacturer_id,
   price_per_kg_eur,
   max_temperature_c,
   time_per_layer_45_deg_seconds,
   notes,
   created_at,
-  updated_at
+  updated_at,
+  category_ref:material_categories!materials_category_id_fkey (
+    id,
+    label,
+    is_active
+  ),
+  manufacturer_ref:material_manufacturers!materials_manufacturer_id_fkey (
+    id,
+    label,
+    is_active
+  )
 `;
 
 type MaterialRow = Database['public']['Tables']['materials']['Row'];
 type MaterialInsert = Database['public']['Tables']['materials']['Insert'];
 type MaterialUpdate = Database['public']['Tables']['materials']['Update'];
+type MaterialRelationRow = {
+  id: string;
+  label: string;
+  is_active: boolean;
+};
+type MaterialRowWithRelations = MaterialRow & {
+  category_ref: MaterialRelationRow | null;
+  manufacturer_ref: MaterialRelationRow | null;
+};
 
 function asSupabaseErrorMessage(error: { message?: string; details?: string | null }) {
   const details = error.details?.trim();
@@ -29,12 +48,14 @@ function asSupabaseErrorMessage(error: { message?: string; details?: string | nu
   return error.message ?? 'Okänt databasfel';
 }
 
-function mapRowToMaterial(row: MaterialRow): Material {
+function mapRowToMaterial(row: MaterialRowWithRelations): Material {
   return {
     id: row.id,
+    categoryId: row.category_id,
+    manufacturerId: row.manufacturer_id,
     name: row.name,
-    category: row.category,
-    manufacturer: row.manufacturer,
+    category: row.category_ref?.label ?? 'Ej angiven',
+    manufacturer: row.manufacturer_ref?.label ?? 'Ej angiven',
     pricePerKgEur: row.price_per_kg_eur,
     maxTemperatureC: row.max_temperature_c,
     timePerLayer45DegSeconds: row.time_per_layer_45_deg_seconds,
@@ -47,8 +68,8 @@ function mapRowToMaterial(row: MaterialRow): Material {
 function mapMutationToInsert(input: MaterialMutationInput): MaterialInsert {
   return {
     name: input.name,
-    category: input.category,
-    manufacturer: input.manufacturer,
+    category_id: input.categoryId,
+    manufacturer_id: input.manufacturerId,
     price_per_kg_eur: input.pricePerKgEur,
     max_temperature_c: input.maxTemperatureC,
     time_per_layer_45_deg_seconds: input.timePerLayer45DegSeconds,
@@ -85,7 +106,7 @@ export async function listMaterials(): Promise<Material[]> {
     );
   }
 
-  return (data ?? []).map((row) => mapRowToMaterial(row as MaterialRow));
+  return (data ?? []).map((row) => mapRowToMaterial(row as MaterialRowWithRelations));
 }
 
 export async function getMaterialById(materialId: string): Promise<Material | null> {
@@ -104,7 +125,7 @@ export async function getMaterialById(materialId: string): Promise<Material | nu
     return null;
   }
 
-  return mapRowToMaterial(data as MaterialRow);
+  return mapRowToMaterial(data as MaterialRowWithRelations);
 }
 
 export async function createMaterial(input: MaterialMutationInput): Promise<Material> {
@@ -121,7 +142,7 @@ export async function createMaterial(input: MaterialMutationInput): Promise<Mate
     throw new Error(`Det gick inte att skapa materialet: ${asSupabaseErrorMessage(error)}`);
   }
 
-  return mapRowToMaterial(data as MaterialRow);
+  return mapRowToMaterial(data as MaterialRowWithRelations);
 }
 
 export async function updateMaterial(
@@ -142,7 +163,7 @@ export async function updateMaterial(
     throw new Error(`Det gick inte att uppdatera materialet: ${asSupabaseErrorMessage(error)}`);
   }
 
-  return mapRowToMaterial(data as MaterialRow);
+  return mapRowToMaterial(data as MaterialRowWithRelations);
 }
 
 export async function deleteMaterial(materialId: string): Promise<void> {

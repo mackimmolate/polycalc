@@ -50,7 +50,7 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 ## Versioning discipline
 
 - Follow Semantic Versioning.
-- Current active baseline is `0.4.0`; increment only for real delivered scope.
+- Current active baseline is `0.5.0`; increment only for real delivered scope.
 - Every versioned change must update `CHANGELOG.md`.
 - Document assumptions and deferred scope for each milestone.
 
@@ -69,6 +69,7 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 - Never commit service-role keys or other secrets.
 - Keep auth minimal unless explicitly expanded in scope.
 - Keep public read and authenticated write behavior explicit via RLS documentation.
+- Keep category/manufacturer option data Supabase-backed and shared (no browser-local source-of-truth model).
 - Document schema and RLS decisions in `docs/SUPABASE.md`.
 
 ## What to avoid
