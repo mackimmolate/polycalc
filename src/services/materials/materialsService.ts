@@ -14,12 +14,12 @@ const MATERIAL_COLUMNS = `
   notes,
   created_at,
   updated_at,
-  category_ref:material_categories!materials_category_id_fkey (
+  category_ref:material_categories (
     id,
     label,
     is_active
   ),
-  manufacturer_ref:material_manufacturers!materials_manufacturer_id_fkey (
+  manufacturer_ref:material_manufacturers (
     id,
     label,
     is_active
