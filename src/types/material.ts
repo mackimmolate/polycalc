@@ -7,7 +7,6 @@ export const defaultMaterialCategoryOptions = [
   'Nylon',
   'TPU',
   'Resin',
-  'Other',
 ] as const;
 
 export type MaterialCategory = string;

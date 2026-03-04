@@ -36,6 +36,7 @@ Run SQL files in Supabase SQL editor, in order:
 2. `supabase/sql/002_materials_rls.sql`
 3. `supabase/sql/003_material_calculations.sql`
 4. `supabase/sql/004_materials_custom_options.sql`
+5. `supabase/sql/005_materials_drop_legacy_option_checks.sql`
 
 Configure Supabase Auth URL settings:
 

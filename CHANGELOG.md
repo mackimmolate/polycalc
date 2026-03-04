@@ -4,6 +4,23 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.4.1] - 2026-03-04
+
+### Changed
+
+- Made material rows fully clickable with clearer inline expand/collapse affordance (removed separate row action button/column).
+- Added saved/read-only calculation mode after save; calculations now require explicit `Redigera` to become editable again.
+- Removed `Övrigt` from default category options in create/edit form.
+
+### Added
+
+- New SQL compatibility hotfix to remove legacy fixed-list constraints for manufacturer/category:
+  - `supabase/sql/005_materials_drop_legacy_option_checks.sql`
+
+### Fixed
+
+- Custom added category/tillverkare values can now be persisted after applying the compatibility SQL (avoids `materials_category_check` legacy constraint errors).
+
 ## [0.4.0] - 2026-03-04
 
 ### Added

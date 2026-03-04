@@ -7,7 +7,6 @@ const categoryLabels: Record<string, string> = {
   Nylon: 'Nylon',
   TPU: 'TPU',
   Resin: 'Resin',
-  Other: 'Övrigt',
 };
 
 export function getCategoryLabel(category: MaterialCategory) {

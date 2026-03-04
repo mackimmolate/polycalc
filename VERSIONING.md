@@ -4,7 +4,7 @@ PolyFlow uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 
 ## Current version
 
-- `0.4.0`
+- `0.4.1`
 
 ## Rules
 
@@ -34,3 +34,4 @@ PolyFlow uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 - `0.2.3`: Phase 1.3 compact row overview, EUR currency switch, and findability polish.
 - `0.3.0`: Phase 2 connected v1 baseline (Supabase CRUD, minimal auth for writes, calculator-aware detail view, sortable overview headers, and delete double-confirm flow).
 - `0.4.0`: Phase 2.1 inline expandable workspace with per-material multi-calculation CRUD and calculation-first overview workflow.
+- `0.4.1`: UX refinement for clickable row affordance + saved/read-only calculation mode, plus custom category/manufacturer schema-compatibility hotfix.
