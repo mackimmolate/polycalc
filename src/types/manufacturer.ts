@@ -7,4 +7,4 @@ export const manufacturerOptions = [
   'Prusament',
 ] as const;
 
-export type Manufacturer = (typeof manufacturerOptions)[number];
+export type Manufacturer = string;

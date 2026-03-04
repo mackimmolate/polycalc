@@ -35,6 +35,7 @@ Run SQL files in Supabase SQL editor, in order:
 1. `supabase/sql/001_materials_schema.sql`
 2. `supabase/sql/002_materials_rls.sql`
 3. `supabase/sql/003_material_calculations.sql`
+4. `supabase/sql/004_materials_custom_options.sql`
 
 Configure Supabase Auth URL settings:
 
@@ -60,3 +61,4 @@ npm run preview
 - `/auth` signs in with magic link.
 - Write actions are blocked when not signed in.
 - Material create/edit returns to overview and reopens target material inline.
+- Material create/edit can add custom tillverkare/kategori values directly from form controls.

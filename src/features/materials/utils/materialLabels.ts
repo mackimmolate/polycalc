@@ -1,6 +1,6 @@
-import type { MaterialCategory } from '@/types/material';
+﻿import type { MaterialCategory } from '@/types/material';
 
-const categoryLabels: Record<MaterialCategory, string> = {
+const categoryLabels: Record<string, string> = {
   PLA: 'PLA',
   PETG: 'PETG',
   ABS: 'ABS',
@@ -11,5 +11,10 @@ const categoryLabels: Record<MaterialCategory, string> = {
 };
 
 export function getCategoryLabel(category: MaterialCategory) {
-  return categoryLabels[category];
+  const normalized = category.trim();
+  if (normalized.length === 0) {
+    return 'Ej angiven';
+  }
+
+  return categoryLabels[normalized] ?? normalized;
 }

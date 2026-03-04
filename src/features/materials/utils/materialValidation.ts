@@ -1,4 +1,4 @@
-import type { Manufacturer } from '@/types/manufacturer';
+﻿import type { Manufacturer } from '@/types/manufacturer';
 import type { MaterialCategory, MaterialMutationInput } from '@/types/material';
 
 export interface MaterialFormValues {
@@ -34,8 +34,14 @@ export function validateMaterialForm(values: MaterialFormValues): {
     errors.name = 'Ange ett materialnamn med minst 2 tecken.';
   }
 
-  if (!values.manufacturer) {
-    errors.manufacturer = 'Välj en tillverkare.';
+  const manufacturer = values.manufacturer.trim();
+  if (manufacturer.length < 2) {
+    errors.manufacturer = 'Välj eller lägg till en tillverkare med minst 2 tecken.';
+  }
+
+  const category = values.category.trim();
+  if (category.length < 2) {
+    errors.category = 'Välj eller lägg till en kategori med minst 2 tecken.';
   }
 
   const price = parseNumber(values.pricePerKgEur);
@@ -64,8 +70,8 @@ export function validateMaterialForm(values: MaterialFormValues): {
   return {
     input: {
       name,
-      category: values.category,
-      manufacturer: values.manufacturer as Manufacturer,
+      category,
+      manufacturer,
       pricePerKgEur: Number(price),
       maxTemperatureC: maxTemperature === null ? null : Math.round(maxTemperature),
       timePerLayer45DegSeconds: Math.round(Number(timePerLayer)),

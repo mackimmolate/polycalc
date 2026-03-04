@@ -1,6 +1,16 @@
 import type { Manufacturer } from '@/types/manufacturer';
 
-export type MaterialCategory = 'PLA' | 'PETG' | 'ABS' | 'Nylon' | 'TPU' | 'Resin' | 'Other';
+export const defaultMaterialCategoryOptions = [
+  'PLA',
+  'PETG',
+  'ABS',
+  'Nylon',
+  'TPU',
+  'Resin',
+  'Other',
+] as const;
+
+export type MaterialCategory = string;
 
 export interface Material {
   id: string;

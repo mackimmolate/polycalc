@@ -18,6 +18,7 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials with an inlin
 - Manages multiple calculation scenarios per material (create, edit, remove).
 - Calculates material cost clearly from fixed and entered values.
 - Creates, edits, and deletes materials against Supabase.
+- Lets users add new manufacturer/category options directly from create/edit forms.
 
 ## Product model in v1
 
@@ -83,6 +84,7 @@ Run SQL files in Supabase SQL editor, in order:
 1. `supabase/sql/001_materials_schema.sql`
 2. `supabase/sql/002_materials_rls.sql`
 3. `supabase/sql/003_material_calculations.sql`
+4. `supabase/sql/004_materials_custom_options.sql`
 
 ### Run
 

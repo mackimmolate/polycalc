@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SurfaceCard } from '@/components/ui/SurfaceCard';
 import { getCategoryLabel } from '@/features/materials/utils/materialLabels';
@@ -7,8 +7,13 @@ import {
   type MaterialFormValues,
   validateMaterialForm,
 } from '@/features/materials/utils/materialValidation';
-import type { Material, MaterialCategory, MaterialMutationInput } from '@/types/material';
 import { manufacturerOptions, type Manufacturer } from '@/types/manufacturer';
+import {
+  defaultMaterialCategoryOptions,
+  type Material,
+  type MaterialCategory,
+  type MaterialMutationInput,
+} from '@/types/material';
 import { formatDurationSeconds } from '@/utils/duration';
 
 interface MaterialFormScaffoldProps {
@@ -19,20 +24,44 @@ interface MaterialFormScaffoldProps {
   onSubmit: (input: MaterialMutationInput) => Promise<void>;
 }
 
-const categoryOptions: MaterialCategory[] = [
-  'PLA',
-  'PETG',
-  'ABS',
-  'Nylon',
-  'TPU',
-  'Resin',
-  'Other',
-];
+function normalizeOptionValue(value: string) {
+  return value.trim().replace(/\s+/g, ' ');
+}
+
+function mergeUniqueOptions(options: string[]) {
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  options.forEach((option) => {
+    const normalized = normalizeOptionValue(option);
+    if (normalized.length === 0) {
+      return;
+    }
+
+    const key = normalized.toLocaleLowerCase('sv-SE');
+    if (seen.has(key)) {
+      return;
+    }
+
+    seen.add(key);
+    result.push(normalized);
+  });
+
+  return result;
+}
+
+function resolveExistingOption(options: string[], rawValue: string) {
+  const normalized = normalizeOptionValue(rawValue);
+  const key = normalized.toLocaleLowerCase('sv-SE');
+  const existing = options.find((option) => option.toLocaleLowerCase('sv-SE') === key);
+
+  return existing ?? normalized;
+}
 
 function toFormValues(material?: Material): MaterialFormValues {
   return {
     name: material?.name ?? '',
-    category: material?.category ?? 'PLA',
+    category: material?.category ?? defaultMaterialCategoryOptions[0],
     manufacturer: material?.manufacturer ?? '',
     pricePerKgEur: material ? material.pricePerKgEur.toString() : '',
     maxTemperatureC: material?.maxTemperatureC?.toString() ?? '',
@@ -61,6 +90,17 @@ export function MaterialFormScaffold({
   );
   const [fieldErrors, setFieldErrors] = useState<MaterialFormErrors>({});
 
+  const [customManufacturers, setCustomManufacturers] = useState<string[]>([]);
+  const [customCategories, setCustomCategories] = useState<string[]>([]);
+
+  const [showAddManufacturer, setShowAddManufacturer] = useState(false);
+  const [manufacturerDraft, setManufacturerDraft] = useState('');
+  const [manufacturerDraftError, setManufacturerDraftError] = useState<string | null>(null);
+
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [categoryDraft, setCategoryDraft] = useState('');
+  const [categoryDraftError, setCategoryDraftError] = useState<string | null>(null);
+
   const parsedLayerDuration = useMemo(() => {
     const numeric = Number(formValues.timePerLayer45DegSeconds.replace(',', '.'));
     if (!Number.isFinite(numeric) || numeric <= 0) {
@@ -69,6 +109,60 @@ export function MaterialFormScaffold({
 
     return formatDurationSeconds(Math.round(numeric));
   }, [formValues.timePerLayer45DegSeconds]);
+
+  const manufacturerSelectOptions = useMemo(
+    () =>
+      mergeUniqueOptions([...manufacturerOptions, ...customManufacturers, formValues.manufacturer]),
+    [customManufacturers, formValues.manufacturer],
+  );
+
+  const categorySelectOptions = useMemo(
+    () =>
+      mergeUniqueOptions([
+        ...defaultMaterialCategoryOptions,
+        ...customCategories,
+        formValues.category,
+      ]),
+    [customCategories, formValues.category],
+  );
+
+  const addManufacturer = () => {
+    const normalized = normalizeOptionValue(manufacturerDraft);
+    if (normalized.length < 2) {
+      setManufacturerDraftError('Ange minst 2 tecken för tillverkare.');
+      return;
+    }
+
+    const resolved = resolveExistingOption(manufacturerSelectOptions, normalized);
+    if (!manufacturerSelectOptions.includes(resolved)) {
+      setCustomManufacturers((current) => mergeUniqueOptions([...current, resolved]));
+    }
+
+    setFormValues((current) => ({ ...current, manufacturer: resolved as Manufacturer }));
+    setFieldErrors((current) => ({ ...current, manufacturer: undefined }));
+    setManufacturerDraft('');
+    setManufacturerDraftError(null);
+    setShowAddManufacturer(false);
+  };
+
+  const addCategory = () => {
+    const normalized = normalizeOptionValue(categoryDraft);
+    if (normalized.length < 2) {
+      setCategoryDraftError('Ange minst 2 tecken för kategori.');
+      return;
+    }
+
+    const resolved = resolveExistingOption(categorySelectOptions, normalized);
+    if (!categorySelectOptions.includes(resolved)) {
+      setCustomCategories((current) => mergeUniqueOptions([...current, resolved]));
+    }
+
+    setFormValues((current) => ({ ...current, category: resolved as MaterialCategory }));
+    setFieldErrors((current) => ({ ...current, category: undefined }));
+    setCategoryDraft('');
+    setCategoryDraftError(null);
+    setShowAddCategory(false);
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -99,47 +193,150 @@ export function MaterialFormScaffold({
           <FieldError error={fieldErrors.name} />
         </label>
 
-        <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Kategori</span>
-          <select
-            value={formValues.category}
-            onChange={(event) =>
-              setFormValues((current) => ({
-                ...current,
-                category: event.target.value as MaterialCategory,
-              }))
-            }
-            className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-          >
-            {categoryOptions.map((category) => (
-              <option key={category} value={category}>
-                {getCategoryLabel(category)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="space-y-1 text-sm">
+          <label className="space-y-1 text-sm">
+            <span className="font-semibold text-[var(--ink)]">Kategori</span>
+            <select
+              value={formValues.category}
+              onChange={(event) =>
+                setFormValues((current) => ({
+                  ...current,
+                  category: event.target.value as MaterialCategory,
+                }))
+              }
+              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
+            >
+              {categorySelectOptions.map((category) => (
+                <option key={category} value={category}>
+                  {getCategoryLabel(category)}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Tillverkare</span>
-          <select
-            value={formValues.manufacturer}
-            onChange={(event) =>
-              setFormValues((current) => ({
-                ...current,
-                manufacturer: event.target.value as Manufacturer | '',
-              }))
-            }
-            className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
+          <button
+            type="button"
+            onClick={() => {
+              setShowAddCategory((current) => !current);
+              setCategoryDraftError(null);
+            }}
+            className="text-xs font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
           >
-            <option value="">Välj tillverkare</option>
-            {manufacturerOptions.map((manufacturer) => (
-              <option key={manufacturer} value={manufacturer}>
-                {manufacturer}
-              </option>
-            ))}
-          </select>
+            + Lägg till ny kategori
+          </button>
+
+          {showAddCategory ? (
+            <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+              <input
+                value={categoryDraft}
+                onChange={(event) => {
+                  setCategoryDraft(event.target.value);
+                  setCategoryDraftError(null);
+                }}
+                className="w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
+                placeholder="t.ex. PC Blend"
+              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={addCategory}
+                  className="rounded-full border border-[var(--accent)] bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-teal-700"
+                >
+                  Lägg till
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddCategory(false);
+                    setCategoryDraft('');
+                    setCategoryDraftError(null);
+                  }}
+                  className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:bg-[var(--surface)]"
+                >
+                  Avbryt
+                </button>
+              </div>
+              {categoryDraftError ? (
+                <p className="text-xs font-medium text-red-700">{categoryDraftError}</p>
+              ) : null}
+            </div>
+          ) : null}
+
+          <FieldError error={fieldErrors.category} />
+        </div>
+
+        <div className="space-y-1 text-sm">
+          <label className="space-y-1 text-sm">
+            <span className="font-semibold text-[var(--ink)]">Tillverkare</span>
+            <select
+              value={formValues.manufacturer}
+              onChange={(event) =>
+                setFormValues((current) => ({
+                  ...current,
+                  manufacturer: event.target.value as Manufacturer | '',
+                }))
+              }
+              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
+            >
+              <option value="">Välj tillverkare</option>
+              {manufacturerSelectOptions.map((manufacturer) => (
+                <option key={manufacturer} value={manufacturer}>
+                  {manufacturer}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button
+            type="button"
+            onClick={() => {
+              setShowAddManufacturer((current) => !current);
+              setManufacturerDraftError(null);
+            }}
+            className="text-xs font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
+          >
+            + Lägg till ny tillverkare
+          </button>
+
+          {showAddManufacturer ? (
+            <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-3">
+              <input
+                value={manufacturerDraft}
+                onChange={(event) => {
+                  setManufacturerDraft(event.target.value);
+                  setManufacturerDraftError(null);
+                }}
+                className="w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
+                placeholder="t.ex. FormFutura"
+              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={addManufacturer}
+                  className="rounded-full border border-[var(--accent)] bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-teal-700"
+                >
+                  Lägg till
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddManufacturer(false);
+                    setManufacturerDraft('');
+                    setManufacturerDraftError(null);
+                  }}
+                  className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:bg-[var(--surface)]"
+                >
+                  Avbryt
+                </button>
+              </div>
+              {manufacturerDraftError ? (
+                <p className="text-xs font-medium text-red-700">{manufacturerDraftError}</p>
+              ) : null}
+            </div>
+          ) : null}
+
           <FieldError error={fieldErrors.manufacturer} />
-        </label>
+        </div>
 
         <label className="space-y-1 text-sm">
           <span className="font-semibold text-[var(--ink)]">Pris per kg (EUR)</span>

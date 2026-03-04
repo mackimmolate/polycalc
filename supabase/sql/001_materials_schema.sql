@@ -1,4 +1,4 @@
--- PolyFlow v1: material library + simple calculator model
+﻿-- PolyFlow v1: material library + simple calculator model
 -- This schema stores fixed material values.
 -- User-entered calculation inputs (kg material, printtid) are not persisted in v1.
 
@@ -7,10 +7,8 @@ create extension if not exists pgcrypto;
 create table if not exists public.materials (
   id uuid primary key default gen_random_uuid(),
   name text not null check (char_length(trim(name)) >= 2),
-  manufacturer text not null check (
-    manufacturer in ('SUNLU', 'Bambu Lab', 'Polymaker', 'eSUN', 'Siraya Tech', 'Prusament')
-  ),
-  category text not null check (category in ('PLA', 'PETG', 'ABS', 'Nylon', 'TPU', 'Resin', 'Other')),
+  manufacturer text not null check (char_length(trim(manufacturer)) >= 2),
+  category text not null check (char_length(trim(category)) >= 2),
   price_per_kg_eur numeric(10, 2) not null check (price_per_kg_eur >= 0),
   max_temperature_c integer check (max_temperature_c is null or max_temperature_c >= 0),
   time_per_layer_45_deg_seconds integer not null check (time_per_layer_45_deg_seconds > 0),

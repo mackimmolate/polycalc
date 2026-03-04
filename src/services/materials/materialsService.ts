@@ -1,8 +1,6 @@
 ﻿import { getSupabaseClientOrThrow } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/database.types';
-import { manufacturerOptions } from '@/types/manufacturer';
-import type { Manufacturer } from '@/types/manufacturer';
-import type { Material, MaterialCategory, MaterialMutationInput } from '@/types/material';
+import type { Material, MaterialMutationInput } from '@/types/material';
 
 const MATERIALS_TABLE = 'materials';
 const MATERIAL_COLUMNS = `
@@ -18,7 +16,6 @@ const MATERIAL_COLUMNS = `
   updated_at
 `;
 
-const categoryValues: MaterialCategory[] = ['PLA', 'PETG', 'ABS', 'Nylon', 'TPU', 'Resin', 'Other'];
 type MaterialRow = Database['public']['Tables']['materials']['Row'];
 type MaterialInsert = Database['public']['Tables']['materials']['Insert'];
 type MaterialUpdate = Database['public']['Tables']['materials']['Update'];
@@ -32,28 +29,12 @@ function asSupabaseErrorMessage(error: { message?: string; details?: string | nu
   return error.message ?? 'Okänt databasfel';
 }
 
-function asCategory(value: string): MaterialCategory {
-  if (categoryValues.includes(value as MaterialCategory)) {
-    return value as MaterialCategory;
-  }
-
-  throw new Error(`Ogiltig kategori i databasen: ${value}`);
-}
-
-function asManufacturer(value: string): Manufacturer {
-  if (manufacturerOptions.includes(value as Manufacturer)) {
-    return value as Manufacturer;
-  }
-
-  throw new Error(`Ogiltig tillverkare i databasen: ${value}`);
-}
-
 function mapRowToMaterial(row: MaterialRow): Material {
   return {
     id: row.id,
     name: row.name,
-    category: asCategory(row.category),
-    manufacturer: asManufacturer(row.manufacturer),
+    category: row.category,
+    manufacturer: row.manufacturer,
     pricePerKgEur: row.price_per_kg_eur,
     maxTemperatureC: row.max_temperature_c,
     timePerLayer45DegSeconds: row.time_per_layer_45_deg_seconds,

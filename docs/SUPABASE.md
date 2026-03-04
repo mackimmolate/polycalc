@@ -26,6 +26,7 @@ Apply in this order:
 1. `supabase/sql/001_materials_schema.sql`
 2. `supabase/sql/002_materials_rls.sql`
 3. `supabase/sql/003_material_calculations.sql`
+4. `supabase/sql/004_materials_custom_options.sql`
 
 ## Table model
 
@@ -33,8 +34,8 @@ Apply in this order:
 
 - `id` (`uuid`, PK)
 - `name` (`text`, required)
-- `manufacturer` (`text`, required, canonical check)
-- `category` (`text`, required, canonical check)
+- `manufacturer` (`text`, required)
+- `category` (`text`, required)
 - `price_per_kg_eur` (`numeric(10,2)`, required, `>= 0`)
 - `max_temperature_c` (`integer`, nullable, `>= 0`)
 - `time_per_layer_45_deg_seconds` (`integer`, required, `> 0`)
@@ -54,6 +55,7 @@ Notes:
 
 - Calculated output values (for example material cost) are derived in UI, not stored.
 - One material can have many calculation records.
+- Manufacturer and category now allow custom non-empty values so users can extend lists from the UI.
 
 ## RLS policy model (v1)
 
