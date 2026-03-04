@@ -5,7 +5,7 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 ## Product principles
 
 - Build a clean, modern, minimal PWA for managing 3D printing materials.
-- Treat PolyFlow as `material library + simple material calculator` in v1.
+- Treat PolyFlow as `material library + inline multi-scenario calculator` in v1.
 - Optimize for clarity, speed, low cognitive load, and maintainability.
 - Prefer simple architecture and strong defaults over clever abstractions.
 - Document intentional deferrals explicitly.
@@ -26,7 +26,7 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 - Prefer readable, explicit code over compact tricks.
 - Use small pure utility functions where they improve clarity.
 - Add concise comments only where logic is non-obvious.
-- Keep naming domain-oriented (`material`, `pricePerKgEur`, `timePerLayer45DegSeconds`, etc.).
+- Keep naming domain-oriented (`material`, `materialCalculation`, `pricePerKgEur`, `timePerLayer45DegSeconds`, etc.).
 - Use ESLint + Prettier as required quality gates.
 
 ## UI and UX expectations
@@ -34,9 +34,11 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 - Prioritize scanability and clear visual hierarchy.
 - Keep materials overview compact and comparison-friendly.
 - Keep one primary search control in overview and sortable column headers for sorting.
+- Make inline expandable rows the primary workflow surface.
+- Support multiple calculations directly within an expanded material workspace.
 - Ship mobile-friendly and desktop-friendly layouts from the start.
 - Include loading, empty, error, auth-required, and not-found states as first-class UX.
-- Keep destructive actions explicit and safe (delete uses double confirmation in v1).
+- Keep destructive actions explicit and safe (material delete uses double confirmation in v1).
 
 ## Documentation expectations
 
@@ -48,7 +50,7 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 ## Versioning discipline
 
 - Follow Semantic Versioning.
-- Current active baseline is `0.3.0`; increment only for real delivered scope.
+- Current active baseline is `0.4.0`; increment only for real delivered scope.
 - Every versioned change must update `CHANGELOG.md`.
 - Document assumptions and deferred scope for each milestone.
 

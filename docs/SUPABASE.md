@@ -2,9 +2,11 @@
 
 ## Current state
 
-- Supabase is the active backend for PolyFlow Phase 2.
+- Supabase is the active backend for PolyFlow Phase 2.1.
 - Frontend client is defined in `src/lib/supabase/client.ts`.
-- Runtime CRUD is implemented in `src/services/materials/materialsService.ts`.
+- Runtime CRUD modules:
+  - `src/services/materials/materialsService.ts`
+  - `src/services/material-calculations/materialCalculationsService.ts`
 
 ## Environment variables
 
@@ -23,39 +25,47 @@ Apply in this order:
 
 1. `supabase/sql/001_materials_schema.sql`
 2. `supabase/sql/002_materials_rls.sql`
+3. `supabase/sql/003_material_calculations.sql`
 
-## v1 table model
+## Table model
 
-Table: `public.materials`
+### `public.materials` (fixed material values)
 
-Columns:
-
-- `id` (`uuid`, PK, default `gen_random_uuid()`)
+- `id` (`uuid`, PK)
 - `name` (`text`, required)
-- `manufacturer` (`text`, required, canonical check constraint)
-- `category` (`text`, required, canonical check constraint)
+- `manufacturer` (`text`, required, canonical check)
+- `category` (`text`, required, canonical check)
 - `price_per_kg_eur` (`numeric(10,2)`, required, `>= 0`)
 - `max_temperature_c` (`integer`, nullable, `>= 0`)
 - `time_per_layer_45_deg_seconds` (`integer`, required, `> 0`)
 - `notes` (`text`, required, default `''`)
-- `created_at` (`timestamptz`, default UTC now)
-- `updated_at` (`timestamptz`, default UTC now, auto-updated by trigger)
+- `created_at`, `updated_at`
+
+### `public.material_calculations` (entered scenario values)
+
+- `id` (`uuid`, PK)
+- `material_id` (`uuid`, FK -> `materials.id`, `on delete cascade`)
+- `label` (`text`, default `''`)
+- `kg_material` (`numeric(10,3)`, required, `>= 0`)
+- `print_time_hours` (`numeric(10,2)`, required, `>= 0`)
+- `created_at`, `updated_at`
 
 Notes:
 
-- v1 uses one material name field (`name`), no dual-name model.
-- Calculator input values are user-entered in UI and not persisted.
+- Calculated output values (for example material cost) are derived in UI, not stored.
+- One material can have many calculation records.
 
 ## RLS policy model (v1)
 
-- RLS enabled on `public.materials`.
+For both `materials` and `material_calculations`:
+
 - Public read allowed (`select` policy).
 - `insert`, `update`, `delete` allowed for `authenticated` role only.
 
 This matches frontend behavior:
 
 - unauthenticated users can browse/search/sort/read.
-- authenticated users can create/edit/delete.
+- authenticated users can create/edit/delete materials and calculations.
 
 ## Auth approach
 
@@ -70,9 +80,9 @@ Required Supabase Auth URL setup:
 
 ## Delete behavior
 
-- v1 destructive action is hard delete.
-- Archive behavior is intentionally deferred.
-- UI enforces double confirmation before delete request.
+- Material destructive action is hard delete with double confirmation.
+- Deleting a material cascades related calculations (`material_id` FK with cascade).
+- Calculation rows can be removed individually.
 
 ## Deferred items
 

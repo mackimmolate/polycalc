@@ -4,6 +4,32 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.4.0] - 2026-03-04
+
+### Added
+
+- Inline expandable material workspace directly in overview rows.
+- Multi-calculation support per material with Supabase-backed CRUD.
+- New Supabase schema asset for calculation records:
+  - `supabase/sql/003_material_calculations.sql`
+- Dedicated calculation service module:
+  - `src/services/material-calculations/materialCalculationsService.ts`
+- Expanded material panel with fixed reference values plus calculation workspace.
+
+### Changed
+
+- Overview workflow is now primary; separate detail page is no longer the primary interaction path.
+- Material rows now include inline expand/collapse controls and fixed-value summary fields including time-per-layer.
+- Create/edit material flows now return users to overview and reopen the affected material inline.
+- Sorting supports `timePerLayer45DegSeconds` in addition to existing sortable fields.
+- Supabase database typings now include `material_calculations` relation.
+
+### Deferred
+
+- Export functionality.
+- Advanced role/permission model beyond authenticated writes.
+- Offline data mutations and offline sync.
+
 ## [0.3.0] - 2026-03-03
 
 ### Added

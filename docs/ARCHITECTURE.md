@@ -2,14 +2,14 @@
 
 ## Current state
 
-- Phase 2 connected baseline is implemented.
-- Runtime data is Supabase-backed for list/detail/create/edit/delete.
-- PolyFlow v1 is implemented as material library plus a simple per-material calculator.
+- Phase 2.1 inline workflow is implemented.
+- Runtime data is Supabase-backed for materials and related calculation records.
+- PolyFlow v1 is implemented as material library plus inline multi-calculation workspace.
 
 ## Guiding principles
 
 - Keep v1 simple, clear, and maintainable.
-- Keep model boundaries explicit: fixed values vs user input vs calculated output.
+- Keep model boundaries explicit: fixed values vs entered scenario values vs calculated output.
 - Use explicit module boundaries over clever abstractions.
 - Keep GitHub Pages deployment compatibility first-class.
 
@@ -39,6 +39,7 @@ src/
   hooks/
   services/
     materials/
+    material-calculations/
   api/
   lib/
     supabase/
@@ -49,14 +50,15 @@ src/
 
 ## Runtime flow
 
-1. Pages call `services/materials/materialsService.ts`.
-2. Service module executes Supabase reads/writes.
-3. Service maps DB rows to typed domain model (`Material`).
-4. UI components/pages render explicit loading, empty, error, and auth-required states.
+1. `MaterialsListPage` loads materials and renders compact sortable rows.
+2. One row can be expanded inline to open a material workspace.
+3. Expanded workspace shows fixed material values and per-material calculations.
+4. Calculation CRUD calls `services/material-calculations/materialCalculationsService.ts`.
+5. Material CRUD calls `services/materials/materialsService.ts`.
 
-## Material model (v1)
+## Data model boundaries
 
-### Fixed values (persisted)
+### Fixed values (persisted on `materials`)
 
 - `name`
 - `manufacturer`
@@ -65,30 +67,29 @@ src/
 - `maxTemperatureC`
 - `timePerLayer45DegSeconds`
 - `notes`
-- `createdAt`
-- `updatedAt`
 
-### User-entered calculator values (not persisted)
+### Entered scenario values (persisted on `material_calculations`)
 
+- `label`
 - `kgMaterial`
-- `printHours`
+- `printTimeHours`
 
-### Calculated values
+### Calculated values (derived in UI)
 
 - `materialCostEur = pricePerKgEur * kgMaterial`
 
 ## Routing strategy
 
-- Router: `createHashRouter` in `src/app/router.tsx`
+- Router: `createHashRouter` in `src/app/router.tsx`.
 - Reason: stable behavior on GitHub Pages without rewrite rules.
 
 Routes:
 
 - `/` -> redirect to `/materials`
-- `/materials` -> overview
-- `/materials/new` -> create
-- `/materials/:materialId` -> detail + calculator
-- `/materials/:materialId/edit` -> edit
+- `/materials` -> primary inline workspace
+- `/materials/new` -> create material
+- `/materials/:materialId/edit` -> edit material
+- `/materials/:materialId` -> compatibility route that redirects back to inline workspace
 - `/auth` -> magic-link sign-in
 - `*` -> not found
 
@@ -96,20 +97,21 @@ Routes:
 
 - One visible search field.
 - Sorting via clickable column headers.
-- Compact row-based overview for quick side-by-side scanning.
-- Row click opens deeper detail view.
+- Compact row-based overview for fast scanning and comparison.
+- Expand/collapse inline workspace under each material row.
+- One expanded material at a time by default.
 
 ## Auth and security model
 
 - Supabase auth: magic link.
-- Reads are public (RLS select policy).
-- Writes require authenticated session (RLS insert/update/delete policies + frontend guard).
+- Reads are public via RLS (`materials` and `material_calculations`).
+- Writes require authenticated session (insert/update/delete policies + frontend guards).
 - No role system in v1.
 
 ## Delete behavior
 
-- Primary destructive action in v1 is hard delete.
-- UI requires double confirmation before delete API call.
+- Material destructive action in v1 is hard delete with double confirmation.
+- Calculation rows use simpler remove action with explicit user trigger.
 - Archive is not part of active v1 destructive flow.
 
 ## PWA baseline

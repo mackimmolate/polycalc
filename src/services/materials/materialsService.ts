@@ -29,7 +29,7 @@ function asSupabaseErrorMessage(error: { message?: string; details?: string | nu
     return `${error.message} (${details})`;
   }
 
-  return error.message ?? 'Okant databasfel';
+  return error.message ?? 'Okänt databasfel';
 }
 
 function asCategory(value: string): MaterialCategory {
@@ -87,7 +87,7 @@ async function requireWriteSession() {
   }
 
   if (!data.session) {
-    throw new Error('Du maste vara inloggad for att andra material.');
+    throw new Error('Du måste vara inloggad för att ändra material.');
   }
 }
 
@@ -99,7 +99,9 @@ export async function listMaterials(): Promise<Material[]> {
     .order('name', { ascending: true });
 
   if (error) {
-    throw new Error(`Det gick inte att lasa material fran databasen: ${asSupabaseErrorMessage(error)}`);
+    throw new Error(
+      `Det gick inte att läsa material från databasen: ${asSupabaseErrorMessage(error)}`,
+    );
   }
 
   return (data ?? []).map((row) => mapRowToMaterial(row as MaterialRow));
@@ -114,7 +116,7 @@ export async function getMaterialById(materialId: string): Promise<Material | nu
     .maybeSingle();
 
   if (error) {
-    throw new Error(`Det gick inte att lasa materialdetaljer: ${asSupabaseErrorMessage(error)}`);
+    throw new Error(`Det gick inte att läsa materialdetaljer: ${asSupabaseErrorMessage(error)}`);
   }
 
   if (!data) {

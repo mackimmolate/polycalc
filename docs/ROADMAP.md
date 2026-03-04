@@ -27,16 +27,21 @@
 - Minimal auth (magic link) for write operations
 - RLS baseline: public read + authenticated write
 - Overview model finalized (search + sortable headers)
-- Calculation-aware material detail view
 - Delete flow with double confirmation
-- SQL setup assets for manual Supabase provisioning
+
+## Phase 2.1 (completed): Inline expandable workspace and multi-calculation model
+
+- Main workflow moved to expandable rows in `/materials`
+- Inline fixed-value panel per material
+- Multiple persisted calculations per material (`material_calculations`)
+- Calculation CRUD directly in expanded row workspace
+- Detail route reduced to compatibility redirect
 
 ## Phase 3 (next): Hardening and release readiness
 
-- Add automated tests for critical flows (services + key UI states)
+- Add automated tests for critical flows (material + calculation services and key UI states)
 - Improve error observability and user-facing diagnostics
-- Refine calculator UX with clearer unit hints and guardrails
-- Optional pagination/virtualization strategy for larger datasets
+- Optimize performance for larger material/calculation datasets
 - Final production checklist before `1.0.0`
 
 ## Deferred scope (v1)

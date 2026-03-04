@@ -2,9 +2,9 @@
 
 ## Current state
 
-- Phase 2 connected runtime is implemented.
-- Materials data is loaded from Supabase.
-- Create/edit/delete require authenticated session.
+- Phase 2.1 inline runtime is implemented.
+- Materials and per-material calculations are loaded from Supabase.
+- Material and calculation writes require authenticated session.
 
 ## Prerequisites
 
@@ -34,6 +34,7 @@ Run SQL files in Supabase SQL editor, in order:
 
 1. `supabase/sql/001_materials_schema.sql`
 2. `supabase/sql/002_materials_rls.sql`
+3. `supabase/sql/003_material_calculations.sql`
 
 Configure Supabase Auth URL settings:
 
@@ -54,7 +55,8 @@ npm run preview
 
 ## Connected behavior checklist
 
-- `/materials` loads data from Supabase.
+- `/materials` loads materials from Supabase.
+- Expanding a material row loads related calculations from Supabase.
 - `/auth` signs in with magic link.
-- Create/edit/delete are blocked when not signed in.
-- Detail page calculator computes material cost from user-entered kg.
+- Write actions are blocked when not signed in.
+- Material create/edit returns to overview and reopens target material inline.

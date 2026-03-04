@@ -1,42 +1,45 @@
 ﻿# PolyFlow
 
-PolyFlow is a clean, modern PWA for managing 3D printing materials with a built-in lightweight material calculator.
+PolyFlow is a clean, modern PWA for managing 3D printing materials with an inline calculation workspace.
 
 ## Current status
 
-- Version: `0.3.0`
-- Phase 2 completed: Supabase-backed materials with list/detail/create/edit/delete, minimal auth, and calculation-aware detail view.
-- Swedish UI, compact row-based overview, and GitHub Pages deployment workflow are active.
+- Version: `0.4.0`
+- Phase 2.1 completed: inline expandable material workflow with multiple calculations per material.
+- Supabase-backed runtime is active for materials and calculation records.
+- Swedish UI, compact row overview, and GitHub Pages deployment workflow are active.
 
 ## What PolyFlow does in v1
 
-- Browses and compares materials in a compact row overview.
-- Searches materials from one search field.
-- Sorts materials via clickable column headers.
-- Opens a material detail view with fixed reference values and calculator inputs.
+- Browses and compares materials in a compact sortable overview.
+- Uses one main search field for fast filtering.
+- Expands one material inline to open a workspace directly under the row.
+- Shows fixed material/reference values in the expanded panel.
+- Manages multiple calculation scenarios per material (create, edit, remove).
+- Calculates material cost clearly from fixed and entered values.
 - Creates, edits, and deletes materials against Supabase.
-- Protects write operations behind minimal authentication (magic link).
 
 ## Product model in v1
 
-PolyFlow distinguishes three value types:
+PolyFlow separates three value types:
 
-1. Fixed material values (stored in Supabase)
+1. Fixed material values (persisted on `materials`)
 
 - material name
 - manufacturer
 - category
 - price per kg (EUR)
-- max temperature (deg C)
-- time per layer at 45 deg (seconds)
+- max temperature (°C)
+- time per layer at 45° (seconds)
 - notes
 
-2. User-entered calculator inputs (not persisted)
+2. User-entered calculation values (persisted per scenario on `material_calculations`)
 
 - kg material
 - print time in hours
+- optional calculation label
 
-3. Calculated values
+3. Calculated values (derived in UI)
 
 - material cost in EUR (`price_per_kg_eur * kg_material`)
 
@@ -79,6 +82,7 @@ Run SQL files in Supabase SQL editor, in order:
 
 1. `supabase/sql/001_materials_schema.sql`
 2. `supabase/sql/002_materials_rls.sql`
+3. `supabase/sql/003_material_calculations.sql`
 
 ### Run
 
@@ -96,7 +100,7 @@ npm run build
 ## Auth in v1
 
 - Sign-in uses Supabase magic link (`/auth`).
-- Read access (list/detail) is public via RLS policy.
+- Read access for materials and calculations is public via RLS policies.
 - Write access (create/edit/delete) requires an authenticated session.
 
 ## Deployment (GitHub Pages)

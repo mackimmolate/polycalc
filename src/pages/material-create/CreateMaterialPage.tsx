@@ -18,9 +18,12 @@ export function CreateMaterialPage() {
     setServerError(null);
     try {
       const created = await createMaterial(input);
-      navigate(`/materials/${created.id}`, {
+      navigate('/materials', {
         replace: true,
-        state: { successMessage: 'Materialet skapades.' },
+        state: {
+          successMessage: 'Materialet skapades.',
+          expandMaterialId: created.id,
+        },
       });
     } catch (caughtError) {
       setServerError(

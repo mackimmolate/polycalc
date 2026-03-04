@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useAuth } from '@/app/providers/useAuth';
 import { PageHeading } from '@/components/ui/PageHeading';
 import { SurfaceCard } from '@/components/ui/SurfaceCard';
 import { MaterialList } from '@/features/materials/components/MaterialList';
@@ -14,17 +15,30 @@ import type { Material } from '@/types/material';
 
 interface NavigationState {
   successMessage?: string;
+  expandMaterialId?: string;
 }
 
 export function MaterialsListPage() {
   const location = useLocation();
+  const { user } = useAuth();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sort, setSort] = useState<MaterialSort>({ field: 'name', direction: 'asc' });
+  const [expandedMaterialId, setExpandedMaterialId] = useState<string | null>(null);
+  const [flashMessage, setFlashMessage] = useState<string | null>(null);
 
-  const successMessage = (location.state as NavigationState | null)?.successMessage ?? null;
+  useEffect(() => {
+    const state = (location.state as NavigationState | null) ?? null;
+    if (state?.successMessage) {
+      setFlashMessage(state.successMessage);
+    }
+
+    if (state?.expandMaterialId) {
+      setExpandedMaterialId(state.expandMaterialId);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     let isMounted = true;
@@ -60,6 +74,16 @@ export function MaterialsListPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!expandedMaterialId) {
+      return;
+    }
+
+    if (!materials.some((material) => material.id === expandedMaterialId)) {
+      setExpandedMaterialId(null);
+    }
+  }, [expandedMaterialId, materials]);
+
   const filteredMaterials = useMemo(
     () =>
       queryMaterials(materials, {
@@ -81,11 +105,21 @@ export function MaterialsListPage() {
     });
   };
 
+  const onToggleExpand = (materialId: string) => {
+    setExpandedMaterialId((current) => (current === materialId ? null : materialId));
+  };
+
+  const onMaterialDeleted = (materialId: string, successMessage: string) => {
+    setMaterials((current) => current.filter((material) => material.id !== materialId));
+    setExpandedMaterialId((current) => (current === materialId ? null : current));
+    setFlashMessage(successMessage);
+  };
+
   return (
     <div className="space-y-6">
       <PageHeading
         title="Material"
-        description="Sök snabbt och sortera direkt i rubrikerna för att hitta rätt material för jobbet."
+        description="Sök, sortera och öppna en arbetsyta direkt i listan för att hantera flera kalkyler per material."
       />
 
       <SurfaceCard className="space-y-3">
@@ -105,9 +139,9 @@ export function MaterialsListPage() {
         </p>
       </SurfaceCard>
 
-      {successMessage ? (
+      {flashMessage ? (
         <SurfaceCard>
-          <p className="text-sm font-semibold text-emerald-700">{successMessage}</p>
+          <p className="text-sm font-semibold text-emerald-700">{flashMessage}</p>
         </SurfaceCard>
       ) : null}
 
@@ -136,7 +170,15 @@ export function MaterialsListPage() {
       ) : null}
 
       {!loading && !error && filteredMaterials.length > 0 ? (
-        <MaterialList materials={filteredMaterials} sort={sort} onSortChange={onSortChange} />
+        <MaterialList
+          materials={filteredMaterials}
+          sort={sort}
+          expandedMaterialId={expandedMaterialId}
+          canWrite={Boolean(user)}
+          onSortChange={onSortChange}
+          onToggleExpand={onToggleExpand}
+          onMaterialDeleted={onMaterialDeleted}
+        />
       ) : null}
     </div>
   );

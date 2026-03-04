@@ -64,9 +64,12 @@ export function EditMaterialPage() {
     setServerError(null);
     try {
       const updated = await updateMaterial(materialId, input);
-      navigate(`/materials/${updated.id}`, {
+      navigate('/materials', {
         replace: true,
-        state: { successMessage: 'Materialet uppdaterades.' },
+        state: {
+          successMessage: 'Materialet uppdaterades.',
+          expandMaterialId: updated.id,
+        },
       });
     } catch (caughtError) {
       setServerError(

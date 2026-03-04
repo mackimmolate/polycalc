@@ -69,7 +69,7 @@ This file records key product and engineering decisions.
 
 - Date: 2026-03-03
 - Status: Accepted
-- Decision: Replace preview runtime data with real Supabase CRUD behind `services/materials/materialsService.ts`.
+- Decision: Replace preview runtime data with real Supabase CRUD behind services.
 - Reason: Keeps API access centralized and maintainable.
 
 ## D-0011: Minimal auth model for safe writes
@@ -92,3 +92,31 @@ This file records key product and engineering decisions.
 - Status: Accepted
 - Decision: Store `time_per_layer_45_deg_seconds` as integer and render human-friendly format in UI.
 - Reason: Stronger typing and cleaner calculations than free-text duration values.
+
+## D-0014: Inline expandable workspace is the primary interaction model
+
+- Date: 2026-03-04
+- Status: Accepted
+- Decision: Use inline row expansion in `/materials` as the main workflow surface instead of detail-page-first navigation.
+- Reason: Reduces navigation friction and keeps comparison + calculation work in one place.
+
+## D-0015: Calculations are first-class related records
+
+- Date: 2026-03-04
+- Status: Accepted
+- Decision: Add `material_calculations` as a separate related entity (`materials` 1->N `material_calculations`).
+- Reason: Supports multiple scenarios per material while keeping model boundaries clean.
+
+## D-0016: Persist entered scenario values, derive results in UI
+
+- Date: 2026-03-04
+- Status: Accepted
+- Decision: Persist `kg_material`, `print_time_hours`, and optional `label`; keep computed cost derived in the app.
+- Reason: Clear separation between stored input and calculated output avoids stale duplicated values.
+
+## D-0017: Detail route retained only as compatibility path
+
+- Date: 2026-03-04
+- Status: Accepted
+- Decision: Keep `/materials/:materialId` route but redirect it to `/materials` with inline expansion state.
+- Reason: Preserves deep-link compatibility while enforcing the overview-first UX.
