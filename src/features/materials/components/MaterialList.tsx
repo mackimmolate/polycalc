@@ -17,7 +17,7 @@ interface MaterialListProps {
 }
 
 const rowGridClass =
-  'grid gap-3 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,2.4fr)_auto]';
+  'grid gap-3 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,2.6fr)]';
 
 function formatTemperature(value: number | null) {
   return value === null ? 'Ej angivet' : `${value} °C`;
@@ -113,9 +113,6 @@ export function MaterialList({
         <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
           Anteckning
         </p>
-        <p className="text-right text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
-          Arbetsyta
-        </p>
       </div>
 
       <ul className="divide-y divide-[var(--border)]">
@@ -124,14 +121,22 @@ export function MaterialList({
 
           return (
             <li key={material.id}>
-              <div
+              <button
+                type="button"
+                onClick={() => onToggleExpand(material.id)}
+                aria-expanded={isExpanded}
+                aria-label={`${isExpanded ? 'Dölj' : 'Öppna'} arbetsyta för ${material.name}`}
                 className={cn(
-                  'px-4 py-3 transition hover:bg-[var(--surface-soft)]',
+                  'w-full cursor-pointer px-4 py-3 text-left transition hover:bg-[var(--surface-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-inset',
                   rowGridClass,
                   isExpanded ? 'bg-[var(--surface-soft)]' : '',
                 )}
               >
-                <RowField label="Material" value={material.name} valueClassName="font-semibold" />
+                <RowField
+                  label="Material"
+                  value={`${isExpanded ? '▾' : '▸'} ${material.name}`}
+                  valueClassName="font-semibold"
+                />
                 <RowField label="Tillverkare" value={material.manufacturer} />
                 <RowField label="Kategori" value={getCategoryLabel(material.category)} />
                 <RowField
@@ -153,23 +158,7 @@ export function MaterialList({
                   value={material.notes || 'Inga anteckningar'}
                   valueClassName="line-clamp-2 text-[var(--muted)]"
                 />
-
-                <div className="flex items-center justify-start lg:justify-end">
-                  <button
-                    type="button"
-                    onClick={() => onToggleExpand(material.id)}
-                    aria-expanded={isExpanded}
-                    className={cn(
-                      'rounded-full border px-3 py-1.5 text-xs font-semibold transition',
-                      isExpanded
-                        ? 'border-[var(--accent)] bg-[var(--accent)] text-white hover:bg-teal-700'
-                        : 'border-[var(--border)] bg-white text-[var(--ink)] hover:bg-[var(--surface-soft)]',
-                    )}
-                  >
-                    {isExpanded ? 'Dölj' : 'Öppna'}
-                  </button>
-                </div>
-              </div>
+              </button>
 
               {isExpanded ? (
                 <MaterialExpandedPanel

@@ -1,20 +1,13 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MaterialCalculationsWorkspace } from '@/features/materials/components/MaterialCalculationsWorkspace';
-import { getCategoryLabel } from '@/features/materials/utils/materialLabels';
 import { deleteMaterial } from '@/services/materials/materialsService';
 import type { Material } from '@/types/material';
-import { formatDurationSeconds } from '@/utils/duration';
-import { formatCurrency } from '@/utils/formatters';
 
 interface MaterialExpandedPanelProps {
   material: Material;
   canWrite: boolean;
   onMaterialDeleted: (materialId: string, successMessage: string) => void;
-}
-
-function formatTemperature(value: number | null) {
-  return value === null ? 'Ej angivet' : `${value} °C`;
 }
 
 export function MaterialExpandedPanel({
@@ -48,9 +41,9 @@ export function MaterialExpandedPanel({
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="text-sm font-semibold text-[var(--ink)]">Materialreferens</p>
+            <p className="text-sm font-semibold text-[var(--ink)]">Kalkylarbetsyta</p>
             <p className="text-xs text-[var(--muted)]">
-              Fasta materialvärden visas här, kalkylscenarier hanteras nedan.
+              Hantera kalkylscenarier för <span className="font-semibold">{material.name}</span>.
             </p>
           </div>
 
@@ -77,59 +70,6 @@ export function MaterialExpandedPanel({
             Inloggning krävs för att redigera eller ta bort material.
           </p>
         ) : null}
-
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
-              Namn
-            </p>
-            <p className="text-sm text-[var(--ink)]">{material.name}</p>
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
-              Tillverkare
-            </p>
-            <p className="text-sm text-[var(--ink)]">{material.manufacturer}</p>
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
-              Kategori
-            </p>
-            <p className="text-sm text-[var(--ink)]">{getCategoryLabel(material.category)}</p>
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
-              Pris per kg
-            </p>
-            <p className="text-sm font-semibold text-[var(--ink)]">
-              {formatCurrency(material.pricePerKgEur)}
-            </p>
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
-              Maxtemperatur
-            </p>
-            <p className="text-sm text-[var(--ink)]">
-              {formatTemperature(material.maxTemperatureC)}
-            </p>
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
-              Tid/lager vid 45°
-            </p>
-            <p className="text-sm text-[var(--ink)]">
-              {formatDurationSeconds(material.timePerLayer45DegSeconds)}
-            </p>
-          </div>
-          <div className="sm:col-span-2 xl:col-span-2">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
-              Anteckning
-            </p>
-            <p className="text-sm text-[var(--ink)]">
-              {material.notes.trim().length > 0 ? material.notes : 'Inga anteckningar.'}
-            </p>
-          </div>
-        </div>
 
         {deleteStep > 0 ? (
           <div className="space-y-2 rounded-xl border border-red-200 bg-red-50 px-3 py-3">
