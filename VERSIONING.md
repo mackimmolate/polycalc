@@ -4,7 +4,7 @@ PolyFlow uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 
 ## Current version
 
-- `0.5.0`
+- `0.6.0`
 
 ## Rules
 
@@ -38,3 +38,4 @@ PolyFlow uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 - `0.4.2`: Form option persistence polish for category/manufacturer plus inline remove actions for custom options.
 - `0.4.3`: Form option removal expanded to all dropdown values, with persisted hidden-option preferences and updated remove action labeling.
 - `0.5.0`: Phase 2.2 shared canonical option model (Supabase-backed `material_categories`/`material_manufacturers`, materials FK migration, and localStorage-source retirement).
+- `0.6.0`: Phase 2.3 sales-oriented calculation expansion (persisted quote-input fields on `material_calculations` plus read-only result presentation for internkostnad, prisförslag, batch och ledtid).

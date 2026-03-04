@@ -4,8 +4,8 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials with an inlin
 
 ## Current status
 
-- Version: `0.5.0`
-- Phase 2.2 completed: shared canonical kategori/tillverkare in Supabase.
+- Version: `0.6.0`
+- Phase 2.3 completed: sales-oriented calculation model in inline workspace.
 - Supabase-backed runtime is active for materials, shared options, and calculation records.
 - Swedish UI, compact row overview, and GitHub Pages deployment workflow are active.
 
@@ -16,7 +16,7 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials with an inlin
 - Expands one material inline to open a workspace directly under the row.
 - Keeps key fixed material values visible in the compact overview rows.
 - Manages multiple calculation scenarios per material (create, edit, remove).
-- Calculates material cost clearly from fixed and entered values.
+- Calculates internal cost, sales price, batch totals, and lead time from fixed and entered values.
 - Creates, edits, and deletes materials against Supabase.
 - Loads kategori/tillverkare from shared Supabase option tables.
 - Lets users add and inactivate kategori/tillverkare inline in create/edit forms.
@@ -45,11 +45,24 @@ PolyFlow separates three value types:
 
 - kg material
 - print time in hours
+- quantity
+- machine hourly rate (EUR)
+- labor cost per part (EUR)
+- post-process cost per part (EUR)
+- setup time (hours)
+- post-process time per part (hours)
+- risk buffer (%)
+- target margin (%)
+- printer count
 - optional calculation label
 
 4. Calculated values (derived in UI)
 
-- material cost in EUR (`price_per_kg_eur * kg_material`)
+- material cost per part (`price_per_kg_eur * kg_material`)
+- internal cost per part
+- suggested sales price per part
+- batch internal cost, batch sales total, and contribution margin
+- lead time and customer-facing summary values
 
 ## Tech stack
 
@@ -94,10 +107,11 @@ Run SQL files in Supabase SQL editor, in order:
 4. `supabase/sql/004_materials_custom_options.sql`
 5. `supabase/sql/005_materials_drop_legacy_option_checks.sql`
 6. `supabase/sql/006_shared_material_options.sql`
+7. `supabase/sql/007_material_calculations_sales_quote_fields.sql`
 
-If your project is already set up through `005`, run only:
+If your project is already set up through `006`, run only:
 
-- `supabase/sql/006_shared_material_options.sql`
+- `supabase/sql/007_material_calculations_sales_quote_fields.sql`
 
 ### Run
 

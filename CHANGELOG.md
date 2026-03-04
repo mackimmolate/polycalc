@@ -4,6 +4,34 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.6.0] - 2026-03-04
+
+### Added
+
+- Sales-oriented calculation inputs persisted on `material_calculations`:
+  - `quantity`
+  - `machine_hourly_rate_eur`
+  - `labor_cost_per_part_eur`
+  - `post_process_cost_per_part_eur`
+  - `setup_time_hours`
+  - `post_process_time_hours_per_part`
+  - `risk_buffer_percent`
+  - `target_margin_percent`
+  - `printer_count`
+- New Supabase SQL upgrade asset:
+  - `supabase/sql/007_material_calculations_sales_quote_fields.sql`
+
+### Changed
+
+- Refactored inline calculation workspace UI to highlight sales-friendly outputs per saved calculation:
+  - internkostnad/st
+  - prisförslag/st
+  - batchkostnad, offerttotal, täckningsbidrag
+  - ledtid och kundsammanfattning
+- Kept saved calculations in read-only presentation mode until explicit `Redigera`.
+- Updated calculation service/types/Supabase DB typings for the expanded persisted scenario-input model.
+- Updated setup and Supabase docs with new SQL order and `007` upgrade path.
+
 ## [0.5.0] - 2026-03-04
 
 ### Added

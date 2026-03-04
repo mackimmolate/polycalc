@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Phase 2.2 shared option model is implemented.
+- Phase 2.3 shared option + sales-oriented calculation model is implemented.
 - Runtime data is Supabase-backed for materials, shared option entities, and related calculation records.
 - PolyFlow v1 is implemented as material library plus inline multi-calculation workspace.
 
@@ -80,10 +80,25 @@ src/
 - `label`
 - `kgMaterial`
 - `printTimeHours`
+- `quantity`
+- `machineHourlyRateEur`
+- `laborCostPerPartEur`
+- `postProcessCostPerPartEur`
+- `setupTimeHours`
+- `postProcessTimeHoursPerPart`
+- `riskBufferPercent`
+- `targetMarginPercent`
+- `printerCount`
 
 ### Calculated values (derived in UI)
 
-- `materialCostEur = pricePerKgEur * kgMaterial`
+- `materialCostPerPart = pricePerKgEur * kgMaterial`
+- `internalCostPerPart`
+- `suggestedSalesPricePerPart`
+- `batchInternalCost`
+- `batchSalesTotal`
+- `batchProfit`
+- `leadTimeHours`
 
 ## Routing strategy
 

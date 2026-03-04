@@ -12,6 +12,15 @@ const MATERIAL_CALCULATION_COLUMNS = `
   label,
   kg_material,
   print_time_hours,
+  quantity,
+  machine_hourly_rate_eur,
+  labor_cost_per_part_eur,
+  post_process_cost_per_part_eur,
+  setup_time_hours,
+  post_process_time_hours_per_part,
+  risk_buffer_percent,
+  target_margin_percent,
+  printer_count,
   created_at,
   updated_at
 `;
@@ -36,6 +45,15 @@ function mapRowToMaterialCalculation(row: MaterialCalculationRow): MaterialCalcu
     label: row.label,
     kgMaterial: row.kg_material,
     printTimeHours: row.print_time_hours,
+    quantity: row.quantity,
+    machineHourlyRateEur: row.machine_hourly_rate_eur,
+    laborCostPerPartEur: row.labor_cost_per_part_eur,
+    postProcessCostPerPartEur: row.post_process_cost_per_part_eur,
+    setupTimeHours: row.setup_time_hours,
+    postProcessTimeHoursPerPart: row.post_process_time_hours_per_part,
+    riskBufferPercent: row.risk_buffer_percent,
+    targetMarginPercent: row.target_margin_percent,
+    printerCount: row.printer_count,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -50,6 +68,15 @@ function mapMutationToInsert(
     label: input.label,
     kg_material: input.kgMaterial,
     print_time_hours: input.printTimeHours,
+    quantity: input.quantity,
+    machine_hourly_rate_eur: input.machineHourlyRateEur,
+    labor_cost_per_part_eur: input.laborCostPerPartEur,
+    post_process_cost_per_part_eur: input.postProcessCostPerPartEur,
+    setup_time_hours: input.setupTimeHours,
+    post_process_time_hours_per_part: input.postProcessTimeHoursPerPart,
+    risk_buffer_percent: input.riskBufferPercent,
+    target_margin_percent: input.targetMarginPercent,
+    printer_count: input.printerCount,
   };
 }
 
@@ -58,6 +85,15 @@ function mapMutationToUpdate(input: MaterialCalculationMutationInput): MaterialC
     label: input.label,
     kg_material: input.kgMaterial,
     print_time_hours: input.printTimeHours,
+    quantity: input.quantity,
+    machine_hourly_rate_eur: input.machineHourlyRateEur,
+    labor_cost_per_part_eur: input.laborCostPerPartEur,
+    post_process_cost_per_part_eur: input.postProcessCostPerPartEur,
+    setup_time_hours: input.setupTimeHours,
+    post_process_time_hours_per_part: input.postProcessTimeHoursPerPart,
+    risk_buffer_percent: input.riskBufferPercent,
+    target_margin_percent: input.targetMarginPercent,
+    printer_count: input.printerCount,
   };
 }
 

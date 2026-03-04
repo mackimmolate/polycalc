@@ -141,3 +141,10 @@ This file records key product and engineering decisions.
 - Status: Accepted
 - Decision: Removing a category/manufacturer in UI updates `is_active = false` instead of deleting rows.
 - Reason: Keeps existing material references valid while hiding inactive options from new selections.
+
+## D-0021: Persist sales-oriented calculation inputs, keep quote outputs derived
+
+- Date: 2026-03-04
+- Status: Accepted
+- Decision: Extend `material_calculations` with persisted scenario inputs (`quantity`, machine/labor/post-process costs, setup/post-process time, risk buffer, target margin, printer count) while keeping computed quote outputs derived in UI.
+- Reason: Supports practical sales calculations (internkostnad, prisförslag, batchsumma, ledtid) without duplicating computed data in the database.

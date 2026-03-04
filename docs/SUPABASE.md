@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Supabase is the active backend for PolyFlow Phase 2.2.
+- Supabase is the active backend for PolyFlow Phase 2.3.
 - Frontend client is defined in `src/lib/supabase/client.ts`.
 - Runtime CRUD modules:
   - `src/services/materials/materialsService.ts`
@@ -30,10 +30,11 @@ Apply in this order:
 4. `supabase/sql/004_materials_custom_options.sql`
 5. `supabase/sql/005_materials_drop_legacy_option_checks.sql`
 6. `supabase/sql/006_shared_material_options.sql`
+7. `supabase/sql/007_material_calculations_sales_quote_fields.sql`
 
 Upgrade note:
 
-- If your database already has scripts `001`-`005`, run only `006` to migrate to shared canonical options.
+- If your database already has scripts `001`-`006`, run only `007` to add sales/quote calculation fields.
 
 ## Table model
 
@@ -72,11 +73,20 @@ Upgrade note:
 - `label` (`text`, default `''`)
 - `kg_material` (`numeric(10,3)`, required, `>= 0`)
 - `print_time_hours` (`numeric(10,2)`, required, `>= 0`)
+- `quantity` (`integer`, required, `> 0`)
+- `machine_hourly_rate_eur` (`numeric(10,2)`, required, `>= 0`)
+- `labor_cost_per_part_eur` (`numeric(10,2)`, required, `>= 0`)
+- `post_process_cost_per_part_eur` (`numeric(10,2)`, required, `>= 0`)
+- `setup_time_hours` (`numeric(10,2)`, required, `>= 0`)
+- `post_process_time_hours_per_part` (`numeric(10,2)`, required, `>= 0`)
+- `risk_buffer_percent` (`numeric(5,2)`, required, `0..100`)
+- `target_margin_percent` (`numeric(5,2)`, required, `0..99.99`)
+- `printer_count` (`integer`, required, `> 0`)
 - `created_at`, `updated_at`
 
 Notes:
 
-- Calculated output values (for example material cost) are derived in UI, not stored.
+- Calculated output values are derived in UI, not stored (for example internkostnad, prisförslag, batchsummering och ledtid).
 - One material can have many calculation records.
 - Category and manufacturer values are now canonical shared entities with normalized keys.
 - Duplicate variants are prevented by `normalized_key` uniqueness.

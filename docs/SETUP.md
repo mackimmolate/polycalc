@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Phase 2.2 shared option runtime is implemented.
+- Phase 2.3 sales-oriented calculation runtime is implemented.
 - Materials, shared kategori/tillverkare options, and per-material calculations are loaded from Supabase.
 - Material, calculation, and option mutations require authenticated session.
 
@@ -38,10 +38,11 @@ Run SQL files in Supabase SQL editor, in order:
 4. `supabase/sql/004_materials_custom_options.sql`
 5. `supabase/sql/005_materials_drop_legacy_option_checks.sql`
 6. `supabase/sql/006_shared_material_options.sql`
+7. `supabase/sql/007_material_calculations_sales_quote_fields.sql`
 
-If your project is already initialized up to `005`, run only:
+If your project is already initialized up to `006`, run only:
 
-- `supabase/sql/006_shared_material_options.sql`
+- `supabase/sql/007_material_calculations_sales_quote_fields.sql`
 
 Configure Supabase Auth URL settings:
 
@@ -64,6 +65,7 @@ npm run preview
 
 - `/materials` loads materials from Supabase.
 - Expanding a material row loads related calculations from Supabase.
+- Expanded calculations show sales-oriented outputs (internkostnad, prisförslag, batch, ledtid).
 - `/auth` signs in with magic link.
 - Write actions are blocked when not signed in.
 - Material create/edit returns to overview and reopens target material inline.

@@ -45,6 +45,17 @@
 - Added canonical duplicate prevention via normalized keys
 - Added safe option removal via inactivation (`is_active = false`)
 
+## Phase 2.3 (completed): Sales-oriented calculation workspace outputs
+
+- Expanded per-material calculation model with persisted scenario inputs for quantity, cost drivers, margin target, and lead-time variables
+- Added SQL upgrade asset `supabase/sql/007_material_calculations_sales_quote_fields.sql`
+- Updated inline calculation workspace to show:
+  - internkostnad/st
+  - prisförslag/st
+  - batchkostnad, offerttotal, täckningsbidrag
+  - ledtid och kundsammanfattning
+- Kept saved calculations read-only until explicit `Redigera`
+
 ## Phase 3 (next): Hardening and release readiness
 
 - Add automated tests for critical flows (material + calculation services and key UI states)
