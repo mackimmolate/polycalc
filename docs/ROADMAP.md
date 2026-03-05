@@ -56,6 +56,14 @@
   - ledtid och kundsammanfattning
 - Kept saved calculations read-only until explicit `Redigera`
 
+## Phase 2.4 (completed): Material reference-time UX polish
+
+- Replaced fixed `45°` wording in create/edit with selectable reference angle (`45°`/`90°`)
+- Switched form input from seconds to minutes for easier entry
+- Kept backend storage in seconds for precision
+- Added schema support for `time_per_layer_reference_angle_deg`
+- Updated material overview rendering to show minute-based time with angle context
+
 ## Phase 3 (next): Hardening and release readiness
 
 - Add automated tests for critical flows (material + calculation services and key UI states)

@@ -5,7 +5,7 @@ export type MaterialSortField =
   | 'category'
   | 'pricePerKgEur'
   | 'maxTemperatureC'
-  | 'timePerLayer45DegSeconds';
+  | 'timePerLayerSeconds';
 export type SortDirection = 'asc' | 'desc';
 
 export interface MaterialSort {
@@ -33,7 +33,9 @@ export function queryMaterials(materials: Material[], query: MaterialQuery) {
       material.notes,
       material.maxTemperatureC?.toString() ?? '',
       material.pricePerKgEur.toString(),
-      material.timePerLayer45DegSeconds.toString(),
+      material.timePerLayerSeconds.toString(),
+      material.timePerLayerReferenceAngleDeg.toString(),
+      (material.timePerLayerSeconds / 60).toString(),
     ];
     const searchableText = searchableParts.join(' ').toLowerCase();
     const matchesSearch =
@@ -54,8 +56,8 @@ export function queryMaterials(materials: Material[], query: MaterialQuery) {
         return (left.pricePerKgEur - right.pricePerKgEur) * factor;
       case 'maxTemperatureC':
         return ((left.maxTemperatureC ?? -1) - (right.maxTemperatureC ?? -1)) * factor;
-      case 'timePerLayer45DegSeconds':
-        return (left.timePerLayer45DegSeconds - right.timePerLayer45DegSeconds) * factor;
+      case 'timePerLayerSeconds':
+        return (left.timePerLayerSeconds - right.timePerLayerSeconds) * factor;
       case 'name':
       default:
         return left.name.localeCompare(right.name, 'sv-SE') * factor;

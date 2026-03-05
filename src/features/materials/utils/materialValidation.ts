@@ -6,7 +6,8 @@ export interface MaterialFormValues {
   manufacturerId: string;
   pricePerKgEur: string;
   maxTemperatureC: string;
-  timePerLayer45DegSeconds: string;
+  timePerLayerMinutes: string;
+  timePerLayerReferenceAngleDeg: string;
   notes: string;
 }
 
@@ -53,9 +54,18 @@ export function validateMaterialForm(values: MaterialFormValues): {
     errors.maxTemperatureC = 'Maxtemperatur måste vara 0 eller högre.';
   }
 
-  const timePerLayer = parseNumber(values.timePerLayer45DegSeconds);
-  if (timePerLayer === null || Number.isNaN(timePerLayer) || timePerLayer <= 0) {
-    errors.timePerLayer45DegSeconds = 'Tid per lager måste vara större än 0 sekunder.';
+  const referenceAngle = Number(values.timePerLayerReferenceAngleDeg);
+  if (referenceAngle !== 45 && referenceAngle !== 90) {
+    errors.timePerLayerReferenceAngleDeg = 'Välj 45° eller 90° som referensvinkel.';
+  }
+
+  const timePerLayerMinutes = parseNumber(values.timePerLayerMinutes);
+  if (
+    timePerLayerMinutes === null ||
+    Number.isNaN(timePerLayerMinutes) ||
+    timePerLayerMinutes <= 0
+  ) {
+    errors.timePerLayerMinutes = 'Tid per lager måste vara större än 0 minuter.';
   }
 
   if (values.notes.length > 1200) {
@@ -73,7 +83,8 @@ export function validateMaterialForm(values: MaterialFormValues): {
       manufacturerId,
       pricePerKgEur: Number(price),
       maxTemperatureC: maxTemperature === null ? null : Math.round(maxTemperature),
-      timePerLayer45DegSeconds: Math.round(Number(timePerLayer)),
+      timePerLayerSeconds: Math.round(Number(timePerLayerMinutes) * 60),
+      timePerLayerReferenceAngleDeg: referenceAngle === 90 ? 90 : 45,
       notes: values.notes.trim(),
     },
     errors,

@@ -3,7 +3,7 @@ import { getCategoryLabel } from '@/features/materials/utils/materialLabels';
 import type { MaterialSort, MaterialSortField } from '@/features/materials/utils/filterMaterials';
 import type { Material } from '@/types/material';
 import { cn } from '@/utils/cn';
-import { formatDurationSeconds } from '@/utils/duration';
+import { formatMinutesFromSeconds } from '@/utils/duration';
 import { formatCurrency } from '@/utils/formatters';
 
 interface MaterialListProps {
@@ -105,8 +105,8 @@ export function MaterialList({
           onSortChange={onSortChange}
         />
         <SortHeader
-          field="timePerLayer45DegSeconds"
-          label="Tid/lager 45°"
+          field="timePerLayerSeconds"
+          label="Tid/lager (ref)"
           sort={sort}
           onSortChange={onSortChange}
         />
@@ -150,8 +150,8 @@ export function MaterialList({
                   valueClassName="tabular-nums"
                 />
                 <RowField
-                  label="Tid/lager 45°"
-                  value={formatDurationSeconds(material.timePerLayer45DegSeconds)}
+                  label="Tid/lager (ref)"
+                  value={`${formatMinutesFromSeconds(material.timePerLayerSeconds)} @ ${material.timePerLayerReferenceAngleDeg}°`}
                 />
                 <RowField
                   label="Anteckning"

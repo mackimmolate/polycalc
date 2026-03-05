@@ -1,5 +1,6 @@
 export type MaterialCategory = string;
 export type MaterialManufacturer = string;
+export type MaterialReferenceAngle = 45 | 90;
 
 export interface Material {
   id: string;
@@ -10,7 +11,8 @@ export interface Material {
   manufacturer: MaterialManufacturer;
   pricePerKgEur: number;
   maxTemperatureC: number | null;
-  timePerLayer45DegSeconds: number;
+  timePerLayerSeconds: number;
+  timePerLayerReferenceAngleDeg: MaterialReferenceAngle;
   notes: string;
   createdAt: string;
   updatedAt: string;
@@ -22,6 +24,7 @@ export interface MaterialMutationInput {
   manufacturerId: string;
   pricePerKgEur: number;
   maxTemperatureC: number | null;
-  timePerLayer45DegSeconds: number;
+  timePerLayerSeconds: number;
+  timePerLayerReferenceAngleDeg: MaterialReferenceAngle;
   notes: string;
 }

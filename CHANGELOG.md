@@ -4,6 +4,24 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.6.1] - 2026-03-05
+
+### Added
+
+- New materials schema upgrade asset:
+  - `supabase/sql/008_materials_reference_angle.sql`
+- Added Supabase-backed reference-angle field on materials:
+  - `time_per_layer_reference_angle_deg` (45 or 90)
+
+### Changed
+
+- Refactored material create/edit field from fixed `45°` + seconds input to:
+  - selectable reference angle (`45°` or `90°`)
+  - input in minutes (UI)
+- Kept internal storage in seconds for precision and compatibility.
+- Updated materials overview display to show reference time in minutes with angle (for example `1,25 min @ 90°`).
+- Updated sorting/search to use the new generic per-layer reference-time model.
+
 ## [0.6.0] - 2026-03-04
 
 ### Added

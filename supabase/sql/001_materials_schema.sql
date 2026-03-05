@@ -11,7 +11,10 @@ create table if not exists public.materials (
   category text not null check (char_length(trim(category)) >= 2),
   price_per_kg_eur numeric(10, 2) not null check (price_per_kg_eur >= 0),
   max_temperature_c integer check (max_temperature_c is null or max_temperature_c >= 0),
+  -- Legacy column name kept for backward compatibility; value stores reference time in seconds.
   time_per_layer_45_deg_seconds integer not null check (time_per_layer_45_deg_seconds > 0),
+  time_per_layer_reference_angle_deg integer not null default 45
+    check (time_per_layer_reference_angle_deg in (45, 90)),
   notes text not null default '',
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())

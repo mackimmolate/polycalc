@@ -10,6 +10,7 @@ export interface Database {
           price_per_kg_eur: number;
           max_temperature_c: number | null;
           time_per_layer_45_deg_seconds: number;
+          time_per_layer_reference_angle_deg: number;
           notes: string;
           created_at: string;
           updated_at: string;
@@ -22,6 +23,7 @@ export interface Database {
           price_per_kg_eur: number;
           max_temperature_c?: number | null;
           time_per_layer_45_deg_seconds: number;
+          time_per_layer_reference_angle_deg?: number;
           notes?: string;
           created_at?: string;
           updated_at?: string;
@@ -34,6 +36,7 @@ export interface Database {
           price_per_kg_eur?: number;
           max_temperature_c?: number | null;
           time_per_layer_45_deg_seconds?: number;
+          time_per_layer_reference_angle_deg?: number;
           notes?: string;
           created_at?: string;
           updated_at?: string;

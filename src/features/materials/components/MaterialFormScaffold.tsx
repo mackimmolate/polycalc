@@ -17,7 +17,6 @@ import {
 } from '@/services/material-options/materialOptionsService';
 import type { Material, MaterialMutationInput } from '@/types/material';
 import type { MaterialOption, MaterialOptionUpsertStatus } from '@/types/materialOption';
-import { formatDurationSeconds } from '@/utils/duration';
 
 interface MaterialFormScaffoldProps {
   mode: 'create' | 'edit';
@@ -32,13 +31,24 @@ function normalizeOptionLabel(value: string) {
 }
 
 function toFormValues(material?: Material): MaterialFormValues {
+  const timePerLayerMinutes =
+    material && material.timePerLayerSeconds > 0
+      ? new Intl.NumberFormat('sv-SE', {
+          useGrouping: false,
+          maximumFractionDigits: 2,
+        }).format(material.timePerLayerSeconds / 60)
+      : '';
+
   return {
     name: material?.name ?? '',
     categoryId: material?.categoryId ?? '',
     manufacturerId: material?.manufacturerId ?? '',
     pricePerKgEur: material ? material.pricePerKgEur.toString() : '',
     maxTemperatureC: material?.maxTemperatureC?.toString() ?? '',
-    timePerLayer45DegSeconds: material?.timePerLayer45DegSeconds?.toString() ?? '',
+    timePerLayerMinutes,
+    timePerLayerReferenceAngleDeg: material
+      ? material.timePerLayerReferenceAngleDeg.toString()
+      : '45',
     notes: material?.notes ?? '',
   };
 }
@@ -143,13 +153,15 @@ export function MaterialFormScaffold({
   }, [loadOptionLists]);
 
   const parsedLayerDuration = useMemo(() => {
-    const numeric = Number(formValues.timePerLayer45DegSeconds.replace(',', '.'));
+    const numeric = Number(formValues.timePerLayerMinutes.replace(',', '.'));
     if (!Number.isFinite(numeric) || numeric <= 0) {
-      return 'Ange tid i sekunder';
+      return 'Ange tid i minuter';
     }
 
-    return formatDurationSeconds(Math.round(numeric));
-  }, [formValues.timePerLayer45DegSeconds]);
+    return `${new Intl.NumberFormat('sv-SE', {
+      maximumFractionDigits: 2,
+    }).format(numeric)} min`;
+  }, [formValues.timePerLayerMinutes]);
 
   const categorySelectOptions = useMemo(
     () =>
@@ -673,24 +685,43 @@ export function MaterialFormScaffold({
           <FieldError error={fieldErrors.maxTemperatureC} />
         </label>
 
-        <label className="space-y-1 text-sm">
-          <span className="font-semibold text-[var(--ink)]">Tid per lager vid 45° (sekunder)</span>
-          <input
-            required
-            inputMode="numeric"
-            value={formValues.timePerLayer45DegSeconds}
-            onChange={(event) =>
-              setFormValues((current) => ({
-                ...current,
-                timePerLayer45DegSeconds: event.target.value,
-              }))
-            }
-            className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
-            placeholder="75"
-          />
-          <p className="text-xs text-[var(--muted)]">Visas som {parsedLayerDuration}</p>
-          <FieldError error={fieldErrors.timePerLayer45DegSeconds} />
-        </label>
+        <div className="space-y-1 text-sm">
+          <span className="font-semibold text-[var(--ink)]">Referenstid per lager</span>
+          <div className="grid gap-2 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            <select
+              value={formValues.timePerLayerReferenceAngleDeg}
+              onChange={(event) =>
+                setFormValues((current) => ({
+                  ...current,
+                  timePerLayerReferenceAngleDeg: event.target.value,
+                }))
+              }
+              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
+            >
+              <option value="45">45°</option>
+              <option value="90">90°</option>
+            </select>
+
+            <input
+              required
+              inputMode="decimal"
+              value={formValues.timePerLayerMinutes}
+              onChange={(event) =>
+                setFormValues((current) => ({
+                  ...current,
+                  timePerLayerMinutes: event.target.value,
+                }))
+              }
+              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--ink)] outline-none ring-[var(--accent)] transition focus:ring-2"
+              placeholder="1,25"
+            />
+          </div>
+          <p className="text-xs text-[var(--muted)]">
+            Referens: {formValues.timePerLayerReferenceAngleDeg}°. Visas som {parsedLayerDuration}.
+          </p>
+          <FieldError error={fieldErrors.timePerLayerReferenceAngleDeg} />
+          <FieldError error={fieldErrors.timePerLayerMinutes} />
+        </div>
 
         <label className="space-y-1 text-sm md:col-span-2">
           <span className="font-semibold text-[var(--ink)]">Anteckningar</span>

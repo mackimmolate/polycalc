@@ -4,8 +4,8 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials with an inlin
 
 ## Current status
 
-- Version: `0.6.0`
-- Phase 2.3 completed: sales-oriented calculation model in inline workspace.
+- Version: `0.6.1`
+- Phase 2.4 completed: material time-reference polish (minutes UI + selectable 45°/90°).
 - Supabase-backed runtime is active for materials, shared options, and calculation records.
 - Swedish UI, compact row overview, and GitHub Pages deployment workflow are active.
 
@@ -33,7 +33,8 @@ PolyFlow separates three value types:
 - category reference (`category_id`)
 - price per kg (EUR)
 - max temperature (°C)
-- time per layer at 45° (seconds)
+- time per layer reference time (stored as seconds)
+- time per layer reference angle (`45°` or `90°`)
 - notes
 
 2. Shared option values (persisted globally)
@@ -108,10 +109,11 @@ Run SQL files in Supabase SQL editor, in order:
 5. `supabase/sql/005_materials_drop_legacy_option_checks.sql`
 6. `supabase/sql/006_shared_material_options.sql`
 7. `supabase/sql/007_material_calculations_sales_quote_fields.sql`
+8. `supabase/sql/008_materials_reference_angle.sql`
 
-If your project is already set up through `006`, run only:
+If your project is already set up through `007`, run only:
 
-- `supabase/sql/007_material_calculations_sales_quote_fields.sql`
+- `supabase/sql/008_materials_reference_angle.sql`
 
 ### Run
 

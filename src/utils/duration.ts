@@ -18,6 +18,16 @@ export function formatDurationSeconds(totalSeconds: number) {
   return `${seconds} s`;
 }
 
+export function formatMinutesFromSeconds(totalSeconds: number, maximumFractionDigits = 2) {
+  if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) {
+    return 'Ej angivet';
+  }
+
+  return `${new Intl.NumberFormat('sv-SE', {
+    maximumFractionDigits,
+  }).format(totalSeconds / 60)} min`;
+}
+
 export function formatHours(hoursValue: number | null) {
   if (hoursValue === null || !Number.isFinite(hoursValue) || hoursValue < 0) {
     return 'Ej angivet';

@@ -11,6 +11,7 @@ const MATERIAL_COLUMNS = `
   price_per_kg_eur,
   max_temperature_c,
   time_per_layer_45_deg_seconds,
+  time_per_layer_reference_angle_deg,
   notes,
   created_at,
   updated_at,
@@ -58,7 +59,8 @@ function mapRowToMaterial(row: MaterialRowWithRelations): Material {
     manufacturer: row.manufacturer_ref?.label ?? 'Ej angiven',
     pricePerKgEur: row.price_per_kg_eur,
     maxTemperatureC: row.max_temperature_c,
-    timePerLayer45DegSeconds: row.time_per_layer_45_deg_seconds,
+    timePerLayerSeconds: row.time_per_layer_45_deg_seconds,
+    timePerLayerReferenceAngleDeg: row.time_per_layer_reference_angle_deg === 90 ? 90 : 45,
     notes: row.notes ?? '',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -72,7 +74,8 @@ function mapMutationToInsert(input: MaterialMutationInput): MaterialInsert {
     manufacturer_id: input.manufacturerId,
     price_per_kg_eur: input.pricePerKgEur,
     max_temperature_c: input.maxTemperatureC,
-    time_per_layer_45_deg_seconds: input.timePerLayer45DegSeconds,
+    time_per_layer_45_deg_seconds: input.timePerLayerSeconds,
+    time_per_layer_reference_angle_deg: input.timePerLayerReferenceAngleDeg,
     notes: input.notes,
   };
 }

@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Phase 2.3 shared option + sales-oriented calculation model is implemented.
+- Phase 2.4 shared option + sales-oriented calculation model with reference-angle polish is implemented.
 - Runtime data is Supabase-backed for materials, shared option entities, and related calculation records.
 - PolyFlow v1 is implemented as material library plus inline multi-calculation workspace.
 
@@ -67,7 +67,8 @@ src/
 - `category_id` (FK -> `material_categories.id`)
 - `pricePerKgEur`
 - `maxTemperatureC`
-- `timePerLayer45DegSeconds`
+- `timePerLayerSeconds` (stored in seconds)
+- `timePerLayerReferenceAngleDeg` (`45` or `90`)
 - `notes`
 
 ### Shared option values (persisted globally)

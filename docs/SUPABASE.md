@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Supabase is the active backend for PolyFlow Phase 2.3.
+- Supabase is the active backend for PolyFlow Phase 2.4.
 - Frontend client is defined in `src/lib/supabase/client.ts`.
 - Runtime CRUD modules:
   - `src/services/materials/materialsService.ts`
@@ -31,10 +31,11 @@ Apply in this order:
 5. `supabase/sql/005_materials_drop_legacy_option_checks.sql`
 6. `supabase/sql/006_shared_material_options.sql`
 7. `supabase/sql/007_material_calculations_sales_quote_fields.sql`
+8. `supabase/sql/008_materials_reference_angle.sql`
 
 Upgrade note:
 
-- If your database already has scripts `001`-`006`, run only `007` to add sales/quote calculation fields.
+- If your database already has scripts `001`-`007`, run only `008` to add materials reference-angle support.
 
 ## Table model
 
@@ -63,6 +64,7 @@ Upgrade note:
 - `price_per_kg_eur` (`numeric(10,2)`, required, `>= 0`)
 - `max_temperature_c` (`integer`, nullable, `>= 0`)
 - `time_per_layer_45_deg_seconds` (`integer`, required, `> 0`)
+- `time_per_layer_reference_angle_deg` (`integer`, required, `45` or `90`)
 - `notes` (`text`, required, default `''`)
 - `created_at`, `updated_at`
 
@@ -87,6 +89,7 @@ Upgrade note:
 Notes:
 
 - Calculated output values are derived in UI, not stored (for example internkostnad, prisförslag, batchsummering och ledtid).
+- Material per-layer reference time is shown as minutes in UI, but stored as seconds in DB.
 - One material can have many calculation records.
 - Category and manufacturer values are now canonical shared entities with normalized keys.
 - Duplicate variants are prevented by `normalized_key` uniqueness.

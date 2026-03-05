@@ -148,3 +148,10 @@ This file records key product and engineering decisions.
 - Status: Accepted
 - Decision: Extend `material_calculations` with persisted scenario inputs (`quantity`, machine/labor/post-process costs, setup/post-process time, risk buffer, target margin, printer count) while keeping computed quote outputs derived in UI.
 - Reason: Supports practical sales calculations (internkostnad, prisförslag, batchsumma, ledtid) without duplicating computed data in the database.
+
+## D-0022: Use selectable reference angle with minute-based input for per-layer time
+
+- Date: 2026-03-05
+- Status: Accepted
+- Decision: Keep storage in seconds (`time_per_layer_45_deg_seconds`) for precision, add `time_per_layer_reference_angle_deg` (`45` or `90`) for context, and use minute-based input/output in the material form/UI.
+- Reason: Minutes are easier for users while seconds remain robust for sorting and calculations; angle selection removes incorrect fixed `45°` assumptions.

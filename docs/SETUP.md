@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Phase 2.3 sales-oriented calculation runtime is implemented.
+- Phase 2.4 sales-oriented calculation runtime is implemented.
 - Materials, shared kategori/tillverkare options, and per-material calculations are loaded from Supabase.
 - Material, calculation, and option mutations require authenticated session.
 
@@ -39,10 +39,11 @@ Run SQL files in Supabase SQL editor, in order:
 5. `supabase/sql/005_materials_drop_legacy_option_checks.sql`
 6. `supabase/sql/006_shared_material_options.sql`
 7. `supabase/sql/007_material_calculations_sales_quote_fields.sql`
+8. `supabase/sql/008_materials_reference_angle.sql`
 
-If your project is already initialized up to `006`, run only:
+If your project is already initialized up to `007`, run only:
 
-- `supabase/sql/007_material_calculations_sales_quote_fields.sql`
+- `supabase/sql/008_materials_reference_angle.sql`
 
 Configure Supabase Auth URL settings:
 
@@ -71,3 +72,4 @@ npm run preview
 - Material create/edit returns to overview and reopens target material inline.
 - Material create/edit loads kategori/tillverkare from shared Supabase option tables.
 - Material create/edit can add/inaktivera kategori/tillverkare directly from form controls.
+- Material create/edit supports reference angle (`45°`/`90°`) and minute-based time input.
