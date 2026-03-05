@@ -84,6 +84,20 @@ async function toDataUrl(url: string) {
   });
 }
 
+async function getImageMetrics(dataUrl: string) {
+  return new Promise<{ width: number; height: number }>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      resolve({
+        width: image.naturalWidth || image.width,
+        height: image.naturalHeight || image.height,
+      });
+    };
+    image.onerror = () => reject(new Error('Kunde inte läsa logotypens dimensioner.'));
+    image.src = dataUrl;
+  });
+}
+
 function drawKeyValueRow(doc: PdfDocument, label: string, value: string, x: number, y: number) {
   doc.setTextColor(91, 106, 117);
   doc.setFontSize(10);
@@ -102,6 +116,7 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
   });
 
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 40;
 
   doc.setFillColor(233, 246, 244);
@@ -109,14 +124,39 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
 
   try {
     const logoDataUrl = await toDataUrl(brandLogoUrl);
-    doc.addImage(logoDataUrl, 'PNG', pageWidth - margin - 120, 26, 120, 30);
+    const logoMetrics = await getImageMetrics(logoDataUrl);
+
+    const preferredWidth = 190;
+    const maxHeight = 52;
+
+    let logoWidth = preferredWidth;
+    let logoHeight = (logoMetrics.height / logoMetrics.width) * logoWidth;
+
+    if (logoHeight > maxHeight) {
+      logoHeight = maxHeight;
+      logoWidth = (logoMetrics.width / logoMetrics.height) * logoHeight;
+    }
+
+    const badgePaddingX = 10;
+    const badgePaddingY = 8;
+    const badgeWidth = logoWidth + badgePaddingX * 2;
+    const badgeHeight = logoHeight + badgePaddingY * 2;
+    const badgeX = pageWidth - margin - badgeWidth;
+    const badgeY = 22;
+
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 10, 10, 'F');
+
+    doc.setDrawColor(216, 227, 224);
+    doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 10, 10, 'S');
+
+    const logoX = badgeX + (badgeWidth - logoWidth) / 2;
+    const logoY = badgeY + (badgeHeight - logoHeight) / 2;
+    doc.addImage(logoDataUrl, 'PNG', logoX, logoY, logoWidth, logoHeight, undefined, 'NONE');
   } catch {
     // PDF export should still succeed even if logo loading fails.
   }
 
-  doc.setTextColor(15, 76, 92);
-  doc.setFontSize(14);
-  doc.text('PolyFlow', margin, 34);
   doc.setTextColor(18, 34, 49);
   doc.setFontSize(24);
   doc.text('Offert', margin, 62);
@@ -129,7 +169,7 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date());
-  doc.text(`Skapad: ${generatedAt}`, pageWidth - margin - 140, 98);
+  doc.text(`Skapad: ${generatedAt}`, pageWidth - margin - 150, 98);
 
   doc.setFillColor(22, 128, 122);
   doc.roundedRect(margin, 138, pageWidth - margin * 2, 102, 14, 14, 'F');
@@ -138,12 +178,12 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
   doc.setFontSize(11);
   doc.text('Offertöversikt', margin + 16, 162);
   doc.setFontSize(23);
-  doc.text(formatCurrency(results.salesPricePerPart), margin + 16, 194);
+  doc.text(formatCurrency(results.batchSalesTotal), margin + 16, 194);
   doc.setFontSize(10);
-  doc.text('Kundpris per detalj', margin + 16, 212);
+  doc.text('Totalt kundpris', margin + 16, 212);
 
   doc.setFontSize(12);
-  doc.text(`Totalt kundpris: ${formatCurrency(results.batchSalesTotal)}`, margin + 240, 170);
+  doc.text(`Kundpris per detalj: ${formatCurrency(results.salesPricePerPart)}`, margin + 240, 170);
   doc.text(`Antal detaljer: ${formatNumber(inputs.quantity, 0)} st`, margin + 240, 190);
   doc.text(`Leveranstid: ${formatLeadTime(results.leadTimeMinutes)}`, margin + 240, 210);
 
@@ -166,13 +206,7 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
     lineY,
   );
   lineY += 22;
-  drawKeyValueRow(
-    doc,
-    'Uppstartstid',
-    `${formatNumber(inputs.setupTimeMinutes, 1)} min`,
-    margin,
-    lineY,
-  );
+  drawKeyValueRow(doc, 'Uppstartstid', `${formatNumber(inputs.setupTimeMinutes, 1)} min`, margin, lineY);
   lineY += 22;
   drawKeyValueRow(
     doc,
@@ -192,39 +226,12 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
     lineY,
   );
 
-  doc.setFontSize(14);
-  doc.setTextColor(18, 34, 49);
-  doc.text('Kostnadsbild', margin, 530);
-
-  const costBoxY = 548;
-  const colWidth = (pageWidth - margin * 2 - 12) / 2;
-
-  doc.setFillColor(250, 252, 251);
-  doc.roundedRect(margin, costBoxY, colWidth, 128, 10, 10, 'F');
-  doc.roundedRect(margin + colWidth + 12, costBoxY, colWidth, 128, 10, 10, 'F');
-
-  doc.setTextColor(91, 106, 117);
-  doc.setFontSize(11);
-  doc.text('Per detalj', margin + 14, costBoxY + 22);
-  doc.text('Totalt', margin + colWidth + 26, costBoxY + 22);
-
-  doc.setTextColor(18, 34, 49);
-  doc.setFontSize(12);
-  doc.text(`Material: ${formatCurrency(results.materialCostPerPart)}`, margin + 14, costBoxY + 46);
-  doc.text(`Maskin: ${formatCurrency(results.machineCostPerPart)}`, margin + 14, costBoxY + 68);
-  doc.text(`Självkostnad: ${formatCurrency(results.internalCostPerPart)}`, margin + 14, costBoxY + 90);
-  doc.text(`Kundpris: ${formatCurrency(results.salesPricePerPart)}`, margin + 14, costBoxY + 112);
-
-  doc.text(`Totalkostnad: ${formatCurrency(results.batchInternalCost)}`, margin + colWidth + 26, costBoxY + 46);
-  doc.text(`Total offert: ${formatCurrency(results.batchSalesTotal)}`, margin + colWidth + 26, costBoxY + 68);
-  doc.text(`Leveranstid: ${formatLeadTime(results.leadTimeMinutes)}`, margin + colWidth + 26, costBoxY + 90);
-
   doc.setTextColor(120, 132, 140);
   doc.setFontSize(9);
   doc.text(
     'PolyFlow-offert. Värden baseras på inmatad kalkyl och materialdata.',
     margin,
-    doc.internal.pageSize.getHeight() - 24,
+    pageHeight - 24,
   );
 
   const safeMaterialName = material.name.trim().replace(/[^a-z0-9-_]+/gi, '-').toLowerCase() || 'material';
