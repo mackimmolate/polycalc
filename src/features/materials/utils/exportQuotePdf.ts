@@ -137,21 +137,8 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
       logoWidth = (logoMetrics.width / logoMetrics.height) * logoHeight;
     }
 
-    const badgePaddingX = 10;
-    const badgePaddingY = 8;
-    const badgeWidth = logoWidth + badgePaddingX * 2;
-    const badgeHeight = logoHeight + badgePaddingY * 2;
-    const badgeX = pageWidth - margin - badgeWidth;
-    const badgeY = 22;
-
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 10, 10, 'F');
-
-    doc.setDrawColor(216, 227, 224);
-    doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 10, 10, 'S');
-
-    const logoX = badgeX + (badgeWidth - logoWidth) / 2;
-    const logoY = badgeY + (badgeHeight - logoHeight) / 2;
+    const logoX = pageWidth - margin - logoWidth;
+    const logoY = 28;
     doc.addImage(logoDataUrl, 'PNG', logoX, logoY, logoWidth, logoHeight, undefined, 'NONE');
   } catch {
     // PDF export should still succeed even if logo loading fails.
