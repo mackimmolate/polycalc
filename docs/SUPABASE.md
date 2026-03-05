@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Supabase is the active backend for PolyFlow Phase 2.4.
+- Supabase is the active backend for PolyFlow Phase 2.5.
 - Frontend client is defined in `src/lib/supabase/client.ts`.
 - Runtime CRUD modules:
   - `src/services/materials/materialsService.ts`
@@ -32,10 +32,11 @@ Apply in this order:
 6. `supabase/sql/006_shared_material_options.sql`
 7. `supabase/sql/007_material_calculations_sales_quote_fields.sql`
 8. `supabase/sql/008_materials_reference_angle.sql`
+9. `supabase/sql/009_material_calculations_details_per_printer.sql`
 
 Upgrade note:
 
-- If your database already has scripts `001`-`007`, run only `008` to add materials reference-angle support.
+- If your database already has scripts `001`-`008`, run only `009` to add calculation capacity support (`details_per_printer`).
 
 ## Table model
 
@@ -76,6 +77,7 @@ Upgrade note:
 - `kg_material` (`numeric(10,3)`, required, `>= 0`)
 - `print_time_hours` (`numeric(10,2)`, required, `>= 0`)
 - `quantity` (`integer`, required, `> 0`)
+- `details_per_printer` (`integer`, required, `> 0`)
 - `machine_hourly_rate_eur` (`numeric(10,2)`, required, `>= 0`)
 - `labor_cost_per_part_eur` (`numeric(10,2)`, required, `>= 0`)
 - `post_process_cost_per_part_eur` (`numeric(10,2)`, required, `>= 0`)
@@ -89,6 +91,7 @@ Upgrade note:
 Notes:
 
 - Calculated output values are derived in UI, not stored (for example internkostnad, prisförslag, batchsummering och ledtid).
+- `details_per_printer` enables capacity-aware cost and lead-time calculations when multiple details can be produced per printer run.
 - Material per-layer reference time is shown as minutes in UI, but stored as seconds in DB.
 - One material can have many calculation records.
 - Category and manufacturer values are now canonical shared entities with normalized keys.

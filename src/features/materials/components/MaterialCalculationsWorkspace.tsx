@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { SurfaceCard } from '@/components/ui/SurfaceCard';
+import { exportQuotePdf } from '@/features/materials/utils/exportQuotePdf';
 import {
   createMaterialCalculation,
   deleteMaterialCalculation,
@@ -22,6 +23,7 @@ interface CalculationDraft {
   kgMaterialInput: string;
   printTimeMinutesInput: string;
   quantityInput: string;
+  detailsPerPrinterInput: string;
   machineHourlyRateEurInput: string;
   setupTimeMinutesInput: string;
   printerCountInput: string;
@@ -29,6 +31,7 @@ interface CalculationDraft {
   savedKgMaterialInput: string;
   savedPrintTimeMinutesInput: string;
   savedQuantityInput: string;
+  savedDetailsPerPrinterInput: string;
   savedMachineHourlyRateEurInput: string;
   savedSetupTimeMinutesInput: string;
   savedPrinterCountInput: string;
@@ -43,6 +46,7 @@ interface ParsedDraftValues {
   printTimeMinutes: number | null;
   printTimeHours: number | null;
   quantity: number | null;
+  detailsPerPrinter: number | null;
   machineHourlyRateEur: number | null;
   setupTimeMinutes: number | null;
   setupTimeHours: number | null;
@@ -64,6 +68,7 @@ type EditableFieldKey =
   | 'kgMaterialInput'
   | 'printTimeMinutesInput'
   | 'quantityInput'
+  | 'detailsPerPrinterInput'
   | 'machineHourlyRateEurInput'
   | 'setupTimeMinutesInput'
   | 'printerCountInput';
@@ -97,6 +102,12 @@ const COST_FIELDS: FieldConfig[] = [
 ];
 
 const CAPACITY_FIELDS: FieldConfig[] = [
+  {
+    key: 'detailsPerPrinterInput',
+    label: 'Antal detaljer/skrivare',
+    placeholder: '1',
+    inputMode: 'numeric',
+  },
   {
     key: 'setupTimeMinutesInput',
     label: 'Uppstartstid (min)',
@@ -191,6 +202,7 @@ function toDraft(calculation: MaterialCalculation, isEditing = false): Calculati
   const kgMaterialInput = formatInputDecimal(calculation.kgMaterial, 3);
   const printTimeMinutesInput = formatInputDecimal(calculation.printTimeHours * 60, 1);
   const quantityInput = String(calculation.quantity);
+  const detailsPerPrinterInput = String(calculation.detailsPerPrinter);
   const machineHourlyRateEurInput = formatInputDecimal(calculation.machineHourlyRateEur, 2);
   const setupTimeMinutesInput = formatInputDecimal(calculation.setupTimeHours * 60, 1);
   const printerCountInput = String(calculation.printerCount);
@@ -201,6 +213,7 @@ function toDraft(calculation: MaterialCalculation, isEditing = false): Calculati
     kgMaterialInput,
     printTimeMinutesInput,
     quantityInput,
+    detailsPerPrinterInput,
     machineHourlyRateEurInput,
     setupTimeMinutesInput,
     printerCountInput,
@@ -208,6 +221,7 @@ function toDraft(calculation: MaterialCalculation, isEditing = false): Calculati
     savedKgMaterialInput: kgMaterialInput,
     savedPrintTimeMinutesInput: printTimeMinutesInput,
     savedQuantityInput: quantityInput,
+    savedDetailsPerPrinterInput: detailsPerPrinterInput,
     savedMachineHourlyRateEurInput: machineHourlyRateEurInput,
     savedSetupTimeMinutesInput: setupTimeMinutesInput,
     savedPrinterCountInput: printerCountInput,
@@ -236,6 +250,7 @@ function parseDraftValues(draft: CalculationDraft): ParsedDraftValues {
     printTimeMinutes,
     printTimeHours,
     quantity: parseIntegerInput(draft.quantityInput),
+    detailsPerPrinter: parseIntegerInput(draft.detailsPerPrinterInput),
     machineHourlyRateEur: parseDecimalInput(draft.machineHourlyRateEurInput),
     setupTimeMinutes,
     setupTimeHours,
@@ -252,6 +267,7 @@ function computeMetrics(
     printTimeMinutes,
     printTimeHours,
     quantity,
+    detailsPerPrinter,
     machineHourlyRateEur,
     setupTimeMinutes,
     printerCount,
@@ -261,16 +277,22 @@ function computeMetrics(
     value !== null && Number.isFinite(value) && value >= 0;
   const isValidPositiveInteger = (value: number | null) =>
     value !== null && Number.isInteger(value) && value > 0;
+  const isValidPositive = (value: number | null) => value !== null && Number.isFinite(value) && value > 0;
 
   const materialCostPerPart =
     isValidNonNegative(kgMaterial) && kgMaterial !== null ? materialPricePerKg * kgMaterial : null;
 
+  const detailsPerPrinterDivisor =
+    isValidPositiveInteger(detailsPerPrinter) && detailsPerPrinter !== null ? detailsPerPrinter : null;
+
   const machineCostPerPart =
     isValidNonNegative(machineHourlyRateEur) &&
     isValidNonNegative(printTimeHours) &&
+    isValidPositive(detailsPerPrinterDivisor) &&
     machineHourlyRateEur !== null &&
-    printTimeHours !== null
-      ? machineHourlyRateEur * printTimeHours
+    printTimeHours !== null &&
+    detailsPerPrinterDivisor !== null
+      ? (machineHourlyRateEur * printTimeHours) / detailsPerPrinterDivisor
       : null;
 
   const directCostPerPart =
@@ -296,16 +318,25 @@ function computeMetrics(
       ? suggestedSalesPricePerPart * quantity
       : null;
 
+  const totalParallelCapacity =
+    isValidPositiveInteger(printerCount) &&
+    isValidPositiveInteger(detailsPerPrinter) &&
+    printerCount !== null &&
+    detailsPerPrinter !== null
+      ? printerCount * detailsPerPrinter
+      : null;
+
   const leadTimeMinutes =
     isValidNonNegative(setupTimeMinutes) &&
     isValidNonNegative(printTimeMinutes) &&
     isValidPositiveInteger(quantity) &&
     isValidPositiveInteger(printerCount) &&
+    isValidPositiveInteger(detailsPerPrinter) &&
     setupTimeMinutes !== null &&
     printTimeMinutes !== null &&
     quantity !== null &&
-    printerCount !== null
-      ? setupTimeMinutes + (printTimeMinutes * quantity) / printerCount
+    totalParallelCapacity !== null
+      ? setupTimeMinutes + (printTimeMinutes * quantity) / totalParallelCapacity
       : null;
 
   return {
@@ -412,6 +443,7 @@ export function MaterialCalculationsWorkspace({
       kgMaterialInput: current.savedKgMaterialInput,
       printTimeMinutesInput: current.savedPrintTimeMinutesInput,
       quantityInput: current.savedQuantityInput,
+      detailsPerPrinterInput: current.savedDetailsPerPrinterInput,
       machineHourlyRateEurInput: current.savedMachineHourlyRateEurInput,
       setupTimeMinutesInput: current.savedSetupTimeMinutesInput,
       printerCountInput: current.savedPrinterCountInput,
@@ -434,6 +466,7 @@ export function MaterialCalculationsWorkspace({
         kgMaterial: 0,
         printTimeHours: 0,
         quantity: 1,
+        detailsPerPrinter: 1,
         machineHourlyRateEur: 0,
         laborCostPerPartEur: 0,
         postProcessCostPerPartEur: DEFAULT_POST_PROCESS_COST_PER_PART_EUR,
@@ -502,6 +535,16 @@ export function MaterialCalculationsWorkspace({
     }
 
     if (
+      parsed.detailsPerPrinter === null ||
+      Number.isNaN(parsed.detailsPerPrinter) ||
+      !Number.isInteger(parsed.detailsPerPrinter) ||
+      parsed.detailsPerPrinter <= 0
+    ) {
+      invalid('Antal detaljer per skrivare måste vara ett heltal större än 0.');
+      return;
+    }
+
+    if (
       parsed.printerCount === null ||
       Number.isNaN(parsed.printerCount) ||
       !Number.isInteger(parsed.printerCount) ||
@@ -531,6 +574,7 @@ export function MaterialCalculationsWorkspace({
         kgMaterial: parsed.kgMaterial,
         printTimeHours: parsed.printTimeHours,
         quantity: parsed.quantity,
+        detailsPerPrinter: parsed.detailsPerPrinter,
         machineHourlyRateEur: parsed.machineHourlyRateEur ?? 0,
         laborCostPerPartEur: 0,
         postProcessCostPerPartEur: DEFAULT_POST_PROCESS_COST_PER_PART_EUR,
@@ -581,6 +625,48 @@ export function MaterialCalculationsWorkspace({
           caughtError instanceof Error
             ? caughtError.message
             : 'Det gick inte att ta bort kalkylen.',
+      }));
+    }
+  };
+
+  const exportCalculation = async (
+    draft: CalculationDraft,
+    title: string,
+    parsedValues: ParsedDraftValues,
+    metrics: CalculationMetrics,
+  ) => {
+    updateDraft(draft.id, (current) => ({ ...current, error: null }));
+
+    try {
+      await exportQuotePdf({
+        material,
+        calculationLabel: title,
+        inputs: {
+          kgPerDetail: parsedValues.kgMaterial,
+          quantity: parsedValues.quantity,
+          printTimeMinutesPerDetail: parsedValues.printTimeMinutes,
+          setupTimeMinutes: parsedValues.setupTimeMinutes,
+          printerCount: parsedValues.printerCount,
+          detailsPerPrinter: parsedValues.detailsPerPrinter,
+          machineHourlyRateEur: parsedValues.machineHourlyRateEur,
+        },
+        results: {
+          materialCostPerPart: metrics.materialCostPerPart,
+          machineCostPerPart: metrics.machineCostPerPart,
+          internalCostPerPart: metrics.internalCostPerPart,
+          salesPricePerPart: metrics.suggestedSalesPricePerPart,
+          batchSalesTotal: metrics.batchSalesTotal,
+          batchInternalCost: metrics.batchInternalCost,
+          leadTimeMinutes: metrics.leadTimeMinutes,
+        },
+      });
+    } catch (caughtError) {
+      updateDraft(draft.id, (current) => ({
+        ...current,
+        error:
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Det gick inte att exportera offert som PDF.',
       }));
     }
   };
@@ -713,6 +799,13 @@ export function MaterialCalculationsWorkspace({
       metrics.machineCostPerPart !== null && quantity > 0
         ? metrics.machineCostPerPart * quantity
         : null;
+    const totalParallelCapacity =
+      parsedValues.printerCount !== null &&
+      parsedValues.detailsPerPrinter !== null &&
+      parsedValues.printerCount > 0 &&
+      parsedValues.detailsPerPrinter > 0
+        ? parsedValues.printerCount * parsedValues.detailsPerPrinter
+        : null;
 
     return (
       <div className="space-y-4">
@@ -733,6 +826,14 @@ export function MaterialCalculationsWorkspace({
               className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:bg-[var(--surface-soft)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               Redigera
+            </button>
+            <button
+              type="button"
+              onClick={() => void exportCalculation(draft, title, parsedValues, metrics)}
+              disabled={draft.deleting}
+              className="rounded-full border border-[var(--accent)] bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800 transition hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Exportera PDF
             </button>
             <button
               type="button"
@@ -765,6 +866,8 @@ export function MaterialCalculationsWorkspace({
               <div className="space-y-1 rounded-lg border border-[var(--border)] bg-white p-2">
                 <p className="font-semibold uppercase tracking-wide text-[var(--muted)]">Resurser och kostnad</p>
                 <p className="text-[var(--ink)]">Antal skrivare: {formatNumber(parsedValues.printerCount, 0)}</p>
+                <p className="text-[var(--ink)]">Antal detaljer/skrivare: {formatNumber(parsedValues.detailsPerPrinter, 0)}</p>
+                <p className="text-[var(--ink)]">Parallell kapacitet: {formatNumber(totalParallelCapacity, 0)} detaljer/körning</p>
                 <p className="text-[var(--ink)]">Maskinkostnad/st: {formatMetricCurrency(metrics.machineCostPerPart)}</p>
                 <p className="text-[var(--ink)]">Maskinkostnad totalt: {formatMetricCurrency(machineCostTotal)}</p>
                 <p className="text-[var(--ink)]">Självkostnad/st: {formatMetricCurrency(metrics.internalCostPerPart)}</p>

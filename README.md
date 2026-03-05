@@ -4,8 +4,8 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials with an inlin
 
 ## Current status
 
-- Version: `0.6.1`
-- Phase 2.4 completed: material time-reference polish (minutes UI + selectable 45°/90°).
+- Version: `0.7.0`
+- Phase 2.5 completed: capacity-aware calculations and PDF-offert export.
 - Supabase-backed runtime is active for materials, shared options, and calculation records.
 - Swedish UI, compact row overview, and GitHub Pages deployment workflow are active.
 
@@ -17,6 +17,8 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials with an inlin
 - Keeps key fixed material values visible in the compact overview rows.
 - Manages multiple calculation scenarios per material (create, edit, remove).
 - Calculates internal cost, sales price, batch totals, and lead time from fixed and entered values.
+- Supports capacity-aware scenarios with `antal detaljer/skrivare`.
+- Exports saved calculations as branded PDF-offerts.
 - Creates, edits, and deletes materials against Supabase.
 - Loads kategori/tillverkare from shared Supabase option tables.
 - Lets users add and inactivate kategori/tillverkare inline in create/edit forms.
@@ -55,6 +57,7 @@ PolyFlow separates three value types:
 - risk buffer (%)
 - target margin (%)
 - printer count
+- details per printer
 - optional calculation label
 
 4. Calculated values (derived in UI)
@@ -62,7 +65,7 @@ PolyFlow separates three value types:
 - material cost per part (`price_per_kg_eur * kg_material`)
 - internal cost per part
 - suggested sales price per part
-- batch internal cost, batch sales total, and contribution margin
+- batch internal cost, batch sales total, and lead time
 - lead time and customer-facing summary values
 
 ## Tech stack
@@ -110,10 +113,11 @@ Run SQL files in Supabase SQL editor, in order:
 6. `supabase/sql/006_shared_material_options.sql`
 7. `supabase/sql/007_material_calculations_sales_quote_fields.sql`
 8. `supabase/sql/008_materials_reference_angle.sql`
+9. `supabase/sql/009_material_calculations_details_per_printer.sql`
 
-If your project is already set up through `007`, run only:
+If your project is already set up through `008`, run only:
 
-- `supabase/sql/008_materials_reference_angle.sql`
+- `supabase/sql/009_material_calculations_details_per_printer.sql`
 
 ### Run
 

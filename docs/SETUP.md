@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Phase 2.4 sales-oriented calculation runtime is implemented.
+- Phase 2.5 capacity-aware calculation runtime with PDF export is implemented.
 - Materials, shared kategori/tillverkare options, and per-material calculations are loaded from Supabase.
 - Material, calculation, and option mutations require authenticated session.
 
@@ -40,10 +40,11 @@ Run SQL files in Supabase SQL editor, in order:
 6. `supabase/sql/006_shared_material_options.sql`
 7. `supabase/sql/007_material_calculations_sales_quote_fields.sql`
 8. `supabase/sql/008_materials_reference_angle.sql`
+9. `supabase/sql/009_material_calculations_details_per_printer.sql`
 
-If your project is already initialized up to `007`, run only:
+If your project is already initialized up to `008`, run only:
 
-- `supabase/sql/008_materials_reference_angle.sql`
+- `supabase/sql/009_material_calculations_details_per_printer.sql`
 
 Configure Supabase Auth URL settings:
 
@@ -67,6 +68,8 @@ npm run preview
 - `/materials` loads materials from Supabase.
 - Expanding a material row loads related calculations from Supabase.
 - Expanded calculations show sales-oriented outputs (internkostnad, prisförslag, batch, ledtid).
+- Expanded calculations support `antal detaljer/skrivare` for capacity-aware cost/tid.
+- Saved calculations can export branded PDF-offerts.
 - `/auth` signs in with magic link.
 - Write actions are blocked when not signed in.
 - Material create/edit returns to overview and reopens target material inline.

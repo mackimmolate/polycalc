@@ -120,6 +120,7 @@ export interface Database {
           kg_material: number;
           print_time_hours: number;
           quantity: number;
+          details_per_printer: number;
           machine_hourly_rate_eur: number;
           labor_cost_per_part_eur: number;
           post_process_cost_per_part_eur: number;
@@ -138,6 +139,7 @@ export interface Database {
           kg_material: number;
           print_time_hours: number;
           quantity?: number;
+          details_per_printer?: number;
           machine_hourly_rate_eur?: number;
           labor_cost_per_part_eur?: number;
           post_process_cost_per_part_eur?: number;
@@ -156,6 +158,7 @@ export interface Database {
           kg_material?: number;
           print_time_hours?: number;
           quantity?: number;
+          details_per_printer?: number;
           machine_hourly_rate_eur?: number;
           labor_cost_per_part_eur?: number;
           post_process_cost_per_part_eur?: number;

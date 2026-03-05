@@ -4,6 +4,30 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.7.0] - 2026-03-05
+
+### Added
+
+- Capacity-aware calculation input persisted on `material_calculations`:
+  - `details_per_printer` (`antal detaljer/skrivare`)
+- New Supabase SQL upgrade asset:
+  - `supabase/sql/009_material_calculations_details_per_printer.sql`
+- PDF export for saved calculations:
+  - `Exportera PDF` action in read-only kalkyl view
+  - branded offert layout using project logo
+
+### Changed
+
+- Refined calculation workspace inputs and labels:
+  - `Kg material` -> `Kg/detalj`
+  - `Antal` -> `Antal detaljer`
+  - `Antal detaljer/skrivare` moved into `Kapacitet och tid`
+- Updated machine cost and lead-time logic to include printer capacity:
+  - machine cost per detail now accounts for details per printer
+  - lead time now uses total parallel capacity (`antal skrivare * antal detaljer/skrivare`)
+- Moved `marstromlogo.png` from repo root to:
+  - `src/assets/brand/marstromlogo.png`
+
 ## [0.6.1] - 2026-03-05
 
 ### Added

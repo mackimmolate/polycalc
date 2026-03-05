@@ -5,6 +5,7 @@ export interface MaterialCalculation {
   kgMaterial: number;
   printTimeHours: number;
   quantity: number;
+  detailsPerPrinter: number;
   machineHourlyRateEur: number;
   laborCostPerPartEur: number;
   postProcessCostPerPartEur: number;
@@ -22,6 +23,7 @@ export interface MaterialCalculationMutationInput {
   kgMaterial: number;
   printTimeHours: number;
   quantity: number;
+  detailsPerPrinter: number;
   machineHourlyRateEur: number;
   laborCostPerPartEur: number;
   postProcessCostPerPartEur: number;

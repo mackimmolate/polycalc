@@ -64,6 +64,13 @@
 - Added schema support for `time_per_layer_reference_angle_deg`
 - Updated material overview rendering to show minute-based time with angle context
 
+## Phase 2.5 (completed): Capacity-aware calculations and PDF offert export
+
+- Added `details_per_printer` as persisted calculation input in Supabase
+- Updated calculation logic so machine cost and lead-time account for printer capacity
+- Added `Exportera PDF` on saved calculations with branded offert layout
+- Moved and structured brand asset under `src/assets/brand/`
+
 ## Phase 3 (next): Hardening and release readiness
 
 - Add automated tests for critical flows (material + calculation services and key UI states)
@@ -73,7 +80,6 @@
 
 ## Deferred scope (v1)
 
-- Export functionality
 - Advanced role/permission system
 - Offline mutation queue and sync
 - Full option administration workflow (rename/merge/bulk cleanup)

@@ -26,7 +26,7 @@ This file records key product and engineering decisions.
 ## D-0004: Export functionality excluded from v1
 
 - Date: 2026-03-03
-- Status: Accepted
+- Status: Superseded
 - Decision: Do not build export in v1.
 - Reason: Not part of core first-value scope.
 
@@ -155,3 +155,10 @@ This file records key product and engineering decisions.
 - Status: Accepted
 - Decision: Keep storage in seconds (`time_per_layer_45_deg_seconds`) for precision, add `time_per_layer_reference_angle_deg` (`45` or `90`) for context, and use minute-based input/output in the material form/UI.
 - Reason: Minutes are easier for users while seconds remain robust for sorting and calculations; angle selection removes incorrect fixed `45°` assumptions.
+
+## D-0023: Add scoped PDF offert export and capacity-per-printer input
+
+- Date: 2026-03-05
+- Status: Accepted
+- Decision: Add `details_per_printer` to persisted calculation inputs and allow PDF export for saved calculations with branded quote layout.
+- Reason: Sales workflows need a shareable quote output and realistic capacity-aware lead-time/cost estimates without introducing a full quote management system.

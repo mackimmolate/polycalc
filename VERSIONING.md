@@ -4,7 +4,7 @@ PolyFlow uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 
 ## Current version
 
-- `0.6.1`
+- `0.7.0`
 
 ## Rules
 
@@ -40,3 +40,4 @@ PolyFlow uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 - `0.5.0`: Phase 2.2 shared canonical option model (Supabase-backed `material_categories`/`material_manufacturers`, materials FK migration, and localStorage-source retirement).
 - `0.6.0`: Phase 2.3 sales-oriented calculation expansion (persisted quote-input fields on `material_calculations` plus read-only result presentation for internkostnad, prisförslag, batch och ledtid).
 - `0.6.1`: Material form time-reference polish (minutes in UI, selectable `45°/90°` reference angle, and new `materials.time_per_layer_reference_angle_deg` schema support).
+- `0.7.0`: Capacity-aware calculation model (`details_per_printer`) and branded PDF-offert export from saved scenarios.

@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Phase 2.4 shared option + sales-oriented calculation model with reference-angle polish is implemented.
+- Phase 2.5 capacity-aware calculation model with PDF offert export is implemented.
 - Runtime data is Supabase-backed for materials, shared option entities, and related calculation records.
 - PolyFlow v1 is implemented as material library plus inline multi-calculation workspace.
 
@@ -90,6 +90,7 @@ src/
 - `riskBufferPercent`
 - `targetMarginPercent`
 - `printerCount`
+- `detailsPerPrinter`
 
 ### Calculated values (derived in UI)
 
@@ -98,8 +99,13 @@ src/
 - `suggestedSalesPricePerPart`
 - `batchInternalCost`
 - `batchSalesTotal`
-- `batchProfit`
-- `leadTimeHours`
+- `leadTimeMinutes`
+
+### Export output (derived document)
+
+- Saved calculations can be exported as a branded PDF offert.
+- Export generation lives in `features/materials/utils/exportQuotePdf.ts`.
+- PDF output is derived from persisted material + calculation inputs and computed values; no separate quote table is introduced in v1.
 
 ## Routing strategy
 

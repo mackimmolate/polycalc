@@ -9,7 +9,7 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 - Optimize for clarity, speed, low cognitive load, and maintainability.
 - Prefer simple architecture and strong defaults over clever abstractions.
 - Document intentional deferrals explicitly.
-- Avoid feature creep in v1 (for example: no export system).
+- Avoid feature creep in v1 (for example: no broad export platform beyond scoped quote PDF).
 
 ## Architecture expectations
 
@@ -50,7 +50,7 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 ## Versioning discipline
 
 - Follow Semantic Versioning.
-- Current active baseline is `0.6.1`; increment only for real delivered scope.
+- Current active baseline is `0.7.0`; increment only for real delivered scope.
 - Every versioned change must update `CHANGELOG.md`.
 - Document assumptions and deferred scope for each milestone.
 
