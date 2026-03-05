@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { SurfaceCard } from '@/components/ui/SurfaceCard';
 import {
   createMaterialCalculation,
@@ -9,7 +9,6 @@ import {
 import type { Material } from '@/types/material';
 import type { MaterialCalculation } from '@/types/materialCalculation';
 import { cn } from '@/utils/cn';
-import { formatHours } from '@/utils/duration';
 import { formatCurrency } from '@/utils/formatters';
 
 interface MaterialCalculationsWorkspaceProps {
@@ -21,18 +20,16 @@ interface CalculationDraft {
   id: string;
   label: string;
   kgMaterialInput: string;
-  printTimeHoursInput: string;
+  printTimeMinutesInput: string;
   quantityInput: string;
   machineHourlyRateEurInput: string;
-  laborCostPerPartEurInput: string;
   setupTimeHoursInput: string;
   printerCountInput: string;
   savedLabel: string;
   savedKgMaterialInput: string;
-  savedPrintTimeHoursInput: string;
+  savedPrintTimeMinutesInput: string;
   savedQuantityInput: string;
   savedMachineHourlyRateEurInput: string;
-  savedLaborCostPerPartEurInput: string;
   savedSetupTimeHoursInput: string;
   savedPrinterCountInput: string;
   isEditing: boolean;
@@ -43,10 +40,10 @@ interface CalculationDraft {
 
 interface ParsedDraftValues {
   kgMaterial: number | null;
+  printTimeMinutes: number | null;
   printTimeHours: number | null;
   quantity: number | null;
   machineHourlyRateEur: number | null;
-  laborCostPerPartEur: number | null;
   setupTimeHours: number | null;
   printerCount: number | null;
 }
@@ -54,23 +51,19 @@ interface ParsedDraftValues {
 interface CalculationMetrics {
   materialCostPerPart: number | null;
   machineCostPerPart: number | null;
-  internalTimeCostPerPart: number | null;
   internalCostPerPart: number | null;
   suggestedSalesPricePerPart: number | null;
   batchInternalCost: number | null;
   batchSalesTotal: number | null;
-  marginAmount: number | null;
-  marginPercent: number | null;
   leadTimeHours: number | null;
 }
 
 type EditableFieldKey =
   | 'label'
   | 'kgMaterialInput'
-  | 'printTimeHoursInput'
+  | 'printTimeMinutesInput'
   | 'quantityInput'
   | 'machineHourlyRateEurInput'
-  | 'laborCostPerPartEurInput'
   | 'setupTimeHoursInput'
   | 'printerCountInput';
 
@@ -82,12 +75,12 @@ interface FieldConfig {
 }
 
 const ORDER_FIELDS: FieldConfig[] = [
-  { key: 'label', label: 'Namn på kalkyl', placeholder: 'Kalkyl', inputMode: 'text' },
+  { key: 'label', label: 'Namn pÃ¥ kalkyl', placeholder: 'Kalkyl', inputMode: 'text' },
   { key: 'kgMaterialInput', label: 'Kg material', placeholder: '0,85', inputMode: 'decimal' },
   {
-    key: 'printTimeHoursInput',
-    label: 'Printtid/st (h)',
-    placeholder: '2,5',
+    key: 'printTimeMinutesInput',
+    label: 'Printtid/st (min)',
+    placeholder: '30',
     inputMode: 'decimal',
   },
   { key: 'quantityInput', label: 'Antal', placeholder: '10', inputMode: 'numeric' },
@@ -98,12 +91,6 @@ const COST_FIELDS: FieldConfig[] = [
     key: 'machineHourlyRateEurInput',
     label: 'Maskinkostnad/h (EUR)',
     placeholder: '8',
-    inputMode: 'decimal',
-  },
-  {
-    key: 'laborCostPerPartEurInput',
-    label: 'Intern tidkostnad/st (EUR)',
-    placeholder: '2',
     inputMode: 'decimal',
   },
 ];
@@ -159,10 +146,18 @@ function formatNumber(value: number | null, maxFractionDigits = 2) {
 
 function formatMetricCurrency(value: number | null) {
   if (value === null || !Number.isFinite(value)) {
-    return 'Ej beräknat';
+    return 'Ej berÃ¤knat';
   }
 
   return formatCurrency(value);
+}
+
+function formatMinutesWithUnit(value: number | null) {
+  if (value === null || !Number.isFinite(value)) {
+    return 'Ej beräknat';
+  }
+
+  return `${formatNumber(value, 1)} min`;
 }
 
 function formatHoursWithUnit(value: number | null) {
@@ -170,12 +165,12 @@ function formatHoursWithUnit(value: number | null) {
     return 'Ej beräknat';
   }
 
-  return `${formatHours(value)} h`;
+  return `${formatNumber(value)} h`;
 }
 
 function formatLeadTime(value: number | null) {
   if (value === null || !Number.isFinite(value)) {
-    return 'Ej beräknat';
+    return 'Ej berÃ¤knat';
   }
 
   const totalMinutes = Math.round(value * 60);
@@ -201,10 +196,9 @@ const DEFAULT_POST_PROCESS_TIME_HOURS_PER_PART = 0;
 function toDraft(calculation: MaterialCalculation, isEditing = false): CalculationDraft {
   const label = calculation.label;
   const kgMaterialInput = formatInputDecimal(calculation.kgMaterial, 3);
-  const printTimeHoursInput = formatInputDecimal(calculation.printTimeHours, 2);
+  const printTimeMinutesInput = formatInputDecimal(calculation.printTimeHours * 60, 1);
   const quantityInput = String(calculation.quantity);
   const machineHourlyRateEurInput = formatInputDecimal(calculation.machineHourlyRateEur, 2);
-  const laborCostPerPartEurInput = formatInputDecimal(calculation.laborCostPerPartEur, 2);
   const setupTimeHoursInput = formatInputDecimal(calculation.setupTimeHours, 2);
   const printerCountInput = String(calculation.printerCount);
 
@@ -212,18 +206,16 @@ function toDraft(calculation: MaterialCalculation, isEditing = false): Calculati
     id: calculation.id,
     label,
     kgMaterialInput,
-    printTimeHoursInput,
+    printTimeMinutesInput,
     quantityInput,
     machineHourlyRateEurInput,
-    laborCostPerPartEurInput,
     setupTimeHoursInput,
     printerCountInput,
     savedLabel: label,
     savedKgMaterialInput: kgMaterialInput,
-    savedPrintTimeHoursInput: printTimeHoursInput,
+    savedPrintTimeMinutesInput: printTimeMinutesInput,
     savedQuantityInput: quantityInput,
     savedMachineHourlyRateEurInput: machineHourlyRateEurInput,
-    savedLaborCostPerPartEurInput: laborCostPerPartEurInput,
     savedSetupTimeHoursInput: setupTimeHoursInput,
     savedPrinterCountInput: printerCountInput,
     isEditing,
@@ -239,12 +231,16 @@ function getCalculationLabel(label: string, index: number) {
 }
 
 function parseDraftValues(draft: CalculationDraft): ParsedDraftValues {
+  const printTimeMinutes = parseDecimalInput(draft.printTimeMinutesInput);
+  const printTimeHours =
+    printTimeMinutes === null || Number.isNaN(printTimeMinutes) ? printTimeMinutes : printTimeMinutes / 60;
+
   return {
     kgMaterial: parseDecimalInput(draft.kgMaterialInput),
-    printTimeHours: parseDecimalInput(draft.printTimeHoursInput),
+    printTimeMinutes,
+    printTimeHours,
     quantity: parseIntegerInput(draft.quantityInput),
     machineHourlyRateEur: parseDecimalInput(draft.machineHourlyRateEurInput),
-    laborCostPerPartEur: parseDecimalInput(draft.laborCostPerPartEurInput),
     setupTimeHours: parseDecimalInput(draft.setupTimeHoursInput),
     printerCount: parseIntegerInput(draft.printerCountInput),
   };
@@ -259,7 +255,6 @@ function computeMetrics(
     printTimeHours,
     quantity,
     machineHourlyRateEur,
-    laborCostPerPartEur,
     setupTimeHours,
     printerCount,
   } = parsedValues;
@@ -280,14 +275,9 @@ function computeMetrics(
       ? machineHourlyRateEur * printTimeHours
       : null;
 
-  const internalTimeCostPerPart =
-    isValidNonNegative(laborCostPerPartEur) && laborCostPerPartEur !== null
-      ? laborCostPerPartEur
-      : null;
-
   const directCostPerPart =
-    materialCostPerPart !== null && machineCostPerPart !== null && internalTimeCostPerPart !== null
-      ? materialCostPerPart + machineCostPerPart + internalTimeCostPerPart
+    materialCostPerPart !== null && machineCostPerPart !== null
+      ? materialCostPerPart + machineCostPerPart
       : null;
 
   const internalCostPerPart = directCostPerPart;
@@ -307,16 +297,6 @@ function computeMetrics(
       ? suggestedSalesPricePerPart * quantity
       : null;
 
-  const marginAmount =
-    batchSalesTotal !== null && batchInternalCost !== null
-      ? batchSalesTotal - batchInternalCost
-      : null;
-
-  const marginPercent =
-    batchSalesTotal !== null && batchSalesTotal > 0 && marginAmount !== null
-      ? (marginAmount / batchSalesTotal) * 100
-      : null;
-
   const leadTimeHours =
     isValidNonNegative(setupTimeHours) &&
     isValidNonNegative(printTimeHours) &&
@@ -332,13 +312,10 @@ function computeMetrics(
   return {
     materialCostPerPart,
     machineCostPerPart,
-    internalTimeCostPerPart,
     internalCostPerPart,
     suggestedSalesPricePerPart,
     batchInternalCost,
     batchSalesTotal,
-    marginAmount,
-    marginPercent,
     leadTimeHours,
   };
 }
@@ -351,7 +328,7 @@ interface ResultCardProps {
 
 function ResultCard({ label, value, emphasis = 'default' }: ResultCardProps) {
   const styleByEmphasis = {
-    default: 'border-[var(--border)] bg-[var(--surface)] text-[var(--ink)]',
+    default: 'border-[var(--border)] bg-white text-[var(--ink)]',
     success: 'border-emerald-300 bg-emerald-50 text-emerald-900',
     accent: 'border-[var(--accent)] bg-teal-50 text-teal-900',
   } as const;
@@ -392,7 +369,7 @@ export function MaterialCalculationsWorkspace({
           setError(
             caughtError instanceof Error
               ? caughtError.message
-              : 'Det gick inte att läsa in kalkyler.',
+              : 'Det gick inte att lÃ¤sa in kalkyler.',
           );
         }
       } finally {
@@ -434,10 +411,9 @@ export function MaterialCalculationsWorkspace({
       ...current,
       label: current.savedLabel,
       kgMaterialInput: current.savedKgMaterialInput,
-      printTimeHoursInput: current.savedPrintTimeHoursInput,
+      printTimeMinutesInput: current.savedPrintTimeMinutesInput,
       quantityInput: current.savedQuantityInput,
       machineHourlyRateEurInput: current.savedMachineHourlyRateEurInput,
-      laborCostPerPartEurInput: current.savedLaborCostPerPartEurInput,
       setupTimeHoursInput: current.savedSetupTimeHoursInput,
       printerCountInput: current.savedPrinterCountInput,
       isEditing: false,
@@ -494,7 +470,16 @@ export function MaterialCalculationsWorkspace({
     };
 
     if (parsed.kgMaterial === null || Number.isNaN(parsed.kgMaterial) || parsed.kgMaterial < 0) {
-      invalid('Ange kg material som 0 eller högre.');
+      invalid('Ange kg material som 0 eller hÃ¶gre.');
+      return;
+    }
+
+    if (
+      parsed.printTimeMinutes === null ||
+      Number.isNaN(parsed.printTimeMinutes) ||
+      parsed.printTimeMinutes < 0
+    ) {
+      invalid('Ange printtid i minuter som 0 eller högre.');
       return;
     }
 
@@ -503,7 +488,7 @@ export function MaterialCalculationsWorkspace({
       Number.isNaN(parsed.printTimeHours) ||
       parsed.printTimeHours < 0
     ) {
-      invalid('Ange printtid i timmar som 0 eller högre.');
+      invalid('Ange printtid i minuter som 0 eller högre.');
       return;
     }
 
@@ -513,7 +498,7 @@ export function MaterialCalculationsWorkspace({
       !Number.isInteger(parsed.quantity) ||
       parsed.quantity <= 0
     ) {
-      invalid('Antal måste vara ett heltal större än 0.');
+      invalid('Antal mÃ¥ste vara ett heltal stÃ¶rre Ã¤n 0.');
       return;
     }
 
@@ -523,13 +508,12 @@ export function MaterialCalculationsWorkspace({
       !Number.isInteger(parsed.printerCount) ||
       parsed.printerCount <= 0
     ) {
-      invalid('Antal skrivare måste vara ett heltal större än 0.');
+      invalid('Antal skrivare mÃ¥ste vara ett heltal stÃ¶rre Ã¤n 0.');
       return;
     }
 
     const nonNegativeChecks: Array<[number | null, string]> = [
       [parsed.machineHourlyRateEur, 'Maskinkostnad per timme måste vara 0 eller högre.'],
-      [parsed.laborCostPerPartEur, 'Intern tidkostnad per styck måste vara 0 eller högre.'],
       [parsed.setupTimeHours, 'Uppstartstid måste vara 0 eller högre.'],
     ];
 
@@ -549,7 +533,7 @@ export function MaterialCalculationsWorkspace({
         printTimeHours: parsed.printTimeHours,
         quantity: parsed.quantity,
         machineHourlyRateEur: parsed.machineHourlyRateEur ?? 0,
-        laborCostPerPartEur: parsed.laborCostPerPartEur ?? 0,
+        laborCostPerPartEur: 0,
         postProcessCostPerPartEur: DEFAULT_POST_PROCESS_COST_PER_PART_EUR,
         setupTimeHours: parsed.setupTimeHours ?? 0,
         postProcessTimeHoursPerPart: DEFAULT_POST_PROCESS_TIME_HOURS_PER_PART,
@@ -580,7 +564,7 @@ export function MaterialCalculationsWorkspace({
       return;
     }
 
-    const shouldDelete = window.confirm('Ta bort den här kalkylen?');
+    const shouldDelete = window.confirm('Ta bort den hÃ¤r kalkylen?');
     if (!shouldDelete) {
       return;
     }
@@ -632,7 +616,7 @@ export function MaterialCalculationsWorkspace({
           <div>
             <p className="text-sm font-semibold text-[var(--ink)]">{title}</p>
             <p className="text-xs text-[var(--muted)]">
-              Fyll i underlag, kontrollera förhandsvisning och spara.
+              Fyll i underlag, kontrollera fÃ¶rhandsvisning och spara.
             </p>
           </div>
           <button
@@ -649,7 +633,7 @@ export function MaterialCalculationsWorkspace({
           <div className="space-y-3">
             <div className="space-y-3 rounded-xl border border-[var(--border)] bg-white p-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                1. Beställning
+                1. BestÃ¤llning
               </p>
               <div className="grid gap-3 md:grid-cols-2">
                 {ORDER_FIELDS.map((field) => renderField(draft, field))}
@@ -677,17 +661,16 @@ export function MaterialCalculationsWorkspace({
 
           <div className="space-y-3 rounded-xl border border-teal-200 bg-teal-50 p-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-              Förhandsvisning
+              FÃ¶rhandsvisning
             </p>
             <div className="grid gap-2">
               <ResultCard
-                label="Självkostnad/st"
+                label="SjÃ¤lvkostnad/st"
                 value={formatMetricCurrency(metrics.internalCostPerPart)}
               />
               <ResultCard
-                label="Försäljningspris/st"
+                label="FÃ¶rsÃ¤ljningspris/st"
                 value={formatMetricCurrency(metrics.suggestedSalesPricePerPart)}
-                emphasis="accent"
               />
               <ResultCard label="Totalpris" value={formatMetricCurrency(metrics.batchSalesTotal)} />
               <ResultCard label="Leveranstid" value={formatLeadTime(metrics.leadTimeHours)} />
@@ -731,19 +714,13 @@ export function MaterialCalculationsWorkspace({
       metrics.machineCostPerPart !== null && quantity > 0
         ? metrics.machineCostPerPart * quantity
         : null;
-    const internalTimeCostTotal =
-      metrics.internalTimeCostPerPart !== null && quantity > 0
-        ? metrics.internalTimeCostPerPart * quantity
-        : null;
 
     return (
       <div className="space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <p className="text-sm font-semibold text-[var(--ink)]">{title}</p>
-            <p className="text-xs text-[var(--muted)]">
-              Sparad kalkyl. Klicka på redigera för ändringar.
-            </p>
+            <p className="text-xs text-[var(--muted)]">Sparad kalkyl. Klicka på redigera för ändringar.</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -769,130 +746,44 @@ export function MaterialCalculationsWorkspace({
           </div>
         </div>
 
-        <div className="space-y-2 rounded-xl border border-teal-300 bg-teal-50 p-3">
-          <p className="text-sm font-semibold text-teal-800">Det här är offerten</p>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            <ResultCard
-              label="Kundpris/st"
-              value={formatMetricCurrency(metrics.suggestedSalesPricePerPart)}
-              emphasis="accent"
-            />
-            <ResultCard
-              label="Totalt kundpris"
-              value={formatMetricCurrency(metrics.batchSalesTotal)}
-              emphasis="accent"
-            />
-            <ResultCard label="Antal" value={`${formatNumber(parsedValues.quantity, 0)} st`} />
-            <ResultCard
-              label="Leveranstid"
-              value={formatLeadTime(metrics.leadTimeHours)}
-              emphasis="success"
-            />
-          </div>
-        </div>
-
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
           <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-              Så räknas priset
-            </p>
-            <div className="space-y-1 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[var(--muted)]">Material (totalt)</span>
-                <span className="font-semibold text-[var(--ink)] tabular-nums">
-                  {formatMetricCurrency(materialCostTotal)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[var(--muted)]">Maskin (totalt)</span>
-                <span className="font-semibold text-[var(--ink)] tabular-nums">
-                  {formatMetricCurrency(machineCostTotal)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[var(--muted)]">Intern tid (totalt)</span>
-                <span className="font-semibold text-[var(--ink)] tabular-nums">
-                  {formatMetricCurrency(internalTimeCostTotal)}
-                </span>
-              </div>
-              <div className="my-1 border-t border-[var(--border)]" />
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-medium text-[var(--ink)]">Totalkostnad</span>
-                <span className="font-semibold text-[var(--ink)] tabular-nums">
-                  {formatMetricCurrency(metrics.batchInternalCost)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-medium text-[var(--ink)]">Försäljningspris</span>
-                <span className="font-semibold text-[var(--accent)] tabular-nums">
-                  {formatMetricCurrency(metrics.batchSalesTotal)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-medium text-[var(--ink)]">Marginal / täckning</span>
-                <span className="font-semibold text-emerald-700 tabular-nums">
-                  {formatMetricCurrency(metrics.marginAmount)} (
-                  {formatNumber(metrics.marginPercent, 1)}
-                  %)
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-              Beräkningsunderlag
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Beräkningsunderlag</p>
             <div className="space-y-2 text-xs">
               <div className="space-y-1 rounded-lg border border-[var(--border)] bg-white p-2">
-                <p className="font-semibold uppercase tracking-wide text-[var(--muted)]">
-                  Material
-                </p>
-                <p className="text-[var(--ink)]">
-                  Antal: {formatNumber(parsedValues.quantity, 0)} st
-                </p>
-                <p className="text-[var(--ink)]">
-                  Material/st: {formatNumber(parsedValues.kgMaterial, 3)} kg
-                </p>
+                <p className="font-semibold uppercase tracking-wide text-[var(--muted)]">Material</p>
+                <p className="text-[var(--ink)]">Antal: {formatNumber(parsedValues.quantity, 0)} st</p>
+                <p className="text-[var(--ink)]">Material/st: {formatNumber(parsedValues.kgMaterial, 3)} kg</p>
+                <p className="text-[var(--ink)]">Materialkostnad/st: {formatMetricCurrency(metrics.materialCostPerPart)}</p>
+                <p className="text-[var(--ink)]">Materialkostnad totalt: {formatMetricCurrency(materialCostTotal)}</p>
               </div>
               <div className="space-y-1 rounded-lg border border-[var(--border)] bg-white p-2">
                 <p className="font-semibold uppercase tracking-wide text-[var(--muted)]">Tid</p>
-                <p className="text-[var(--ink)]">
-                  Printtid/st: {formatHoursWithUnit(parsedValues.printTimeHours)}
-                </p>
-                <p className="text-[var(--ink)]">
-                  Uppstartstid: {formatHoursWithUnit(parsedValues.setupTimeHours)}
-                </p>
-                <p className="text-[var(--ink)]">
-                  Total produktionstid: {formatLeadTime(metrics.leadTimeHours)}
-                </p>
+                <p className="text-[var(--ink)]">Printtid/st: {formatMinutesWithUnit(parsedValues.printTimeMinutes)}</p>
+                <p className="text-[var(--ink)]">Uppstartstid: {formatHoursWithUnit(parsedValues.setupTimeHours)}</p>
+                <p className="text-[var(--ink)]">Total produktionstid: {formatLeadTime(metrics.leadTimeHours)}</p>
               </div>
               <div className="space-y-1 rounded-lg border border-[var(--border)] bg-white p-2">
-                <p className="font-semibold uppercase tracking-wide text-[var(--muted)]">
-                  Resurser
-                </p>
-                <p className="text-[var(--ink)]">
-                  Antal skrivare: {formatNumber(parsedValues.printerCount, 0)}
-                </p>
+                <p className="font-semibold uppercase tracking-wide text-[var(--muted)]">Resurser och kostnad</p>
+                <p className="text-[var(--ink)]">Antal skrivare: {formatNumber(parsedValues.printerCount, 0)}</p>
+                <p className="text-[var(--ink)]">Maskinkostnad/st: {formatMetricCurrency(metrics.machineCostPerPart)}</p>
+                <p className="text-[var(--ink)]">Maskinkostnad totalt: {formatMetricCurrency(machineCostTotal)}</p>
+                <p className="text-[var(--ink)]">Självkostnad/st: {formatMetricCurrency(metrics.internalCostPerPart)}</p>
+                <p className="text-[var(--ink)]">Totalkostnad: {formatMetricCurrency(metrics.batchInternalCost)}</p>
+                <p className="text-[var(--ink)]">Försäljningspris totalt: {formatMetricCurrency(metrics.batchSalesTotal)}</p>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="grid gap-2 md:grid-cols-3">
-          <ResultCard
-            label="Självkostnad/st"
-            value={formatMetricCurrency(metrics.internalCostPerPart)}
-          />
-          <ResultCard
-            label="Försäljningspris/st"
-            value={formatMetricCurrency(metrics.suggestedSalesPricePerPart)}
-            emphasis="accent"
-          />
-          <ResultCard
-            label="Totalkostnad"
-            value={formatMetricCurrency(metrics.batchInternalCost)}
-          />
+          <div className="space-y-2 rounded-xl border border-teal-300 bg-teal-50 p-3">
+            <p className="text-sm font-semibold text-teal-800">Offert</p>
+            <div className="space-y-2">
+              <ResultCard label="Kundpris/st" value={formatMetricCurrency(metrics.suggestedSalesPricePerPart)} />
+              <ResultCard label="Totalt kundpris" value={formatMetricCurrency(metrics.batchSalesTotal)} />
+              <ResultCard label="Antal" value={`${formatNumber(parsedValues.quantity, 0)} st`} />
+              <ResultCard label="Leveranstid" value={formatLeadTime(metrics.leadTimeHours)} />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -904,7 +795,7 @@ export function MaterialCalculationsWorkspace({
         <div>
           <p className="text-sm font-semibold text-[var(--ink)]">Kalkyler</p>
           <p className="text-xs text-[var(--muted)]">
-            Skapa scenarier för internkostnad, prisförslag, batch och ledtid.
+            Skapa scenarier fÃ¶r internkostnad, prisfÃ¶rslag, batch och ledtid.
           </p>
         </div>
 
@@ -920,28 +811,28 @@ export function MaterialCalculationsWorkspace({
 
       {!canWrite ? (
         <p className="text-xs text-[var(--muted)]">
-          Logga in för att skapa, spara eller ta bort kalkyler.
+          Logga in fÃ¶r att skapa, spara eller ta bort kalkyler.
         </p>
       ) : null}
 
       {error ? (
         <SurfaceCard className="space-y-1 border-red-200 bg-red-50 p-3">
-          <p className="text-sm font-semibold text-red-700">Det gick inte att läsa kalkyler.</p>
+          <p className="text-sm font-semibold text-red-700">Det gick inte att lÃ¤sa kalkyler.</p>
           <p className="text-sm text-red-900/85">{error}</p>
         </SurfaceCard>
       ) : null}
 
       {loading ? (
         <SurfaceCard className="p-3">
-          <p className="text-sm text-[var(--muted)]">Läser in kalkyler...</p>
+          <p className="text-sm text-[var(--muted)]">LÃ¤ser in kalkyler...</p>
         </SurfaceCard>
       ) : null}
 
       {!loading && !error && drafts.length === 0 ? (
         <SurfaceCard className="space-y-1 p-3">
-          <p className="text-sm font-semibold text-[var(--ink)]">Inga kalkyler ännu.</p>
+          <p className="text-sm font-semibold text-[var(--ink)]">Inga kalkyler Ã¤nnu.</p>
           <p className="text-sm text-[var(--muted)]">
-            Lägg till en kalkyl för att räkna internkostnad, offertpris och leveranstid.
+            LÃ¤gg till en kalkyl fÃ¶r att rÃ¤kna internkostnad, offertpris och leveranstid.
           </p>
         </SurfaceCard>
       ) : null}
@@ -970,3 +861,5 @@ export function MaterialCalculationsWorkspace({
     </div>
   );
 }
+
+
