@@ -39,6 +39,14 @@ function formatNumber(value: number | null, maxFractionDigits = 2) {
   }).format(value);
 }
 
+function formatTemperature(value: number | null) {
+  if (value === null || !Number.isFinite(value)) {
+    return 'Ej angivet';
+  }
+
+  return `${formatNumber(value, 0)} °C`;
+}
+
 function formatLeadTime(minutesValue: number | null) {
   if (minutesValue === null || !Number.isFinite(minutesValue)) {
     return 'Ej beräknat';
@@ -144,11 +152,11 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
 
   doc.setTextColor(18, 34, 49);
   doc.setFontSize(24);
-  doc.text('Offert', margin, 62);
+  doc.text('Självkostnadskalkyl', margin, 62);
   doc.setTextColor(91, 106, 117);
   doc.setFontSize(11);
-  doc.text(material.name, margin, 82);
-  doc.text(calculationLabel.trim().length > 0 ? calculationLabel : 'Kalkyl', margin, 98);
+  doc.text(calculationLabel.trim().length > 0 ? calculationLabel : 'Kalkyl', margin, 82);
+  doc.text(material.name, margin, 98);
 
   const generatedAt = new Intl.DateTimeFormat('sv-SE', {
     dateStyle: 'medium',
@@ -161,7 +169,7 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
 
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(11);
-  doc.text('Offertöversikt', margin + 16, 162);
+  doc.text('Självkostnadsöversikt', margin + 16, 162);
   doc.setFontSize(23);
   doc.text(formatCurrency(results.batchInternalCost), margin + 16, 194);
   doc.setFontSize(10);
@@ -178,6 +186,8 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
 
   let lineY = 312;
   drawKeyValueRow(doc, 'Pris per kg material', formatCurrency(material.pricePerKgEur), margin, lineY);
+  lineY += 22;
+  drawKeyValueRow(doc, 'Maxtemperatur', formatTemperature(material.maxTemperatureC), margin, lineY);
   lineY += 22;
   drawKeyValueRow(doc, 'Kg per detalj', `${formatNumber(inputs.kgPerDetail, 3)} kg`, margin, lineY);
   lineY += 22;
@@ -214,12 +224,12 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
   doc.setTextColor(120, 132, 140);
   doc.setFontSize(9);
   doc.text(
-    'PolyFlow-offert. Värden baseras på inmatad kalkyl och materialdata.',
+    'PolyFlow-självkostnadskalkyl. Värden baseras på inmatad kalkyl och materialdata.',
     margin,
     pageHeight - 24,
   );
 
   const safeMaterialName = material.name.trim().replace(/[^a-z0-9-_]+/gi, '-').toLowerCase() || 'material';
   const safeLabel = calculationLabel.trim().replace(/[^a-z0-9-_]+/gi, '-').toLowerCase() || 'kalkyl';
-  doc.save(`offert-${safeMaterialName}-${safeLabel}.pdf`);
+  doc.save(`sjalvkostnadskalkyl-${safeMaterialName}-${safeLabel}.pdf`);
 }

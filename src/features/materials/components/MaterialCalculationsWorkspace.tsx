@@ -649,7 +649,7 @@ export function MaterialCalculationsWorkspace({
         error:
           caughtError instanceof Error
             ? caughtError.message
-            : 'Det gick inte att exportera offert som PDF.',
+            : 'Det gick inte att exportera självkostnadskalkyl som PDF.',
       }));
     }
   };
