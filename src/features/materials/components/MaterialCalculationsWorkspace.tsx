@@ -75,7 +75,7 @@ interface FieldConfig {
 }
 
 const ORDER_FIELDS: FieldConfig[] = [
-  { key: 'label', label: 'Namn pÃ¥ kalkyl', placeholder: 'Kalkyl', inputMode: 'text' },
+  { key: 'label', label: 'Namn på kalkyl', placeholder: 'Kalkyl', inputMode: 'text' },
   { key: 'kgMaterialInput', label: 'Kg material', placeholder: '0,85', inputMode: 'decimal' },
   {
     key: 'printTimeMinutesInput',
@@ -146,7 +146,7 @@ function formatNumber(value: number | null, maxFractionDigits = 2) {
 
 function formatMetricCurrency(value: number | null) {
   if (value === null || !Number.isFinite(value)) {
-    return 'Ej berÃ¤knat';
+    return 'Ej beräknat';
   }
 
   return formatCurrency(value);
@@ -170,7 +170,7 @@ function formatHoursWithUnit(value: number | null) {
 
 function formatLeadTime(value: number | null) {
   if (value === null || !Number.isFinite(value)) {
-    return 'Ej berÃ¤knat';
+    return 'Ej beräknat';
   }
 
   const totalMinutes = Math.round(value * 60);
@@ -369,7 +369,7 @@ export function MaterialCalculationsWorkspace({
           setError(
             caughtError instanceof Error
               ? caughtError.message
-              : 'Det gick inte att lÃ¤sa in kalkyler.',
+              : 'Det gick inte att läsa in kalkyler.',
           );
         }
       } finally {
@@ -470,7 +470,7 @@ export function MaterialCalculationsWorkspace({
     };
 
     if (parsed.kgMaterial === null || Number.isNaN(parsed.kgMaterial) || parsed.kgMaterial < 0) {
-      invalid('Ange kg material som 0 eller hÃ¶gre.');
+      invalid('Ange kg material som 0 eller högre.');
       return;
     }
 
@@ -498,7 +498,7 @@ export function MaterialCalculationsWorkspace({
       !Number.isInteger(parsed.quantity) ||
       parsed.quantity <= 0
     ) {
-      invalid('Antal mÃ¥ste vara ett heltal stÃ¶rre Ã¤n 0.');
+      invalid('Antal måste vara ett heltal större än 0.');
       return;
     }
 
@@ -508,7 +508,7 @@ export function MaterialCalculationsWorkspace({
       !Number.isInteger(parsed.printerCount) ||
       parsed.printerCount <= 0
     ) {
-      invalid('Antal skrivare mÃ¥ste vara ett heltal stÃ¶rre Ã¤n 0.');
+      invalid('Antal skrivare måste vara ett heltal större än 0.');
       return;
     }
 
@@ -564,7 +564,7 @@ export function MaterialCalculationsWorkspace({
       return;
     }
 
-    const shouldDelete = window.confirm('Ta bort den hÃ¤r kalkylen?');
+    const shouldDelete = window.confirm('Ta bort den här kalkylen?');
     if (!shouldDelete) {
       return;
     }
@@ -616,7 +616,7 @@ export function MaterialCalculationsWorkspace({
           <div>
             <p className="text-sm font-semibold text-[var(--ink)]">{title}</p>
             <p className="text-xs text-[var(--muted)]">
-              Fyll i underlag, kontrollera fÃ¶rhandsvisning och spara.
+              Fyll i underlag, kontrollera förhandsvisning och spara.
             </p>
           </div>
           <button
@@ -633,7 +633,7 @@ export function MaterialCalculationsWorkspace({
           <div className="space-y-3">
             <div className="space-y-3 rounded-xl border border-[var(--border)] bg-white p-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                1. BestÃ¤llning
+                1. Beställning
               </p>
               <div className="grid gap-3 md:grid-cols-2">
                 {ORDER_FIELDS.map((field) => renderField(draft, field))}
@@ -661,15 +661,15 @@ export function MaterialCalculationsWorkspace({
 
           <div className="space-y-3 rounded-xl border border-teal-200 bg-teal-50 p-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-              FÃ¶rhandsvisning
+              Förhandsvisning
             </p>
             <div className="grid gap-2">
               <ResultCard
-                label="SjÃ¤lvkostnad/st"
+                label="Självkostnad/st"
                 value={formatMetricCurrency(metrics.internalCostPerPart)}
               />
               <ResultCard
-                label="FÃ¶rsÃ¤ljningspris/st"
+                label="Försäljningspris/st"
                 value={formatMetricCurrency(metrics.suggestedSalesPricePerPart)}
               />
               <ResultCard label="Totalpris" value={formatMetricCurrency(metrics.batchSalesTotal)} />
@@ -795,7 +795,7 @@ export function MaterialCalculationsWorkspace({
         <div>
           <p className="text-sm font-semibold text-[var(--ink)]">Kalkyler</p>
           <p className="text-xs text-[var(--muted)]">
-            Skapa scenarier fÃ¶r internkostnad, prisfÃ¶rslag, batch och ledtid.
+            Skapa scenarier för internkostnad, prisförslag, batch och ledtid.
           </p>
         </div>
 
@@ -811,28 +811,28 @@ export function MaterialCalculationsWorkspace({
 
       {!canWrite ? (
         <p className="text-xs text-[var(--muted)]">
-          Logga in fÃ¶r att skapa, spara eller ta bort kalkyler.
+          Logga in för att skapa, spara eller ta bort kalkyler.
         </p>
       ) : null}
 
       {error ? (
         <SurfaceCard className="space-y-1 border-red-200 bg-red-50 p-3">
-          <p className="text-sm font-semibold text-red-700">Det gick inte att lÃ¤sa kalkyler.</p>
+          <p className="text-sm font-semibold text-red-700">Det gick inte att läsa kalkyler.</p>
           <p className="text-sm text-red-900/85">{error}</p>
         </SurfaceCard>
       ) : null}
 
       {loading ? (
         <SurfaceCard className="p-3">
-          <p className="text-sm text-[var(--muted)]">LÃ¤ser in kalkyler...</p>
+          <p className="text-sm text-[var(--muted)]">Läser in kalkyler...</p>
         </SurfaceCard>
       ) : null}
 
       {!loading && !error && drafts.length === 0 ? (
         <SurfaceCard className="space-y-1 p-3">
-          <p className="text-sm font-semibold text-[var(--ink)]">Inga kalkyler Ã¤nnu.</p>
+          <p className="text-sm font-semibold text-[var(--ink)]">Inga kalkyler ännu.</p>
           <p className="text-sm text-[var(--muted)]">
-            LÃ¤gg till en kalkyl fÃ¶r att rÃ¤kna internkostnad, offertpris och leveranstid.
+            Lägg till en kalkyl för att räkna internkostnad, offertpris och leveranstid.
           </p>
         </SurfaceCard>
       ) : null}
