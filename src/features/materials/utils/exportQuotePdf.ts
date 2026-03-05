@@ -18,8 +18,6 @@ interface QuotePdfResults {
   materialCostPerPart: number | null;
   machineCostPerPart: number | null;
   internalCostPerPart: number | null;
-  salesPricePerPart: number | null;
-  batchSalesTotal: number | null;
   batchInternalCost: number | null;
   leadTimeMinutes: number | null;
 }
@@ -165,12 +163,12 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
   doc.setFontSize(11);
   doc.text('Offertöversikt', margin + 16, 162);
   doc.setFontSize(23);
-  doc.text(formatCurrency(results.batchSalesTotal), margin + 16, 194);
+  doc.text(formatCurrency(results.batchInternalCost), margin + 16, 194);
   doc.setFontSize(10);
-  doc.text('Totalt kundpris', margin + 16, 212);
+  doc.text('Totalkostnad', margin + 16, 212);
 
   doc.setFontSize(12);
-  doc.text(`Kundpris per detalj: ${formatCurrency(results.salesPricePerPart)}`, margin + 240, 170);
+  doc.text(`Självkostnad per detalj: ${formatCurrency(results.internalCostPerPart)}`, margin + 240, 170);
   doc.text(`Antal detaljer: ${formatNumber(inputs.quantity, 0)} st`, margin + 240, 190);
   doc.text(`Leveranstid: ${formatLeadTime(results.leadTimeMinutes)}`, margin + 240, 210);
 

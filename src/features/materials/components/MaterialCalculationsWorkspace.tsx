@@ -57,9 +57,7 @@ interface CalculationMetrics {
   materialCostPerPart: number | null;
   machineCostPerPart: number | null;
   internalCostPerPart: number | null;
-  suggestedSalesPricePerPart: number | null;
   batchInternalCost: number | null;
-  batchSalesTotal: number | null;
   leadTimeMinutes: number | null;
 }
 
@@ -192,7 +190,7 @@ function formatLeadTime(value: number | null) {
   return `${hours} h ${minutes} min`;
 }
 
-const DEFAULT_TARGET_MARGIN_PERCENT = 30;
+const DEFAULT_TARGET_MARGIN_PERCENT = 0;
 const DEFAULT_RISK_BUFFER_PERCENT = 0;
 const DEFAULT_POST_PROCESS_COST_PER_PART_EUR = 0;
 const DEFAULT_POST_PROCESS_TIME_HOURS_PER_PART = 0;
@@ -301,21 +299,10 @@ function computeMetrics(
       : null;
 
   const internalCostPerPart = directCostPerPart;
-  const marginFactor = 1 - DEFAULT_TARGET_MARGIN_PERCENT / 100;
-
-  const suggestedSalesPricePerPart =
-    internalCostPerPart !== null && marginFactor > 0
-      ? internalCostPerPart / marginFactor
-      : null;
 
   const batchInternalCost =
     internalCostPerPart !== null && isValidPositiveInteger(quantity) && quantity !== null
       ? internalCostPerPart * quantity
-      : null;
-
-  const batchSalesTotal =
-    suggestedSalesPricePerPart !== null && isValidPositiveInteger(quantity) && quantity !== null
-      ? suggestedSalesPricePerPart * quantity
       : null;
 
   const totalParallelCapacity =
@@ -343,9 +330,7 @@ function computeMetrics(
     materialCostPerPart,
     machineCostPerPart,
     internalCostPerPart,
-    suggestedSalesPricePerPart,
     batchInternalCost,
-    batchSalesTotal,
     leadTimeMinutes,
   };
 }
@@ -654,8 +639,6 @@ export function MaterialCalculationsWorkspace({
           materialCostPerPart: metrics.materialCostPerPart,
           machineCostPerPart: metrics.machineCostPerPart,
           internalCostPerPart: metrics.internalCostPerPart,
-          salesPricePerPart: metrics.suggestedSalesPricePerPart,
-          batchSalesTotal: metrics.batchSalesTotal,
           batchInternalCost: metrics.batchInternalCost,
           leadTimeMinutes: metrics.leadTimeMinutes,
         },
@@ -753,11 +736,7 @@ export function MaterialCalculationsWorkspace({
                 label="Självkostnad/st"
                 value={formatMetricCurrency(metrics.internalCostPerPart)}
               />
-              <ResultCard
-                label="Försäljningspris/st"
-                value={formatMetricCurrency(metrics.suggestedSalesPricePerPart)}
-              />
-              <ResultCard label="Totalpris" value={formatMetricCurrency(metrics.batchSalesTotal)} />
+              <ResultCard label="Totalkostnad" value={formatMetricCurrency(metrics.batchInternalCost)} />
               <ResultCard label="Leveranstid" value={formatLeadTime(metrics.leadTimeMinutes)} />
             </div>
           </div>
@@ -872,16 +851,15 @@ export function MaterialCalculationsWorkspace({
                 <p className="text-[var(--ink)]">Maskinkostnad totalt: {formatMetricCurrency(machineCostTotal)}</p>
                 <p className="text-[var(--ink)]">Självkostnad/st: {formatMetricCurrency(metrics.internalCostPerPart)}</p>
                 <p className="text-[var(--ink)]">Totalkostnad: {formatMetricCurrency(metrics.batchInternalCost)}</p>
-                <p className="text-[var(--ink)]">Försäljningspris totalt: {formatMetricCurrency(metrics.batchSalesTotal)}</p>
               </div>
             </div>
           </div>
 
           <div className="space-y-2 rounded-xl border border-teal-300 bg-teal-50 p-3">
-            <p className="text-sm font-semibold text-teal-800">Offert</p>
+            <p className="text-sm font-semibold text-teal-800">Kostnadsöversikt</p>
             <div className="space-y-2">
-              <ResultCard label="Kundpris/st" value={formatMetricCurrency(metrics.suggestedSalesPricePerPart)} />
-              <ResultCard label="Totalt kundpris" value={formatMetricCurrency(metrics.batchSalesTotal)} />
+              <ResultCard label="Självkostnad/st" value={formatMetricCurrency(metrics.internalCostPerPart)} />
+              <ResultCard label="Totalkostnad" value={formatMetricCurrency(metrics.batchInternalCost)} />
               <ResultCard label="Antal detaljer" value={`${formatNumber(parsedValues.quantity, 0)} st`} />
               <ResultCard label="Leveranstid" value={formatLeadTime(metrics.leadTimeMinutes)} />
             </div>
@@ -897,7 +875,7 @@ export function MaterialCalculationsWorkspace({
         <div>
           <p className="text-sm font-semibold text-[var(--ink)]">Kalkyler</p>
           <p className="text-xs text-[var(--muted)]">
-            Skapa scenarier för internkostnad, prisförslag, batch och ledtid.
+            Skapa scenarier för internkostnad, batch och ledtid.
           </p>
         </div>
 
@@ -934,7 +912,7 @@ export function MaterialCalculationsWorkspace({
         <SurfaceCard className="space-y-1 p-3">
           <p className="text-sm font-semibold text-[var(--ink)]">Inga kalkyler ännu.</p>
           <p className="text-sm text-[var(--muted)]">
-            Lägg till en kalkyl för att räkna internkostnad, offertpris och leveranstid.
+            Lägg till en kalkyl för att räkna internkostnad och leveranstid.
           </p>
         </SurfaceCard>
       ) : null}
