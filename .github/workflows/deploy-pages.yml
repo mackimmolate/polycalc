@@ -35,6 +35,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Test
+        run: npm run test
+
       - name: Validate Supabase build variables
         run: |
           test -n "${VITE_SUPABASE_URL}" || (echo "Missing VITE_SUPABASE_URL" && exit 1)

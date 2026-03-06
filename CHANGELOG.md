@@ -4,6 +4,25 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.7.5] - 2026-03-06
+
+### Added
+
+- Additional automated tests for:
+  - auth callback parsing used by the magic-link flow
+  - materials overview search/sort behavior
+- `npm run verify` script for local release-readiness validation.
+- CI test step in the GitHub Pages deployment workflow.
+
+### Changed
+
+- Upgraded `jspdf` from `2.5.2` to `4.2.0`, removing the previous critical audit finding in the PDF export dependency chain.
+- Extracted auth callback parsing into a dedicated utility module to make the magic-link callback handling directly testable.
+
+### Documentation
+
+- Documented the current release-readiness baseline and the remaining unresolved PWA/workbox audit chain.
+
 ## [0.7.4] - 2026-03-06
 
 ### Added

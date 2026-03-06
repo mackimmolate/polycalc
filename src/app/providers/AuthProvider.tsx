@@ -2,51 +2,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { AuthContext, type AuthContextValue } from '@/app/providers/auth-context';
+import { getHashAuthParams, normalizeAuthError } from '@/app/providers/auth-utils';
 import { getSupabaseClientOrThrow, hasSupabaseConfig } from '@/lib/supabase/client';
-
-function getHashAuthParams(): URLSearchParams | null {
-  const rawHash = window.location.hash.replace(/^#/, '');
-  if (!rawHash) {
-    return null;
-  }
-
-  const candidates = new Set<string>();
-  candidates.add(rawHash);
-
-  const fragmentParts = rawHash.split('#');
-  if (fragmentParts.length > 1) {
-    candidates.add(fragmentParts[fragmentParts.length - 1]);
-  }
-
-  const questionIndex = rawHash.indexOf('?');
-  if (questionIndex >= 0 && questionIndex + 1 < rawHash.length) {
-    candidates.add(rawHash.slice(questionIndex + 1));
-  }
-
-  for (const candidate of candidates) {
-    const normalized = candidate.startsWith('/') ? candidate.slice(1) : candidate;
-    const params = new URLSearchParams(normalized);
-    if (
-      params.has('access_token') ||
-      params.has('refresh_token') ||
-      params.has('error') ||
-      params.has('error_description') ||
-      params.has('error_code')
-    ) {
-      return params;
-    }
-  }
-
-  return null;
-}
-
-function normalizeAuthError(value: string | null) {
-  if (!value) {
-    return null;
-  }
-
-  return decodeURIComponent(value.replace(/\+/g, ' '));
-}
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const isConfigured = hasSupabaseConfig();
@@ -74,7 +31,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     });
 
     const bootstrapSession = async () => {
-      const callbackParams = getHashAuthParams();
+      const callbackParams = getHashAuthParams(window.location.hash);
 
       if (callbackParams) {
         const accessToken = callbackParams.get('access_token');

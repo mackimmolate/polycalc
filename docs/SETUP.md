@@ -67,6 +67,12 @@ npm run build
 npm run preview
 ```
 
+Full local verification:
+
+```bash
+npm run verify
+```
+
 ## Connected behavior checklist
 
 - `/materials` loads materials from Supabase.

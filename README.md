@@ -4,7 +4,7 @@ PolyCalc is a clean, modern PWA for managing 3D printing materials with an inlin
 
 ## Current status
 
-- Version: `0.7.4`
+- Version: `0.7.5`
 - Current shipped state: capacity-aware självkostnadskalkyl with PDF export.
 - Supabase-backed runtime is active for materials, shared options, and calculation records.
 - Swedish UI, compact row overview, and GitHub Pages deployment workflow are active.
@@ -133,6 +133,12 @@ npm run test
 npm run build
 ```
 
+Or run the full local verification chain:
+
+```bash
+npm run verify
+```
+
 ## Auth in v1
 
 - Sign-in uses Supabase magic link (`/auth`).
@@ -166,6 +172,14 @@ Required repository configuration:
 - Install prompt is supported when browser conditions are met.
 - Static shell/assets are cached.
 - Offline CRUD and offline data sync are not implemented.
+
+## Release-readiness notes
+
+- CI now runs `lint`, `test`, and `build` before Pages deploy.
+- The calculation engine, auth callback parsing, and materials search/sort logic have automated test coverage.
+- `jspdf` was upgraded to remove the previous critical audit finding in the PDF export path.
+- `npm audit` still reports a high-severity chain through `vite-plugin-pwa -> workbox-build -> @rollup/plugin-terser -> serialize-javascript`.
+- As of `2026-03-06`, `vite-plugin-pwa@1.2.0` is the latest published version, so there is no clean package upgrade available from within the current plugin stack.
 
 ## Documentation map
 

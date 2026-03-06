@@ -4,7 +4,7 @@ PolyCalc uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 
 ## Current version
 
-- `0.7.4`
+- `0.7.5`
 
 ## Rules
 
@@ -45,3 +45,4 @@ PolyCalc uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 - `0.7.2`: Product rename from `PolyFlow` to `PolyCalc` across app branding, metadata, PWA identity, package metadata, and documentation.
 - `0.7.3`: GitHub Pages and Supabase deployment documentation polish for safe future repository rename to `polycalc`.
 - `0.7.4`: Stabilization baseline with extracted/tested calculation logic, runtime cleanup of legacy sales-field coupling, shared Supabase service helpers, and retry actions for connected read failures.
+- `0.7.5`: Release-readiness hardening with `jspdf` security upgrade, expanded automated tests, `verify` command, and CI test enforcement before Pages deploy.

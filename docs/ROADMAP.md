@@ -77,15 +77,18 @@
 Completed stabilization baseline:
 
 - Added unit tests for the core calculation engine
+- Added automated tests for auth callback parsing and materials search/sort behavior
 - Extracted calculation formulas into a dedicated reusable utility
 - Removed active runtime coupling to legacy sales-oriented calculation fields
 - Added retry actions for transient read failures in connected overview/workspace states
+- Added CI test execution before GitHub Pages deploy
+- Upgraded `jspdf` to remove the previous critical audit finding in the PDF export chain
 
 Still recommended next:
 
 - Add automated tests for the Supabase service layer and key UI/auth states
 - Improve error observability and user-facing diagnostics
-- Optimize performance for larger material/calculation datasets
+- Re-check the unresolved `vite-plugin-pwa/workbox` audit chain before `1.0.0`
 - Final production checklist before `1.0.0`
 
 ## Deferred scope (v1)

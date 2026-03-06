@@ -4,7 +4,7 @@
 
 - GitHub Pages deployment workflow is implemented.
 - Workflow path: `.github/workflows/deploy-pages.yml`
-- Workflow stages: install -> lint -> validate env -> build -> upload artifact -> deploy
+- Workflow stages: install -> lint -> test -> validate env -> build -> upload artifact -> deploy
 
 ## Target platform
 
@@ -59,6 +59,25 @@ The workflow fails early if these are missing:
 - `VITE_SUPABASE_ANON_KEY`
 
 This prevents deploying a non-connected build by accident.
+
+## Production smoke checklist
+
+After a production deploy, verify:
+
+1. Pages root loads with the expected repository base path.
+2. Magic-link sign-in returns to the deployed Pages URL.
+3. Material list loads from Supabase.
+4. Material create/edit/delete works while authenticated.
+5. Shared kategori/tillverkare options load and can be added/inactivated.
+6. Inline calculations can be created, saved, edited, and removed.
+7. PDF självkostnadskalkyl export still works in the browser.
+8. Hard refresh / cached PWA update path works after deploy.
+
+## Known release risk
+
+- `npm audit` still reports a high-severity dependency chain through `vite-plugin-pwa -> workbox-build -> @rollup/plugin-terser -> serialize-javascript`.
+- As of `2026-03-06`, `vite-plugin-pwa@1.2.0` is the latest published version, so there is no straightforward upgrade path inside the current plugin choice.
+- Treat this as an upstream dependency risk to re-check before a `1.0.0` cut.
 
 ## PWA deployment notes
 
