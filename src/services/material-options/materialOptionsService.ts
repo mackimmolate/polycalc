@@ -1,4 +1,8 @@
 import { getSupabaseClientOrThrow } from '@/lib/supabase/client';
+import {
+  asSupabaseErrorMessage,
+  requireAuthenticatedSession,
+} from '@/lib/supabase/serviceHelpers';
 import type { Database } from '@/lib/supabase/database.types';
 import type { MaterialOption, MaterialOptionUpsertResult } from '@/types/materialOption';
 
@@ -29,15 +33,6 @@ function normalizeOptionKey(value: string) {
   return normalizeOptionLabel(value).toLocaleLowerCase('sv-SE');
 }
 
-function asSupabaseErrorMessage(error: { message?: string; details?: string | null }) {
-  const details = error.details?.trim();
-  if (details) {
-    return `${error.message} (${details})`;
-  }
-
-  return error.message ?? 'Okänt databasfel';
-}
-
 function mapRowToMaterialOption(row: MaterialOptionRow): MaterialOption {
   return {
     id: row.id,
@@ -47,18 +42,6 @@ function mapRowToMaterialOption(row: MaterialOptionRow): MaterialOption {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
-}
-
-async function requireWriteSession(entityLabel: string) {
-  const supabase = getSupabaseClientOrThrow();
-  const { data, error } = await supabase.auth.getSession();
-  if (error) {
-    throw new Error('Det gick inte att kontrollera inloggning.');
-  }
-
-  if (!data.session) {
-    throw new Error(`Du måste vara inloggad för att ändra ${entityLabel}.`);
-  }
 }
 
 async function listOptions(
@@ -196,21 +179,21 @@ export async function listMaterialManufacturers(params?: { includeInactive?: boo
 }
 
 export async function createMaterialCategory(rawLabel: string) {
-  await requireWriteSession('kategorier');
+  await requireAuthenticatedSession('kategorier');
   return createOrReactivateOption(MATERIAL_CATEGORY_TABLE, rawLabel);
 }
 
 export async function createMaterialManufacturer(rawLabel: string) {
-  await requireWriteSession('tillverkare');
+  await requireAuthenticatedSession('tillverkare');
   return createOrReactivateOption(MATERIAL_MANUFACTURER_TABLE, rawLabel);
 }
 
 export async function deactivateMaterialCategory(optionId: string) {
-  await requireWriteSession('kategorier');
+  await requireAuthenticatedSession('kategorier');
   return deactivateOption(MATERIAL_CATEGORY_TABLE, optionId);
 }
 
 export async function deactivateMaterialManufacturer(optionId: string) {
-  await requireWriteSession('tillverkare');
+  await requireAuthenticatedSession('tillverkare');
   return deactivateOption(MATERIAL_MANUFACTURER_TABLE, optionId);
 }

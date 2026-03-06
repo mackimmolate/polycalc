@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/app/providers/useAuth';
 import { PageHeading } from '@/components/ui/PageHeading';
@@ -7,8 +7,8 @@ import { MaterialList } from '@/features/materials/components/MaterialList';
 import {
   queryMaterials,
   type MaterialSort,
-  type SortDirection,
   type MaterialSortField,
+  type SortDirection,
 } from '@/features/materials/utils/filterMaterials';
 import { listMaterials } from '@/services/materials/materialsService';
 import type { Material } from '@/types/material';
@@ -28,6 +28,7 @@ export function MaterialsListPage() {
   const [sort, setSort] = useState<MaterialSort>({ field: 'name', direction: 'asc' });
   const [expandedMaterialId, setExpandedMaterialId] = useState<string | null>(null);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     const state = (location.state as NavigationState | null) ?? null;
@@ -72,7 +73,7 @@ export function MaterialsListPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [reloadToken]);
 
   useEffect(() => {
     if (!expandedMaterialId) {
@@ -155,6 +156,15 @@ export function MaterialsListPage() {
         <SurfaceCard>
           <p className="text-sm font-semibold text-red-700">Det gick inte att läsa in material.</p>
           <p className="mt-1 text-sm text-[var(--muted)]">{error}</p>
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={() => setReloadToken((current) => current + 1)}
+              className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+            >
+              Försök igen
+            </button>
+          </div>
         </SurfaceCard>
       ) : null}
 

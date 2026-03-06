@@ -72,9 +72,18 @@
 - Moved and structured brand asset under `src/assets/brand/`
 - Simplified the active workflow to internal cost only; sales price and margins are no longer part of the current UI/PDF
 
-## Phase 3 (next): Hardening and release readiness
+## Phase 3 (current): Hardening and release readiness
 
-- Add automated tests for critical flows (material + calculation services and key UI states)
+Completed stabilization baseline:
+
+- Added unit tests for the core calculation engine
+- Extracted calculation formulas into a dedicated reusable utility
+- Removed active runtime coupling to legacy sales-oriented calculation fields
+- Added retry actions for transient read failures in connected overview/workspace states
+
+Still recommended next:
+
+- Add automated tests for the Supabase service layer and key UI/auth states
 - Improve error observability and user-facing diagnostics
 - Optimize performance for larger material/calculation datasets
 - Final production checklist before `1.0.0`

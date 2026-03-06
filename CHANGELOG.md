@@ -4,6 +4,37 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.7.4] - 2026-03-06
+
+### Added
+
+- Minimal automated test baseline with `vitest` and focused unit tests for the calculation engine.
+- Retry actions for runtime read failures in the materials overview and inline calculation workspace.
+
+### Changed
+
+- Extracted calculation formulas into a dedicated reusable utility module instead of keeping the logic embedded in the workspace component.
+- Simplified the active `material_calculations` runtime model to the fields PolyCalc actually uses:
+  - `label`
+  - `kg_material`
+  - `print_time_hours`
+  - `quantity`
+  - `details_per_printer`
+  - `machine_hourly_rate_eur`
+  - `setup_time_hours`
+  - `printer_count`
+- Stopped active runtime reads/writes for the legacy sales-oriented calculation columns while keeping them untouched in the database for schema compatibility.
+- Consolidated duplicated Supabase session/error helpers into shared service utilities.
+- Renamed the PDF export utility from quote-oriented naming to self-cost-oriented naming in code.
+
+### Removed
+
+- Unused `src/api/contracts.ts`.
+
+### Documentation
+
+- Updated docs to reflect the new stabilization baseline, automated test command, and the fact that legacy sales-oriented calculation columns remain schema-only compatibility fields.
+
 ## [0.7.3] - 2026-03-06
 
 ### Changed

@@ -169,3 +169,10 @@ This file records key product and engineering decisions.
 - Status: Accepted
 - Decision: The active UI and exported PDF compute only material cost, machine cost, internal cost, batch total, and lead time. Sales price, customer price, and margin policy are intentionally handled outside PolyCalc.
 - Reason: Keeps the product focused on own cost and avoids hardcoding sales policy into the application while still preserving legacy schema compatibility.
+
+## D-0025: Keep runtime decoupled from legacy sales columns and test the calculation engine directly
+
+- Date: 2026-03-06
+- Status: Accepted
+- Decision: Keep legacy sales-oriented columns in the database for compatibility, but remove them from the active runtime contract and move calculation formulas into a standalone unit-tested utility module.
+- Reason: Reduces cognitive load in the app model, lowers risk of accidental reintroduction of obsolete pricing logic, and makes formula changes verifiable without driving them through UI components.

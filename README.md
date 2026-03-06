@@ -4,7 +4,7 @@ PolyCalc is a clean, modern PWA for managing 3D printing materials with an inlin
 
 ## Current status
 
-- Version: `0.7.3`
+- Version: `0.7.4`
 - Current shipped state: capacity-aware självkostnadskalkyl with PDF export.
 - Supabase-backed runtime is active for materials, shared options, and calculation records.
 - Swedish UI, compact row overview, and GitHub Pages deployment workflow are active.
@@ -65,7 +65,7 @@ PolyCalc separates three value types:
 
 Compatibility note:
 
-- `material_calculations` still contains some legacy columns from the earlier sales-oriented iteration (`labor_cost_per_part_eur`, `post_process_cost_per_part_eur`, `post_process_time_hours_per_part`, `risk_buffer_percent`, `target_margin_percent`), but they are not part of the active UI or current calculation flow.
+- `material_calculations` still contains some legacy columns from the earlier sales-oriented iteration (`labor_cost_per_part_eur`, `post_process_cost_per_part_eur`, `post_process_time_hours_per_part`, `risk_buffer_percent`, `target_margin_percent`), but the active runtime no longer reads or writes them.
 
 ## Tech stack
 
@@ -129,6 +129,7 @@ npm run dev
 
 ```bash
 npm run lint
+npm run test
 npm run build
 ```
 

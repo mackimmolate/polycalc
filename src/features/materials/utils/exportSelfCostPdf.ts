@@ -1,10 +1,11 @@
 import brandLogoUrl from '@/assets/brand/marstromlogo.png';
 import type { Material } from '@/types/material';
+import { formatLeadTimeMinutes } from '@/utils/duration';
 import { formatCurrency } from '@/utils/formatters';
 
 type PdfDocument = import('jspdf').jsPDF;
 
-interface QuotePdfInputs {
+interface SelfCostPdfInputs {
   kgPerDetail: number | null;
   quantity: number | null;
   printTimeMinutesPerDetail: number | null;
@@ -14,7 +15,7 @@ interface QuotePdfInputs {
   machineHourlyRateEur: number | null;
 }
 
-interface QuotePdfResults {
+interface SelfCostPdfResults {
   materialCostPerPart: number | null;
   machineCostPerPart: number | null;
   internalCostPerPart: number | null;
@@ -22,11 +23,11 @@ interface QuotePdfResults {
   leadTimeMinutes: number | null;
 }
 
-export interface QuotePdfPayload {
+export interface SelfCostPdfPayload {
   material: Material;
   calculationLabel: string;
-  inputs: QuotePdfInputs;
-  results: QuotePdfResults;
+  inputs: SelfCostPdfInputs;
+  results: SelfCostPdfResults;
 }
 
 function formatNumber(value: number | null, maxFractionDigits = 2) {
@@ -45,26 +46,6 @@ function formatTemperature(value: number | null) {
   }
 
   return `${formatNumber(value, 0)} °C`;
-}
-
-function formatLeadTime(minutesValue: number | null) {
-  if (minutesValue === null || !Number.isFinite(minutesValue)) {
-    return 'Ej beräknat';
-  }
-
-  const totalMinutes = Math.max(0, Math.round(minutesValue));
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-
-  if (hours <= 0) {
-    return `${minutes} min`;
-  }
-
-  if (minutes === 0) {
-    return `${hours} h`;
-  }
-
-  return `${hours} h ${minutes} min`;
 }
 
 async function toDataUrl(url: string) {
@@ -113,7 +94,7 @@ function drawKeyValueRow(doc: PdfDocument, label: string, value: string, x: numb
   doc.text(value, x + 190, y);
 }
 
-export async function exportQuotePdf(payload: QuotePdfPayload) {
+export async function exportSelfCostPdf(payload: SelfCostPdfPayload) {
   const { material, calculationLabel, inputs, results } = payload;
   const { jsPDF } = await import('jspdf');
   const doc = new jsPDF({
@@ -176,9 +157,17 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
   doc.text('Totalkostnad', margin + 16, 212);
 
   doc.setFontSize(12);
-  doc.text(`Självkostnad per detalj: ${formatCurrency(results.internalCostPerPart)}`, margin + 240, 170);
+  doc.text(
+    `Självkostnad per detalj: ${formatCurrency(results.internalCostPerPart)}`,
+    margin + 240,
+    170,
+  );
   doc.text(`Antal detaljer: ${formatNumber(inputs.quantity, 0)} st`, margin + 240, 190);
-  doc.text(`Leveranstid: ${formatLeadTime(results.leadTimeMinutes)}`, margin + 240, 210);
+  doc.text(
+    `Leveranstid: ${formatLeadTimeMinutes(results.leadTimeMinutes)}`,
+    margin + 240,
+    210,
+  );
 
   doc.setTextColor(18, 34, 49);
   doc.setFontSize(14);
@@ -191,7 +180,13 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
   lineY += 22;
   drawKeyValueRow(doc, 'Kg per detalj', `${formatNumber(inputs.kgPerDetail, 3)} kg`, margin, lineY);
   lineY += 22;
-  drawKeyValueRow(doc, 'Materialkostnad per detalj', formatCurrency(results.materialCostPerPart), margin, lineY);
+  drawKeyValueRow(
+    doc,
+    'Materialkostnad per detalj',
+    formatCurrency(results.materialCostPerPart),
+    margin,
+    lineY,
+  );
   lineY += 22;
   drawKeyValueRow(
     doc,
@@ -229,7 +224,9 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
     pageHeight - 24,
   );
 
-  const safeMaterialName = material.name.trim().replace(/[^a-z0-9-_]+/gi, '-').toLowerCase() || 'material';
-  const safeLabel = calculationLabel.trim().replace(/[^a-z0-9-_]+/gi, '-').toLowerCase() || 'kalkyl';
+  const safeMaterialName =
+    material.name.trim().replace(/[^a-z0-9-_]+/gi, '-').toLowerCase() || 'material';
+  const safeLabel =
+    calculationLabel.trim().replace(/[^a-z0-9-_]+/gi, '-').toLowerCase() || 'kalkyl';
   doc.save(`sjalvkostnadskalkyl-${safeMaterialName}-${safeLabel}.pdf`);
 }

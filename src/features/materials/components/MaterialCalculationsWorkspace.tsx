@@ -1,6 +1,12 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { SurfaceCard } from '@/components/ui/SurfaceCard';
-import { exportQuotePdf } from '@/features/materials/utils/exportQuotePdf';
+import { exportSelfCostPdf } from '@/features/materials/utils/exportSelfCostPdf';
+import {
+  computeCalculationMetrics,
+  minutesToHours,
+  type CalculationMetrics,
+  type CalculationScenarioValues,
+} from '@/features/materials/utils/materialCalculationLogic';
 import {
   createMaterialCalculation,
   deleteMaterialCalculation,
@@ -10,6 +16,7 @@ import {
 import type { Material } from '@/types/material';
 import type { MaterialCalculation } from '@/types/materialCalculation';
 import { cn } from '@/utils/cn';
+import { formatLeadTimeMinutes } from '@/utils/duration';
 import { formatCurrency } from '@/utils/formatters';
 
 interface MaterialCalculationsWorkspaceProps {
@@ -39,26 +46,6 @@ interface CalculationDraft {
   saving: boolean;
   deleting: boolean;
   error: string | null;
-}
-
-interface ParsedDraftValues {
-  kgMaterial: number | null;
-  printTimeMinutes: number | null;
-  printTimeHours: number | null;
-  quantity: number | null;
-  detailsPerPrinter: number | null;
-  machineHourlyRateEur: number | null;
-  setupTimeMinutes: number | null;
-  setupTimeHours: number | null;
-  printerCount: number | null;
-}
-
-interface CalculationMetrics {
-  materialCostPerPart: number | null;
-  machineCostPerPart: number | null;
-  internalCostPerPart: number | null;
-  batchInternalCost: number | null;
-  leadTimeMinutes: number | null;
 }
 
 type EditableFieldKey =
@@ -170,31 +157,6 @@ function formatMinutesWithUnit(value: number | null) {
   return `${formatNumber(value, 1)} min`;
 }
 
-function formatLeadTime(value: number | null) {
-  if (value === null || !Number.isFinite(value)) {
-    return 'Ej beräknat';
-  }
-
-  const totalMinutes = Math.max(0, Math.round(value));
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-
-  if (hours <= 0) {
-    return `${minutes} min`;
-  }
-
-  if (minutes === 0) {
-    return `${hours} h`;
-  }
-
-  return `${hours} h ${minutes} min`;
-}
-
-const DEFAULT_TARGET_MARGIN_PERCENT = 0;
-const DEFAULT_RISK_BUFFER_PERCENT = 0;
-const DEFAULT_POST_PROCESS_COST_PER_PART_EUR = 0;
-const DEFAULT_POST_PROCESS_TIME_HOURS_PER_PART = 0;
-
 function toDraft(calculation: MaterialCalculation, isEditing = false): CalculationDraft {
   const label = calculation.label;
   const kgMaterialInput = formatInputDecimal(calculation.kgMaterial, 3);
@@ -235,103 +197,15 @@ function getCalculationLabel(label: string, index: number) {
   return trimmed.length > 0 ? trimmed : `Kalkyl ${index + 1}`;
 }
 
-function parseDraftValues(draft: CalculationDraft): ParsedDraftValues {
-  const printTimeMinutes = parseDecimalInput(draft.printTimeMinutesInput);
-  const printTimeHours =
-    printTimeMinutes === null || Number.isNaN(printTimeMinutes) ? printTimeMinutes : printTimeMinutes / 60;
-  const setupTimeMinutes = parseDecimalInput(draft.setupTimeMinutesInput);
-  const setupTimeHours =
-    setupTimeMinutes === null || Number.isNaN(setupTimeMinutes) ? setupTimeMinutes : setupTimeMinutes / 60;
-
+function parseDraftValues(draft: CalculationDraft): CalculationScenarioValues {
   return {
     kgMaterial: parseDecimalInput(draft.kgMaterialInput),
-    printTimeMinutes,
-    printTimeHours,
+    printTimeMinutes: parseDecimalInput(draft.printTimeMinutesInput),
     quantity: parseIntegerInput(draft.quantityInput),
     detailsPerPrinter: parseIntegerInput(draft.detailsPerPrinterInput),
     machineHourlyRateEur: parseDecimalInput(draft.machineHourlyRateEurInput),
-    setupTimeMinutes,
-    setupTimeHours,
+    setupTimeMinutes: parseDecimalInput(draft.setupTimeMinutesInput),
     printerCount: parseIntegerInput(draft.printerCountInput),
-  };
-}
-
-function computeMetrics(
-  materialPricePerKg: number,
-  parsedValues: ParsedDraftValues,
-): CalculationMetrics {
-  const {
-    kgMaterial,
-    printTimeMinutes,
-    printTimeHours,
-    quantity,
-    detailsPerPrinter,
-    machineHourlyRateEur,
-    setupTimeMinutes,
-    printerCount,
-  } = parsedValues;
-
-  const isValidNonNegative = (value: number | null) =>
-    value !== null && Number.isFinite(value) && value >= 0;
-  const isValidPositiveInteger = (value: number | null) =>
-    value !== null && Number.isInteger(value) && value > 0;
-  const isValidPositive = (value: number | null) => value !== null && Number.isFinite(value) && value > 0;
-
-  const materialCostPerPart =
-    isValidNonNegative(kgMaterial) && kgMaterial !== null ? materialPricePerKg * kgMaterial : null;
-
-  const detailsPerPrinterDivisor =
-    isValidPositiveInteger(detailsPerPrinter) && detailsPerPrinter !== null ? detailsPerPrinter : null;
-
-  const machineCostPerPart =
-    isValidNonNegative(machineHourlyRateEur) &&
-    isValidNonNegative(printTimeHours) &&
-    isValidPositive(detailsPerPrinterDivisor) &&
-    machineHourlyRateEur !== null &&
-    printTimeHours !== null &&
-    detailsPerPrinterDivisor !== null
-      ? (machineHourlyRateEur * printTimeHours) / detailsPerPrinterDivisor
-      : null;
-
-  const directCostPerPart =
-    materialCostPerPart !== null && machineCostPerPart !== null
-      ? materialCostPerPart + machineCostPerPart
-      : null;
-
-  const internalCostPerPart = directCostPerPart;
-
-  const batchInternalCost =
-    internalCostPerPart !== null && isValidPositiveInteger(quantity) && quantity !== null
-      ? internalCostPerPart * quantity
-      : null;
-
-  const totalParallelCapacity =
-    isValidPositiveInteger(printerCount) &&
-    isValidPositiveInteger(detailsPerPrinter) &&
-    printerCount !== null &&
-    detailsPerPrinter !== null
-      ? printerCount * detailsPerPrinter
-      : null;
-
-  const leadTimeMinutes =
-    isValidNonNegative(setupTimeMinutes) &&
-    isValidNonNegative(printTimeMinutes) &&
-    isValidPositiveInteger(quantity) &&
-    isValidPositiveInteger(printerCount) &&
-    isValidPositiveInteger(detailsPerPrinter) &&
-    setupTimeMinutes !== null &&
-    printTimeMinutes !== null &&
-    quantity !== null &&
-    totalParallelCapacity !== null
-      ? setupTimeMinutes + (printTimeMinutes * quantity) / totalParallelCapacity
-      : null;
-
-  return {
-    materialCostPerPart,
-    machineCostPerPart,
-    internalCostPerPart,
-    batchInternalCost,
-    leadTimeMinutes,
   };
 }
 
@@ -366,6 +240,7 @@ export function MaterialCalculationsWorkspace({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [createPending, setCreatePending] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -399,7 +274,7 @@ export function MaterialCalculationsWorkspace({
     return () => {
       isMounted = false;
     };
-  }, [material.id]);
+  }, [material.id, reloadToken]);
 
   const nextCalculationLabel = useMemo(() => `Kalkyl ${drafts.length + 1}`, [drafts.length]);
 
@@ -453,12 +328,7 @@ export function MaterialCalculationsWorkspace({
         quantity: 1,
         detailsPerPrinter: 1,
         machineHourlyRateEur: 0,
-        laborCostPerPartEur: 0,
-        postProcessCostPerPartEur: DEFAULT_POST_PROCESS_COST_PER_PART_EUR,
         setupTimeHours: 0,
-        postProcessTimeHoursPerPart: DEFAULT_POST_PROCESS_TIME_HOURS_PER_PART,
-        riskBufferPercent: DEFAULT_RISK_BUFFER_PERCENT,
-        targetMarginPercent: DEFAULT_TARGET_MARGIN_PERCENT,
         printerCount: 1,
       });
 
@@ -495,15 +365,6 @@ export function MaterialCalculationsWorkspace({
       parsed.printTimeMinutes === null ||
       Number.isNaN(parsed.printTimeMinutes) ||
       parsed.printTimeMinutes < 0
-    ) {
-      invalid('Ange printtid i minuter som 0 eller högre.');
-      return;
-    }
-
-    if (
-      parsed.printTimeHours === null ||
-      Number.isNaN(parsed.printTimeHours) ||
-      parsed.printTimeHours < 0
     ) {
       invalid('Ange printtid i minuter som 0 eller högre.');
       return;
@@ -557,16 +418,11 @@ export function MaterialCalculationsWorkspace({
       const updated = await updateMaterialCalculation(draft.id, {
         label,
         kgMaterial: parsed.kgMaterial,
-        printTimeHours: parsed.printTimeHours,
+        printTimeHours: minutesToHours(parsed.printTimeMinutes),
         quantity: parsed.quantity,
         detailsPerPrinter: parsed.detailsPerPrinter,
         machineHourlyRateEur: parsed.machineHourlyRateEur ?? 0,
-        laborCostPerPartEur: 0,
-        postProcessCostPerPartEur: DEFAULT_POST_PROCESS_COST_PER_PART_EUR,
-        setupTimeHours: parsed.setupTimeHours ?? 0,
-        postProcessTimeHoursPerPart: DEFAULT_POST_PROCESS_TIME_HOURS_PER_PART,
-        riskBufferPercent: DEFAULT_RISK_BUFFER_PERCENT,
-        targetMarginPercent: DEFAULT_TARGET_MARGIN_PERCENT,
+        setupTimeHours: minutesToHours(parsed.setupTimeMinutes ?? 0),
         printerCount: parsed.printerCount,
       });
 
@@ -617,13 +473,13 @@ export function MaterialCalculationsWorkspace({
   const exportCalculation = async (
     draft: CalculationDraft,
     title: string,
-    parsedValues: ParsedDraftValues,
+    parsedValues: CalculationScenarioValues,
     metrics: CalculationMetrics,
   ) => {
     updateDraft(draft.id, (current) => ({ ...current, error: null }));
 
     try {
-      await exportQuotePdf({
+      await exportSelfCostPdf({
         material,
         calculationLabel: title,
         inputs: {
@@ -676,7 +532,7 @@ export function MaterialCalculationsWorkspace({
   const renderEditForm = (draft: CalculationDraft, index: number) => {
     const title = getCalculationLabel(draft.label, index);
     const parsedValues = parseDraftValues(draft);
-    const metrics = computeMetrics(material.pricePerKgEur, parsedValues);
+    const metrics = computeCalculationMetrics(material.pricePerKgEur, parsedValues);
 
     return (
       <div className="space-y-4">
@@ -736,8 +592,14 @@ export function MaterialCalculationsWorkspace({
                 label="Självkostnad/st"
                 value={formatMetricCurrency(metrics.internalCostPerPart)}
               />
-              <ResultCard label="Totalkostnad" value={formatMetricCurrency(metrics.batchInternalCost)} />
-              <ResultCard label="Leveranstid" value={formatLeadTime(metrics.leadTimeMinutes)} />
+              <ResultCard
+                label="Totalkostnad"
+                value={formatMetricCurrency(metrics.batchInternalCost)}
+              />
+              <ResultCard
+                label="Leveranstid"
+                value={formatLeadTimeMinutes(metrics.leadTimeMinutes)}
+              />
             </div>
           </div>
         </div>
@@ -766,7 +628,7 @@ export function MaterialCalculationsWorkspace({
 
   const renderReadOnly = (draft: CalculationDraft, index: number) => {
     const parsedValues = parseDraftValues(draft);
-    const metrics = computeMetrics(material.pricePerKgEur, parsedValues);
+    const metrics = computeCalculationMetrics(material.pricePerKgEur, parsedValues);
     const title = getCalculationLabel(draft.label, index);
 
     const quantity = parsedValues.quantity ?? 0;
@@ -778,20 +640,15 @@ export function MaterialCalculationsWorkspace({
       metrics.machineCostPerPart !== null && quantity > 0
         ? metrics.machineCostPerPart * quantity
         : null;
-    const totalParallelCapacity =
-      parsedValues.printerCount !== null &&
-      parsedValues.detailsPerPrinter !== null &&
-      parsedValues.printerCount > 0 &&
-      parsedValues.detailsPerPrinter > 0
-        ? parsedValues.printerCount * parsedValues.detailsPerPrinter
-        : null;
 
     return (
       <div className="space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <p className="text-sm font-semibold text-[var(--ink)]">{title}</p>
-            <p className="text-xs text-[var(--muted)]">Sparad kalkyl. Klicka på redigera för ändringar.</p>
+            <p className="text-xs text-[var(--muted)]">
+              Sparad kalkyl. Klicka på redigera för ändringar.
+            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -827,30 +684,62 @@ export function MaterialCalculationsWorkspace({
 
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
           <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Beräkningsunderlag</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+              Beräkningsunderlag
+            </p>
             <div className="space-y-2 text-xs">
               <div className="space-y-1 rounded-lg border border-[var(--border)] bg-white p-2">
                 <p className="font-semibold uppercase tracking-wide text-[var(--muted)]">Material</p>
-                <p className="text-[var(--ink)]">Antal detaljer: {formatNumber(parsedValues.quantity, 0)} st</p>
-                <p className="text-[var(--ink)]">Kg/detalj: {formatNumber(parsedValues.kgMaterial, 3)} kg</p>
-                <p className="text-[var(--ink)]">Materialkostnad/st: {formatMetricCurrency(metrics.materialCostPerPart)}</p>
-                <p className="text-[var(--ink)]">Materialkostnad totalt: {formatMetricCurrency(materialCostTotal)}</p>
+                <p className="text-[var(--ink)]">
+                  Antal detaljer: {formatNumber(parsedValues.quantity, 0)} st
+                </p>
+                <p className="text-[var(--ink)]">
+                  Kg/detalj: {formatNumber(parsedValues.kgMaterial, 3)} kg
+                </p>
+                <p className="text-[var(--ink)]">
+                  Materialkostnad/st: {formatMetricCurrency(metrics.materialCostPerPart)}
+                </p>
+                <p className="text-[var(--ink)]">
+                  Materialkostnad totalt: {formatMetricCurrency(materialCostTotal)}
+                </p>
               </div>
               <div className="space-y-1 rounded-lg border border-[var(--border)] bg-white p-2">
                 <p className="font-semibold uppercase tracking-wide text-[var(--muted)]">Tid</p>
-                <p className="text-[var(--ink)]">Printtid/st (min): {formatMinutesWithUnit(parsedValues.printTimeMinutes)}</p>
-                <p className="text-[var(--ink)]">Uppstartstid (min): {formatMinutesWithUnit(parsedValues.setupTimeMinutes)}</p>
-                <p className="text-[var(--ink)]">Total produktionstid: {formatLeadTime(metrics.leadTimeMinutes)}</p>
+                <p className="text-[var(--ink)]">
+                  Printtid/st (min): {formatMinutesWithUnit(parsedValues.printTimeMinutes)}
+                </p>
+                <p className="text-[var(--ink)]">
+                  Uppstartstid (min): {formatMinutesWithUnit(parsedValues.setupTimeMinutes)}
+                </p>
+                <p className="text-[var(--ink)]">
+                  Total produktionstid: {formatLeadTimeMinutes(metrics.leadTimeMinutes)}
+                </p>
               </div>
               <div className="space-y-1 rounded-lg border border-[var(--border)] bg-white p-2">
-                <p className="font-semibold uppercase tracking-wide text-[var(--muted)]">Resurser och kostnad</p>
-                <p className="text-[var(--ink)]">Antal skrivare: {formatNumber(parsedValues.printerCount, 0)}</p>
-                <p className="text-[var(--ink)]">Antal detaljer/skrivare: {formatNumber(parsedValues.detailsPerPrinter, 0)}</p>
-                <p className="text-[var(--ink)]">Parallell kapacitet: {formatNumber(totalParallelCapacity, 0)} detaljer/körning</p>
-                <p className="text-[var(--ink)]">Maskinkostnad/st: {formatMetricCurrency(metrics.machineCostPerPart)}</p>
-                <p className="text-[var(--ink)]">Maskinkostnad totalt: {formatMetricCurrency(machineCostTotal)}</p>
-                <p className="text-[var(--ink)]">Självkostnad/st: {formatMetricCurrency(metrics.internalCostPerPart)}</p>
-                <p className="text-[var(--ink)]">Totalkostnad: {formatMetricCurrency(metrics.batchInternalCost)}</p>
+                <p className="font-semibold uppercase tracking-wide text-[var(--muted)]">
+                  Resurser och kostnad
+                </p>
+                <p className="text-[var(--ink)]">
+                  Antal skrivare: {formatNumber(parsedValues.printerCount, 0)}
+                </p>
+                <p className="text-[var(--ink)]">
+                  Antal detaljer/skrivare: {formatNumber(parsedValues.detailsPerPrinter, 0)}
+                </p>
+                <p className="text-[var(--ink)]">
+                  Parallell kapacitet: {formatNumber(metrics.totalParallelCapacity, 0)} detaljer/körning
+                </p>
+                <p className="text-[var(--ink)]">
+                  Maskinkostnad/st: {formatMetricCurrency(metrics.machineCostPerPart)}
+                </p>
+                <p className="text-[var(--ink)]">
+                  Maskinkostnad totalt: {formatMetricCurrency(machineCostTotal)}
+                </p>
+                <p className="text-[var(--ink)]">
+                  Självkostnad/st: {formatMetricCurrency(metrics.internalCostPerPart)}
+                </p>
+                <p className="text-[var(--ink)]">
+                  Totalkostnad: {formatMetricCurrency(metrics.batchInternalCost)}
+                </p>
               </div>
             </div>
           </div>
@@ -858,10 +747,22 @@ export function MaterialCalculationsWorkspace({
           <div className="space-y-2 rounded-xl border border-teal-300 bg-teal-50 p-3">
             <p className="text-sm font-semibold text-teal-800">Kostnadsöversikt</p>
             <div className="space-y-2">
-              <ResultCard label="Självkostnad/st" value={formatMetricCurrency(metrics.internalCostPerPart)} />
-              <ResultCard label="Totalkostnad" value={formatMetricCurrency(metrics.batchInternalCost)} />
-              <ResultCard label="Antal detaljer" value={`${formatNumber(parsedValues.quantity, 0)} st`} />
-              <ResultCard label="Leveranstid" value={formatLeadTime(metrics.leadTimeMinutes)} />
+              <ResultCard
+                label="Självkostnad/st"
+                value={formatMetricCurrency(metrics.internalCostPerPart)}
+              />
+              <ResultCard
+                label="Totalkostnad"
+                value={formatMetricCurrency(metrics.batchInternalCost)}
+              />
+              <ResultCard
+                label="Antal detaljer"
+                value={`${formatNumber(parsedValues.quantity, 0)} st`}
+              />
+              <ResultCard
+                label="Leveranstid"
+                value={formatLeadTimeMinutes(metrics.leadTimeMinutes)}
+              />
             </div>
           </div>
         </div>
@@ -899,6 +800,15 @@ export function MaterialCalculationsWorkspace({
         <SurfaceCard className="space-y-1 border-red-200 bg-red-50 p-3">
           <p className="text-sm font-semibold text-red-700">Det gick inte att läsa kalkyler.</p>
           <p className="text-sm text-red-900/85">{error}</p>
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={() => setReloadToken((current) => current + 1)}
+              className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+            >
+              Försök igen
+            </button>
+          </div>
         </SurfaceCard>
       ) : null}
 
@@ -941,5 +851,3 @@ export function MaterialCalculationsWorkspace({
     </div>
   );
 }
-
-

@@ -1,4 +1,8 @@
 import { getSupabaseClientOrThrow } from '@/lib/supabase/client';
+import {
+  asSupabaseErrorMessage,
+  requireAuthenticatedSession,
+} from '@/lib/supabase/serviceHelpers';
 import type { Database } from '@/lib/supabase/database.types';
 import type { Material, MaterialMutationInput } from '@/types/material';
 
@@ -40,15 +44,6 @@ type MaterialRowWithRelations = MaterialRow & {
   manufacturer_ref: MaterialRelationRow | null;
 };
 
-function asSupabaseErrorMessage(error: { message?: string; details?: string | null }) {
-  const details = error.details?.trim();
-  if (details) {
-    return `${error.message} (${details})`;
-  }
-
-  return error.message ?? 'Okänt databasfel';
-}
-
 function mapRowToMaterial(row: MaterialRowWithRelations): Material {
   return {
     id: row.id,
@@ -82,18 +77,6 @@ function mapMutationToInsert(input: MaterialMutationInput): MaterialInsert {
 
 function mapMutationToUpdate(input: MaterialMutationInput): MaterialUpdate {
   return mapMutationToInsert(input);
-}
-
-async function requireWriteSession() {
-  const supabase = getSupabaseClientOrThrow();
-  const { data, error } = await supabase.auth.getSession();
-  if (error) {
-    throw new Error('Det gick inte att kontrollera inloggning.');
-  }
-
-  if (!data.session) {
-    throw new Error('Du måste vara inloggad för att ändra material.');
-  }
 }
 
 export async function listMaterials(): Promise<Material[]> {
@@ -132,7 +115,7 @@ export async function getMaterialById(materialId: string): Promise<Material | nu
 }
 
 export async function createMaterial(input: MaterialMutationInput): Promise<Material> {
-  await requireWriteSession();
+  await requireAuthenticatedSession('material');
 
   const supabase = getSupabaseClientOrThrow();
   const { data, error } = await supabase
@@ -152,7 +135,7 @@ export async function updateMaterial(
   materialId: string,
   input: MaterialMutationInput,
 ): Promise<Material> {
-  await requireWriteSession();
+  await requireAuthenticatedSession('material');
 
   const supabase = getSupabaseClientOrThrow();
   const { data, error } = await supabase
@@ -170,7 +153,7 @@ export async function updateMaterial(
 }
 
 export async function deleteMaterial(materialId: string): Promise<void> {
-  await requireWriteSession();
+  await requireAuthenticatedSession('material');
 
   const supabase = getSupabaseClientOrThrow();
   const { error } = await supabase.from(MATERIALS_TABLE).delete().eq('id', materialId);

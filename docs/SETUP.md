@@ -62,6 +62,7 @@ If you rename the GitHub repository later, update the Pages URL in both `Site UR
 npm install
 npm run dev
 npm run lint
+npm run test
 npm run build
 npm run preview
 ```
@@ -79,4 +80,4 @@ npm run preview
 - Material create/edit loads kategori/tillverkare from shared Supabase option tables.
 - Material create/edit can add/inaktivera kategori/tillverkare directly from form controls.
 - Material create/edit supports reference angle (`45°`/`90°`) and minute-based time input.
-- Legacy sales-oriented calculation columns remain in the DB schema from earlier iterations, but are not part of the active UI.
+- Legacy sales-oriented calculation columns remain in the DB schema from earlier iterations, but the active frontend no longer reads or writes them.

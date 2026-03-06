@@ -41,7 +41,6 @@ src/
     materials/
     material-options/
     material-calculations/
-  api/
   lib/
     supabase/
   types/
@@ -95,7 +94,7 @@ src/
 - `riskBufferPercent`
 - `targetMarginPercent`
 
-These fields remain in `material_calculations` for schema compatibility, but are not part of the active runtime workflow.
+These fields remain in `material_calculations` for schema compatibility, but are not part of the active runtime workflow and are no longer read or written by the frontend services.
 
 ### Calculated values (derived in UI)
 
@@ -108,8 +107,14 @@ These fields remain in `material_calculations` for schema compatibility, but are
 ### Export output (derived document)
 
 - Saved calculations can be exported as a branded PDF självkostnadskalkyl.
-- Export generation lives in `features/materials/utils/exportQuotePdf.ts`.
+- Export generation lives in `features/materials/utils/exportSelfCostPdf.ts`.
 - PDF output is derived from persisted material + calculation inputs and computed values; no separate export table is introduced in v1.
+
+## Hardening notes
+
+- Shared Supabase error/session helpers live in `src/lib/supabase/serviceHelpers.ts`.
+- Core calculation formulas live in `src/features/materials/utils/materialCalculationLogic.ts`.
+- The calculation engine has unit coverage via `vitest`.
 
 ## Routing strategy
 

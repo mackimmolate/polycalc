@@ -100,7 +100,7 @@ Notes:
 - Category and manufacturer values are now canonical shared entities with normalized keys.
 - Duplicate variants are prevented by `normalized_key` uniqueness.
 - Removing an option from the form inactivates it (`is_active = false`) instead of hard delete.
-- Legacy sales-oriented columns remain for schema compatibility but are not part of the current UI/runtime.
+- Legacy sales-oriented columns remain for schema compatibility but are not part of the current UI/runtime, and the active frontend service layer no longer reads or writes them.
 
 ## RLS policy model (v1)
 

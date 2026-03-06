@@ -1,4 +1,8 @@
 import { getSupabaseClientOrThrow } from '@/lib/supabase/client';
+import {
+  asSupabaseErrorMessage,
+  requireAuthenticatedSession,
+} from '@/lib/supabase/serviceHelpers';
 import type { Database } from '@/lib/supabase/database.types';
 import type {
   MaterialCalculation,
@@ -15,12 +19,7 @@ const MATERIAL_CALCULATION_COLUMNS = `
   quantity,
   details_per_printer,
   machine_hourly_rate_eur,
-  labor_cost_per_part_eur,
-  post_process_cost_per_part_eur,
   setup_time_hours,
-  post_process_time_hours_per_part,
-  risk_buffer_percent,
-  target_margin_percent,
   printer_count,
   created_at,
   updated_at
@@ -29,15 +28,6 @@ const MATERIAL_CALCULATION_COLUMNS = `
 type MaterialCalculationRow = Database['public']['Tables']['material_calculations']['Row'];
 type MaterialCalculationInsert = Database['public']['Tables']['material_calculations']['Insert'];
 type MaterialCalculationUpdate = Database['public']['Tables']['material_calculations']['Update'];
-
-function asSupabaseErrorMessage(error: { message?: string; details?: string | null }) {
-  const details = error.details?.trim();
-  if (details) {
-    return `${error.message} (${details})`;
-  }
-
-  return error.message ?? 'Okänt databasfel';
-}
 
 function mapRowToMaterialCalculation(row: MaterialCalculationRow): MaterialCalculation {
   return {
@@ -49,12 +39,7 @@ function mapRowToMaterialCalculation(row: MaterialCalculationRow): MaterialCalcu
     quantity: row.quantity,
     detailsPerPrinter: row.details_per_printer,
     machineHourlyRateEur: row.machine_hourly_rate_eur,
-    laborCostPerPartEur: row.labor_cost_per_part_eur,
-    postProcessCostPerPartEur: row.post_process_cost_per_part_eur,
     setupTimeHours: row.setup_time_hours,
-    postProcessTimeHoursPerPart: row.post_process_time_hours_per_part,
-    riskBufferPercent: row.risk_buffer_percent,
-    targetMarginPercent: row.target_margin_percent,
     printerCount: row.printer_count,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -73,12 +58,7 @@ function mapMutationToInsert(
     quantity: input.quantity,
     details_per_printer: input.detailsPerPrinter,
     machine_hourly_rate_eur: input.machineHourlyRateEur,
-    labor_cost_per_part_eur: input.laborCostPerPartEur,
-    post_process_cost_per_part_eur: input.postProcessCostPerPartEur,
     setup_time_hours: input.setupTimeHours,
-    post_process_time_hours_per_part: input.postProcessTimeHoursPerPart,
-    risk_buffer_percent: input.riskBufferPercent,
-    target_margin_percent: input.targetMarginPercent,
     printer_count: input.printerCount,
   };
 }
@@ -91,26 +71,9 @@ function mapMutationToUpdate(input: MaterialCalculationMutationInput): MaterialC
     quantity: input.quantity,
     details_per_printer: input.detailsPerPrinter,
     machine_hourly_rate_eur: input.machineHourlyRateEur,
-    labor_cost_per_part_eur: input.laborCostPerPartEur,
-    post_process_cost_per_part_eur: input.postProcessCostPerPartEur,
     setup_time_hours: input.setupTimeHours,
-    post_process_time_hours_per_part: input.postProcessTimeHoursPerPart,
-    risk_buffer_percent: input.riskBufferPercent,
-    target_margin_percent: input.targetMarginPercent,
     printer_count: input.printerCount,
   };
-}
-
-async function requireWriteSession() {
-  const supabase = getSupabaseClientOrThrow();
-  const { data, error } = await supabase.auth.getSession();
-  if (error) {
-    throw new Error('Det gick inte att kontrollera inloggning.');
-  }
-
-  if (!data.session) {
-    throw new Error('Du måste vara inloggad för att ändra kalkyler.');
-  }
 }
 
 export async function listMaterialCalculations(materialId: string): Promise<MaterialCalculation[]> {
@@ -132,7 +95,7 @@ export async function createMaterialCalculation(
   materialId: string,
   input: MaterialCalculationMutationInput,
 ): Promise<MaterialCalculation> {
-  await requireWriteSession();
+  await requireAuthenticatedSession('kalkyler');
 
   const supabase = getSupabaseClientOrThrow();
   const { data, error } = await supabase
@@ -152,7 +115,7 @@ export async function updateMaterialCalculation(
   calculationId: string,
   input: MaterialCalculationMutationInput,
 ): Promise<MaterialCalculation> {
-  await requireWriteSession();
+  await requireAuthenticatedSession('kalkyler');
 
   const supabase = getSupabaseClientOrThrow();
   const { data, error } = await supabase
@@ -170,7 +133,7 @@ export async function updateMaterialCalculation(
 }
 
 export async function deleteMaterialCalculation(calculationId: string): Promise<void> {
-  await requireWriteSession();
+  await requireAuthenticatedSession('kalkyler');
 
   const supabase = getSupabaseClientOrThrow();
   const { error } = await supabase
