@@ -1,10 +1,10 @@
 ﻿# Versioning Policy
 
-PolyFlow uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
+PolyCalc uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 
 ## Current version
 
-- `0.7.0`
+- `0.7.3`
 
 ## Rules
 
@@ -41,3 +41,6 @@ PolyFlow uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 - `0.6.0`: Phase 2.3 sales-oriented calculation expansion (persisted quote-input fields on `material_calculations` plus read-only result presentation for internkostnad, prisförslag, batch och ledtid).
 - `0.6.1`: Material form time-reference polish (minutes in UI, selectable `45°/90°` reference angle, and new `materials.time_per_layer_reference_angle_deg` schema support).
 - `0.7.0`: Capacity-aware calculation model (`details_per_printer`) and branded PDF-offert export from saved scenarios.
+- `0.7.1`: Documentation alignment and product polish for the current självkostnadskalkyl flow (cost-only outputs, renamed PDF export, updated current-state docs).
+- `0.7.2`: Product rename from `PolyFlow` to `PolyCalc` across app branding, metadata, PWA identity, package metadata, and documentation.
+- `0.7.3`: GitHub Pages and Supabase deployment documentation polish for safe future repository rename to `polycalc`.

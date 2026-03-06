@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Phase 2.5 capacity-aware calculation runtime with PDF export is implemented.
+- Current shipped state is a capacity-aware calculation runtime with self-cost PDF export.
 - Materials, shared kategori/tillverkare options, and per-material calculations are loaded from Supabase.
 - Material, calculation, and option mutations require authenticated session.
 
@@ -27,6 +27,7 @@ Rules:
 - Never commit real secrets.
 - Never use service-role keys in frontend code.
 - `VITE_BASE_PATH` is optional for local work; default is `/`.
+- GitHub Actions sets `VITE_BASE_PATH` automatically from the current repository name during Pages builds.
 
 ## Supabase manual setup
 
@@ -53,6 +54,8 @@ Configure Supabase Auth URL settings:
   - `http://localhost:5173/`
   - your GitHub Pages URL (`https://<user>.github.io/<repo>/`)
 
+If you rename the GitHub repository later, update the Pages URL in both `Site URL` and `Additional redirect URLs` to match the new repository name before testing magic-link login on Pages.
+
 ## Local development flow
 
 ```bash
@@ -67,12 +70,13 @@ npm run preview
 
 - `/materials` loads materials from Supabase.
 - Expanding a material row loads related calculations from Supabase.
-- Expanded calculations show sales-oriented outputs (internkostnad, prisförslag, batch, ledtid).
+- Expanded calculations show self-cost outputs (materialkostnad, maskinkostnad, internkostnad, batch, ledtid).
 - Expanded calculations support `antal detaljer/skrivare` for capacity-aware cost/tid.
-- Saved calculations can export branded PDF-offerts.
+- Saved calculations can export branded PDF självkostnadskalkyler.
 - `/auth` signs in with magic link.
 - Write actions are blocked when not signed in.
 - Material create/edit returns to overview and reopens target material inline.
 - Material create/edit loads kategori/tillverkare from shared Supabase option tables.
 - Material create/edit can add/inaktivera kategori/tillverkare directly from form controls.
 - Material create/edit supports reference angle (`45°`/`90°`) and minute-based time input.
+- Legacy sales-oriented calculation columns remain in the DB schema from earlier iterations, but are not part of the active UI.

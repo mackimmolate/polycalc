@@ -9,7 +9,6 @@ const githubPagesBase =
   process.env.GITHUB_ACTIONS === 'true' && repositoryName ? `/${repositoryName}/` : '/';
 const basePath = process.env.VITE_BASE_PATH ?? githubPagesBase;
 
-// https://vite.dev/config/
 export default defineConfig({
   base: basePath,
   resolve: {
@@ -30,8 +29,8 @@ export default defineConfig({
       ],
       manifest: {
         id: './',
-        name: 'PolyFlow',
-        short_name: 'PolyFlow',
+        name: 'PolyCalc',
+        short_name: 'PolyCalc',
         description: 'Ett enkelt PWA för att hantera 3D-printmaterial.',
         start_url: './#/materials',
         scope: './',

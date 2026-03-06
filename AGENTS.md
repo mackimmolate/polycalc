@@ -1,15 +1,16 @@
 ﻿# AGENTS.md
 
-This file defines durable working rules for PolyFlow contributors and future Codex passes.
+This file defines durable working rules for PolyCalc contributors and future Codex passes.
 
 ## Product principles
 
 - Build a clean, modern, minimal PWA for managing 3D printing materials.
-- Treat PolyFlow as `material library + inline multi-scenario calculator` in v1.
+- Treat PolyCalc as `material library + inline multi-scenario calculator` in v1.
+- Keep the active calculation workflow focused on `självkostnad`, not sales pricing or margin policy.
 - Optimize for clarity, speed, low cognitive load, and maintainability.
 - Prefer simple architecture and strong defaults over clever abstractions.
 - Document intentional deferrals explicitly.
-- Avoid feature creep in v1 (for example: no broad export platform beyond scoped quote PDF).
+- Avoid feature creep in v1 (for example: no broad export platform beyond scoped self-cost PDF export).
 
 ## Architecture expectations
 
@@ -50,7 +51,7 @@ This file defines durable working rules for PolyFlow contributors and future Cod
 ## Versioning discipline
 
 - Follow Semantic Versioning.
-- Current active baseline is `0.7.0`; increment only for real delivered scope.
+- Current active baseline is `0.7.3`; increment only for real delivered scope.
 - Every versioned change must update `CHANGELOG.md`.
 - Document assumptions and deferred scope for each milestone.
 

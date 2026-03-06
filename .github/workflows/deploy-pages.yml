@@ -1,4 +1,4 @@
-name: Deploy PolyFlow
+name: Deploy PolyCalc
 
 on:
   push:

@@ -21,11 +21,11 @@ export function AppShell() {
             className="flex items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 shadow-sm transition hover:border-[var(--accent)]"
           >
             <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--accent)] font-display text-sm font-bold text-white">
-              PF
+              PC
             </span>
             <span>
               <span className="block font-display text-lg font-bold leading-none text-[var(--ink)]">
-                PolyFlow
+                PolyCalc
               </span>
               <span className="block text-xs text-[var(--muted)]">Materialbibliotek</span>
             </span>

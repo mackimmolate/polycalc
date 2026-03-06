@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Supabase is the active backend for PolyFlow Phase 2.5.
+- Supabase is the active backend for the current PolyCalc självkostnadskalkyl workflow.
 - Frontend client is defined in `src/lib/supabase/client.ts`.
 - Runtime CRUD modules:
   - `src/services/materials/materialsService.ts`
@@ -69,7 +69,7 @@ Upgrade note:
 - `notes` (`text`, required, default `''`)
 - `created_at`, `updated_at`
 
-### `public.material_calculations` (entered scenario values)
+### `public.material_calculations` (scenario values)
 
 - `id` (`uuid`, PK)
 - `material_id` (`uuid`, FK -> `materials.id`, `on delete cascade`)
@@ -79,24 +79,28 @@ Upgrade note:
 - `quantity` (`integer`, required, `> 0`)
 - `details_per_printer` (`integer`, required, `> 0`)
 - `machine_hourly_rate_eur` (`numeric(10,2)`, required, `>= 0`)
-- `labor_cost_per_part_eur` (`numeric(10,2)`, required, `>= 0`)
-- `post_process_cost_per_part_eur` (`numeric(10,2)`, required, `>= 0`)
 - `setup_time_hours` (`numeric(10,2)`, required, `>= 0`)
-- `post_process_time_hours_per_part` (`numeric(10,2)`, required, `>= 0`)
-- `risk_buffer_percent` (`numeric(5,2)`, required, `0..100`)
-- `target_margin_percent` (`numeric(5,2)`, required, `0..99.99`)
 - `printer_count` (`integer`, required, `> 0`)
 - `created_at`, `updated_at`
 
+Legacy compatibility columns retained in schema:
+
+- `labor_cost_per_part_eur` (`numeric(10,2)`, required, `>= 0`)
+- `post_process_cost_per_part_eur` (`numeric(10,2)`, required, `>= 0`)
+- `post_process_time_hours_per_part` (`numeric(10,2)`, required, `>= 0`)
+- `risk_buffer_percent` (`numeric(5,2)`, required, `0..100`)
+- `target_margin_percent` (`numeric(5,2)`, required, `0..99.99`)
+
 Notes:
 
-- Calculated output values are derived in UI, not stored (for example internkostnad, prisförslag, batchsummering och ledtid).
+- Calculated output values are derived in UI, not stored (materialkostnad, maskinkostnad, internkostnad, batchsummering och ledtid).
 - `details_per_printer` enables capacity-aware cost and lead-time calculations when multiple details can be produced per printer run.
 - Material per-layer reference time is shown as minutes in UI, but stored as seconds in DB.
 - One material can have many calculation records.
 - Category and manufacturer values are now canonical shared entities with normalized keys.
 - Duplicate variants are prevented by `normalized_key` uniqueness.
 - Removing an option from the form inactivates it (`is_active = false`) instead of hard delete.
+- Legacy sales-oriented columns remain for schema compatibility but are not part of the current UI/runtime.
 
 ## RLS policy model (v1)
 
@@ -123,6 +127,16 @@ Required Supabase Auth URL setup:
 
 - Local: `http://localhost:5173/`
 - GitHub Pages: `https://<user>.github.io/<repo>/`
+
+If the GitHub repository name changes, update Supabase Auth configuration to the new Pages URL in both:
+
+- `Site URL`
+- `Additional Redirect URLs`
+
+Recommended Pages entries after rename:
+
+- `https://<user>.github.io/<new-repo>/`
+- `https://<user>.github.io/<new-repo>/#/auth`
 
 ## Delete behavior
 

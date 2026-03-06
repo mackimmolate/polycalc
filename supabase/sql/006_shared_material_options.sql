@@ -1,4 +1,4 @@
--- PolyFlow v2.2: shared canonical category/manufacturer options in Supabase.
+-- PolyCalc v2.2: shared canonical category/manufacturer options in Supabase.
 -- Moves materials to foreign-key references and keeps option removal safe via is_active.
 
 create extension if not exists pgcrypto;

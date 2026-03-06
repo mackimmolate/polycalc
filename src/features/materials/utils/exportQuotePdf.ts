@@ -224,7 +224,7 @@ export async function exportQuotePdf(payload: QuotePdfPayload) {
   doc.setTextColor(120, 132, 140);
   doc.setFontSize(9);
   doc.text(
-    'PolyFlow-självkostnadskalkyl. Värden baseras på inmatad kalkyl och materialdata.',
+    'PolyCalc-självkostnadskalkyl. Värden baseras på inmatad kalkyl och materialdata.',
     margin,
     pageHeight - 24,
   );

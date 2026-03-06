@@ -1,24 +1,24 @@
-﻿# PolyFlow
+# PolyCalc
 
-PolyFlow is a clean, modern PWA for managing 3D printing materials with an inline calculation workspace.
+PolyCalc is a clean, modern PWA for managing 3D printing materials with an inline calculation workspace.
 
 ## Current status
 
-- Version: `0.7.0`
-- Phase 2.5 completed: capacity-aware calculations and PDF-offert export.
+- Version: `0.7.3`
+- Current shipped state: capacity-aware självkostnadskalkyl with PDF export.
 - Supabase-backed runtime is active for materials, shared options, and calculation records.
 - Swedish UI, compact row overview, and GitHub Pages deployment workflow are active.
 
-## What PolyFlow does in v1
+## What PolyCalc does in v1
 
 - Browses and compares materials in a compact sortable overview.
 - Uses one main search field for fast filtering.
 - Expands one material inline to open a workspace directly under the row.
 - Keeps key fixed material values visible in the compact overview rows.
 - Manages multiple calculation scenarios per material (create, edit, remove).
-- Calculates internal cost, sales price, batch totals, and lead time from fixed and entered values.
+- Calculates material cost, machine cost, internal cost, batch totals, and lead time from fixed and entered values.
 - Supports capacity-aware scenarios with `antal detaljer/skrivare`.
-- Exports saved calculations as branded PDF-offerts.
+- Exports saved calculations as branded PDF självkostnadskalkyler.
 - Creates, edits, and deletes materials against Supabase.
 - Loads kategori/tillverkare from shared Supabase option tables.
 - Lets users add and inactivate kategori/tillverkare inline in create/edit forms.
@@ -26,7 +26,7 @@ PolyFlow is a clean, modern PWA for managing 3D printing materials with an inlin
 
 ## Product model in v1
 
-PolyFlow separates three value types:
+PolyCalc separates three value types:
 
 1. Fixed material values (persisted on `materials`)
 
@@ -34,9 +34,9 @@ PolyFlow separates three value types:
 - manufacturer reference (`manufacturer_id`)
 - category reference (`category_id`)
 - price per kg (EUR)
-- max temperature (°C)
+- max temperature (deg C)
 - time per layer reference time (stored as seconds)
-- time per layer reference angle (`45°` or `90°`)
+- time per layer reference angle (`45deg` or `90deg`)
 - notes
 
 2. Shared option values (persisted globally)
@@ -44,29 +44,28 @@ PolyFlow separates three value types:
 - `material_manufacturers` (`label`, `normalized_key`, `is_active`)
 - `material_categories` (`label`, `normalized_key`, `is_active`)
 
-3. User-entered calculation values (persisted per scenario on `material_calculations`)
+3. Active user-entered calculation values (persisted per scenario on `material_calculations`)
 
 - kg material
-- print time in hours
+- print time per detail (entered in minutes, stored as hours)
 - quantity
-- machine hourly rate (EUR)
-- labor cost per part (EUR)
-- post-process cost per part (EUR)
-- setup time (hours)
-- post-process time per part (hours)
-- risk buffer (%)
-- target margin (%)
-- printer count
 - details per printer
+- machine hourly rate (EUR)
+- setup time (entered in minutes, stored as hours)
+- printer count
 - optional calculation label
 
 4. Calculated values (derived in UI)
 
 - material cost per part (`price_per_kg_eur * kg_material`)
+- machine cost per part
 - internal cost per part
-- suggested sales price per part
-- batch internal cost, batch sales total, and lead time
-- lead time and customer-facing summary values
+- batch internal cost
+- lead time
+
+Compatibility note:
+
+- `material_calculations` still contains some legacy columns from the earlier sales-oriented iteration (`labor_cost_per_part_eur`, `post_process_cost_per_part_eur`, `post_process_time_hours_per_part`, `risk_buffer_percent`, `target_margin_percent`), but they are not part of the active UI or current calculation flow.
 
 ## Tech stack
 
@@ -75,6 +74,7 @@ PolyFlow separates three value types:
 - React Router (hash routing for GitHub Pages)
 - Tailwind CSS
 - Supabase JS
+- `jsPDF`
 - `vite-plugin-pwa`
 - ESLint + Prettier
 
@@ -148,6 +148,17 @@ Required repository configuration:
 2. Add Actions variable `VITE_SUPABASE_URL`
 3. Add Actions secret `VITE_SUPABASE_ANON_KEY`
 4. In Supabase Auth URL configuration, allow redirect URL for your Pages site (`https://<user>.github.io/<repo>/`)
+
+## Repository rename readiness
+
+- Production Pages builds already derive `VITE_BASE_PATH` from the current GitHub repository name in CI.
+- This means a future repository rename from `polyflow` to `polycalc` does not require a code change for asset paths or routing.
+- After renaming the GitHub repository, update Supabase Auth settings to the new Pages URL:
+  - `Site URL`: `https://<user>.github.io/<new-repo>/`
+  - `Additional Redirect URLs`:
+    - `https://<user>.github.io/<new-repo>/`
+    - `https://<user>.github.io/<new-repo>/#/auth`
+- Then redeploy from GitHub Actions so the new base path is baked into the build output.
 
 ## PWA behavior in v1
 

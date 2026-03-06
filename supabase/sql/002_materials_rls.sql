@@ -1,4 +1,4 @@
--- PolyFlow v1 RLS baseline
+-- PolyCalc v1 RLS baseline
 -- Goal: allow public read, but require authenticated session for write operations.
 -- Destructive behavior in v1 is hard delete (no archive flow).
 

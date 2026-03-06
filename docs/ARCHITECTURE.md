@@ -2,9 +2,9 @@
 
 ## Current state
 
-- Phase 2.5 capacity-aware calculation model with PDF offert export is implemented.
+- Current shipped state is a capacity-aware självkostnadskalkyl with PDF export.
 - Runtime data is Supabase-backed for materials, shared option entities, and related calculation records.
-- PolyFlow v1 is implemented as material library plus inline multi-calculation workspace.
+- PolyCalc v1 is implemented as material library plus inline multi-calculation workspace.
 
 ## Guiding principles
 
@@ -76,36 +76,40 @@ src/
 - `material_categories`: `label`, `normalized_key`, `is_active`
 - `material_manufacturers`: `label`, `normalized_key`, `is_active`
 
-### Entered scenario values (persisted on `material_calculations`)
+### Active entered scenario values (persisted on `material_calculations`)
 
 - `label`
 - `kgMaterial`
-- `printTimeHours`
+- `printTimeHours` (entered as minutes in UI)
 - `quantity`
+- `detailsPerPrinter`
 - `machineHourlyRateEur`
+- `setupTimeHours` (entered as minutes in UI)
+- `printerCount`
+
+### Compatibility fields retained in schema
+
 - `laborCostPerPartEur`
 - `postProcessCostPerPartEur`
-- `setupTimeHours`
 - `postProcessTimeHoursPerPart`
 - `riskBufferPercent`
 - `targetMarginPercent`
-- `printerCount`
-- `detailsPerPrinter`
+
+These fields remain in `material_calculations` for schema compatibility, but are not part of the active runtime workflow.
 
 ### Calculated values (derived in UI)
 
 - `materialCostPerPart = pricePerKgEur * kgMaterial`
+- `machineCostPerPart`
 - `internalCostPerPart`
-- `suggestedSalesPricePerPart`
 - `batchInternalCost`
-- `batchSalesTotal`
 - `leadTimeMinutes`
 
 ### Export output (derived document)
 
-- Saved calculations can be exported as a branded PDF offert.
+- Saved calculations can be exported as a branded PDF självkostnadskalkyl.
 - Export generation lives in `features/materials/utils/exportQuotePdf.ts`.
-- PDF output is derived from persisted material + calculation inputs and computed values; no separate quote table is introduced in v1.
+- PDF output is derived from persisted material + calculation inputs and computed values; no separate export table is introduced in v1.
 
 ## Routing strategy
 

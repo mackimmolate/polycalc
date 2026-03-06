@@ -6,7 +6,7 @@ This file records key product and engineering decisions.
 
 - Date: 2026-03-03
 - Status: Accepted
-- Decision: Build PolyFlow in explicit phases with implementation + docs + version/changelog updates per phase.
+- Decision: Build PolyCalc in explicit phases with implementation + docs + version/changelog updates per phase.
 - Reason: Reduces drift, improves reviewability, and keeps scope control in v1.
 
 ## D-0002: Stack baseline
@@ -51,7 +51,7 @@ This file records key product and engineering decisions.
 - Decision: Use compact rows instead of large cards for the materials overview.
 - Reason: Better scanability and practical repeated use.
 
-## D-0008: PolyFlow v1 is library plus simple calculator
+## D-0008: PolyCalc v1 is library plus simple calculator
 
 - Date: 2026-03-03
 - Status: Accepted
@@ -142,11 +142,11 @@ This file records key product and engineering decisions.
 - Decision: Removing a category/manufacturer in UI updates `is_active = false` instead of deleting rows.
 - Reason: Keeps existing material references valid while hiding inactive options from new selections.
 
-## D-0021: Persist sales-oriented calculation inputs, keep quote outputs derived
+## D-0021: Persist sales-oriented calculation inputs, keep pricing outputs derived
 
 - Date: 2026-03-04
-- Status: Accepted
-- Decision: Extend `material_calculations` with persisted scenario inputs (`quantity`, machine/labor/post-process costs, setup/post-process time, risk buffer, target margin, printer count) while keeping computed quote outputs derived in UI.
+- Status: Superseded
+- Decision: Extend `material_calculations` with persisted scenario inputs (`quantity`, machine/labor/post-process costs, setup/post-process time, risk buffer, target margin, printer count) while keeping computed pricing outputs derived in UI.
 - Reason: Supports practical sales calculations (internkostnad, prisförslag, batchsumma, ledtid) without duplicating computed data in the database.
 
 ## D-0022: Use selectable reference angle with minute-based input for per-layer time
@@ -156,9 +156,16 @@ This file records key product and engineering decisions.
 - Decision: Keep storage in seconds (`time_per_layer_45_deg_seconds`) for precision, add `time_per_layer_reference_angle_deg` (`45` or `90`) for context, and use minute-based input/output in the material form/UI.
 - Reason: Minutes are easier for users while seconds remain robust for sorting and calculations; angle selection removes incorrect fixed `45°` assumptions.
 
-## D-0023: Add scoped PDF offert export and capacity-per-printer input
+## D-0023: Add scoped PDF självkostnadskalkyl export and capacity-per-printer input
 
 - Date: 2026-03-05
 - Status: Accepted
-- Decision: Add `details_per_printer` to persisted calculation inputs and allow PDF export for saved calculations with branded quote layout.
-- Reason: Sales workflows need a shareable quote output and realistic capacity-aware lead-time/cost estimates without introducing a full quote management system.
+- Decision: Add `details_per_printer` to persisted calculation inputs and allow PDF export for saved calculations with a branded självkostnadskalkyl layout.
+- Reason: Users need a shareable internal cost document and realistic capacity-aware lead-time/cost estimates without introducing a full commercial workflow system.
+
+## D-0024: Active runtime calculates self-cost only
+
+- Date: 2026-03-06
+- Status: Accepted
+- Decision: The active UI and exported PDF compute only material cost, machine cost, internal cost, batch total, and lead time. Sales price, customer price, and margin policy are intentionally handled outside PolyCalc.
+- Reason: Keeps the product focused on own cost and avoids hardcoding sales policy into the application while still preserving legacy schema compatibility.

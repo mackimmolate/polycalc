@@ -1,4 +1,4 @@
--- PolyFlow v1.1 hotfix: remove legacy fixed-list checks on materials.category/materials.manufacturer.
+-- PolyCalc v1.1 hotfix: remove legacy fixed-list checks on materials.category/materials.manufacturer.
 -- Some projects still have strict check constraints from older schema versions.
 
 do $$

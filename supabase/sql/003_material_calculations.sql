@@ -1,4 +1,4 @@
--- PolyFlow v1.1+: per-material calculation scenarios
+-- PolyCalc v1.1+: per-material calculation scenarios
 -- Calculations store user-entered scenario values.
 -- Calculated values (for example material cost) stay derived in app logic.
 

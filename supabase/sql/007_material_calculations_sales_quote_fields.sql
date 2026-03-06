@@ -1,4 +1,4 @@
--- PolyFlow 0.6.0: sales-oriented quote fields on material_calculations.
+-- PolyCalc 0.6.0: sales-oriented quote fields on material_calculations.
 -- Adds persisted inputs for internal cost, suggested sales price, batch totals, and lead-time estimation.
 
 alter table public.material_calculations

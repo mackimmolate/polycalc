@@ -1,4 +1,4 @@
--- PolyFlow v1.1: allow custom manufacturer/category options from UI.
+-- PolyCalc v1.1: allow custom manufacturer/category options from UI.
 -- Replaces strict fixed-list checks with non-empty text checks.
 -- This is retained for legacy projects where materials still use text columns.
 

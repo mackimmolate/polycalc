@@ -1,4 +1,4 @@
-﻿-- PolyFlow v1: material library + simple calculator model
+-- PolyCalc v1: material library + simple calculator model
 -- This schema stores fixed material values.
 -- User-entered calculation inputs (kg material, printtid) are not persisted in v1.
 

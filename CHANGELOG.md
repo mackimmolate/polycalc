@@ -4,6 +4,47 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.7.3] - 2026-03-06
+
+### Changed
+
+- Clarified and hardened the GitHub Pages deployment foundation for future repository rename from `polyflow` to `polycalc`.
+- Kept Pages base-path handling repository-name-aware in CI so production builds follow the current GitHub repository name automatically.
+- Renamed the deployment workflow label from `Deploy PolyFlow` to `Deploy PolyCalc`.
+
+### Documentation
+
+- Documented the exact manual Supabase Auth URL updates required after a GitHub repository rename.
+- Clarified that `VITE_BASE_PATH` remains optional locally and is derived automatically in GitHub Actions builds.
+
+## [0.7.2] - 2026-03-06
+
+### Changed
+
+- Renamed the product from `PolyFlow` to `PolyCalc` across the app shell, PWA identity, metadata, exported PDF branding, and package metadata.
+- Updated the visible monogram from `PF` to `PC`.
+
+### Documentation
+
+- Renamed the product consistently across repo documentation, governance guidance, and versioning records.
+
+## [0.7.1] - 2026-03-06
+
+### Changed
+
+- Reframed the active calculation flow from sales/quote language to self-cost language:
+  - removed visible `Försäljningspris` and `Totalt kundpris`
+  - PDF export now produces a `Självkostnadskalkyl` instead of an offert
+- Updated the exported PDF to:
+  - include material max temperature
+  - show calculation label before material name in the header
+  - keep the exported document focused on internal cost only
+
+### Documentation
+
+- Aligned README, setup, architecture, Supabase, roadmap, and decision records with the current självkostnadskalkyl workflow.
+- Documented that several sales-oriented columns still exist in `material_calculations` for schema compatibility, but are not part of the active UI/runtime.
+
 ## [0.7.0] - 2026-03-05
 
 ### Added

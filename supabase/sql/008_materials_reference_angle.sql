@@ -1,4 +1,4 @@
--- PolyFlow 0.6.1: reference angle support for per-layer time.
+-- PolyCalc 0.6.1: reference angle support for per-layer time.
 -- Keeps existing time column in seconds and adds a selectable reference angle (45 or 90).
 
 alter table public.materials

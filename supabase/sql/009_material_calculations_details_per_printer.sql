@@ -1,4 +1,4 @@
--- PolyFlow 0.7.0: support multiple details per printer in one print run.
+-- PolyCalc 0.7.0: support multiple details per printer in one print run.
 -- Adds a persisted capacity input used by lead-time and machine-cost calculations.
 
 alter table public.material_calculations
