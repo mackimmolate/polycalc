@@ -36,6 +36,8 @@ Apply in this order:
 
 Upgrade note:
 
+- Running the full list is safe for a fresh project.
+- `007_material_calculations_sales_quote_fields.sql` is primarily a compatibility upgrade for older databases. The current `003_material_calculations.sql` already includes those legacy columns for new installs.
 - If your database already has scripts `001`-`008`, run only `009` to add calculation capacity support (`details_per_printer`).
 
 ## Table model

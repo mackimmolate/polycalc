@@ -72,7 +72,7 @@
 - Moved and structured brand asset under `src/assets/brand/`
 - Simplified the active workflow to internal cost only; sales price and margins are no longer part of the current UI/PDF
 
-## Phase 3 (current): Hardening and release readiness
+## Phase 3 (completed): Hardening and release readiness
 
 Completed stabilization baseline:
 
@@ -84,12 +84,17 @@ Completed stabilization baseline:
 - Added CI test execution before GitHub Pages deploy
 - Upgraded `jspdf` to remove the previous critical audit finding in the PDF export chain
 
-Still recommended next:
+## Optional future directions
 
 - Add automated tests for the Supabase service layer and key UI/auth states
 - Improve error observability and user-facing diagnostics
 - Re-check the unresolved `vite-plugin-pwa/workbox` audit chain before `1.0.0`
 - Final production checklist before `1.0.0`
+
+## Current position
+
+- There is no mandatory next delivery phase required for the current PolyCalc build.
+- The product is in a stable, deployable, and documented state for the present scope.
 
 ## Deferred scope (v1)
 

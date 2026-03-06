@@ -181,6 +181,11 @@ Required repository configuration:
 - `npm audit` still reports a high-severity chain through `vite-plugin-pwa -> workbox-build -> @rollup/plugin-terser -> serialize-javascript`.
 - As of `2026-03-06`, `vite-plugin-pwa@1.2.0` is the latest published version, so there is no clean package upgrade available from within the current plugin stack.
 
+## Project status
+
+- PolyCalc does not have a mandatory next build phase at the moment.
+- Remaining work is optional future evolution (for example deeper service-layer tests, performance tuning, or a later PWA dependency refresh when upstream packages provide a better upgrade path).
+
 ## Documentation map
 
 - Repo guidance: [`AGENTS.md`](AGENTS.md)

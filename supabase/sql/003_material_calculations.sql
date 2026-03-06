@@ -1,6 +1,7 @@
 -- PolyCalc v1.1+: per-material calculation scenarios
 -- Calculations store user-entered scenario values.
 -- Calculated values (for example material cost) stay derived in app logic.
+-- Several legacy sales-oriented columns remain in this table for schema compatibility, even though the active frontend runtime no longer uses them.
 
 create table if not exists public.material_calculations (
   id uuid primary key default gen_random_uuid(),

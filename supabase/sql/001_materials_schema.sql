@@ -1,6 +1,6 @@
 -- PolyCalc v1: material library + simple calculator model
 -- This schema stores fixed material values.
--- User-entered calculation inputs (kg material, printtid) are not persisted in v1.
+-- User-entered calculation inputs are stored separately in public.material_calculations via later SQL assets.
 
 create extension if not exists pgcrypto;
 

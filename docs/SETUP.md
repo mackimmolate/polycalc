@@ -43,6 +43,11 @@ Run SQL files in Supabase SQL editor, in order:
 8. `supabase/sql/008_materials_reference_angle.sql`
 9. `supabase/sql/009_material_calculations_details_per_printer.sql`
 
+Notes:
+
+- Running all files in the listed order is safe for a fresh setup.
+- `007_material_calculations_sales_quote_fields.sql` is mainly a historical compatibility upgrade for older databases. A fresh setup from the current `003_material_calculations.sql` already includes those legacy compatibility columns.
+
 If your project is already initialized up to `008`, run only:
 
 - `supabase/sql/009_material_calculations_details_per_printer.sql`
